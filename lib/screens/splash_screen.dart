@@ -34,7 +34,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Container(
+    return
+      Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -45,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
           ],
         ),
       ),
-      child:  Scaffold(
+      child: SafeArea(child: Scaffold(
         //Make sure you make the scaffold background transparent
         backgroundColor: Colors.transparent,
         body: Stack(children: [
@@ -60,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
             color: Colors.white,
           ),)),
         ],),
-      ),
+      ),),
     );
   }
 }

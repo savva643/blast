@@ -18,9 +18,10 @@ import 'package:http/http.dart' as http;
 const kBgColor = Color(0xFF1604E2);
 
 class MusicScreen extends StatefulWidget {
-  const MusicScreen({Key? key}) : super(key: key);
+  final  Function(dynamic) onCallback;
+  MusicScreen({Key? key, required this.onCallback}) : super(key: key);
   @override
-  State<MusicScreen> createState() => _MusicScreenState();
+  State<MusicScreen> createState() => _MusicScreenState((dynamic input) {onCallback(input);});
 
 
 
@@ -30,6 +31,7 @@ class MusicScreen extends StatefulWidget {
 class _MusicScreenState extends State<MusicScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  late  Function(dynamic) onCallback;
 
   List _langData = [
     {
@@ -43,6 +45,11 @@ class _MusicScreenState extends State<MusicScreen> {
       'name': 'Русский',
     },
   ];
+  var player;
+  _MusicScreenState(Function(dynamic) onk){
+    onCallback = onk;
+  }
+
   @override
   void initState()
   {
@@ -51,7 +58,6 @@ class _MusicScreenState extends State<MusicScreen> {
   }
   String musicUrl = ""; // Insert your music URL
   String thumbnailImgUrl = "";
-  var player = AudioPlayer();
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -61,7 +67,7 @@ class _MusicScreenState extends State<MusicScreen> {
         preferredSize: Size.zero,
         child: AppBar(
           elevation: 0,
-          backgroundColor: kBgColor,
+          backgroundColor: const Color.fromARGB(255, 15, 15, 16),
 
           systemOverlayStyle: const SystemUiOverlayStyle(
             statusBarColor: kBgColor,
@@ -70,8 +76,9 @@ class _MusicScreenState extends State<MusicScreen> {
           ),
         ),
       ),
-
+      backgroundColor: const Color.fromARGB(255, 15, 15, 16),
       body: SafeArea(
+
         child:
         Container(
           decoration: new BoxDecoration(
@@ -83,69 +90,7 @@ class _MusicScreenState extends State<MusicScreen> {
                   Color.fromARGB(255, 15, 15, 16),
                 ],
               )),
-          child:
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-        children: [
-            SizedBox(
-              height: 80,width: 220,
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                child:
-            Container(
-              padding: EdgeInsets.only(top: 140),
-              child:
-              Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-              ),),
-          Container(padding: EdgeInsets.only(left: 12,top: 12),
-              child:
-              Text("blast!",
-                style: TextStyle(
-                  fontSize: 40,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),)),
-        ],),
-            Container(margin: EdgeInsets.only(left: 32,right: 32),
-              child:
-            Stack(alignment: Alignment.center,
-              children: [
-              Image.asset('assets/images/circleblast.png', width: 600,),
-              Container(padding: EdgeInsets.only(left: 12,top: 12),
-                  child:
-                      Column(children: [ Text("Джем",
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),),
-                        IconButton(onPressed: ()  {
-                           player.setUrl("https://kompot.site/music/436.mp3");
-                           player.play();
-                        }, iconSize: 56, icon: Image.asset('assets/images/plays.png',width: 56, height: 56)),],)
-                  ),
-            ],),),
-            SizedBox(height: 10,),
-            Center(child: Text("Чарт",
-              style: TextStyle(
-                fontSize: 30,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),),),
-            SizedBox(height: 10,),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.only(left: 32, right: 32),
-                child: _loadListView(),
-            ),),
-          ],
-        ),
+          child:_loadListView(),
       ),
 
       ),
@@ -160,7 +105,6 @@ class _MusicScreenState extends State<MusicScreen> {
 
   @override
   void dispose() {
-    player.dispose();
     super.dispose();
   }
 
@@ -175,86 +119,161 @@ class _MusicScreenState extends State<MusicScreen> {
     }
   }
 
+
+
   _clearSearch() {
     _searchLanguageController.clear();
     setState(() => _searchedLangData = _langData);
   }
-
-  Widget _loadListView() {
+   Widget _loadListView() {
     return ListView.builder(
       itemCount: _searchedLangData.length,
-      itemBuilder: (BuildContext context, int idx) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          child: Material(
-
-            color: Color.fromARGB(255, 15, 15, 16),
-            borderRadius: BorderRadius.circular(5),
-            child: ListTile(
-              contentPadding: EdgeInsets.only(left: 0,right: 0, bottom: 0, top: 0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-              onTap: () async {
-                player.setUrl(_searchedLangData[idx]['url']);
-                player.play();
-              },
-              leadingAndTrailingTextStyle: TextStyle(),
-              leading: SizedBox(width: 90, height: 60, child:Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center,children: [
-                  SizedBox(width: 30, child:Text(
-                  (idx + 1).toString(),
-                textAlign: TextAlign.center,
-
-                style: TextStyle(
-
-                    fontSize: 18,
-                    fontFamily: 'Ubuntu',
-                    fontWeight: FontWeight.w500,
-                    color: Color.fromARGB(255, 246, 244, 244)
-                ),
-              ), ), SizedBox(
-                width: 60,
-                height: 60,
-                child: OverflowBox(
-                  maxWidth: double.infinity,
-                  maxHeight: double.infinity,
-        child: CachedNetworkImage(
-                  imageUrl: _searchedLangData[idx]['img'],
-                  imageBuilder: (context, imageProvider) => Container(
-                    padding: EdgeInsets.only(left: 0,right: 0, bottom: 0, top: 0),
-                    width: 64.0,
-                    height: 64.0,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(5),
-                      image: DecorationImage(
-                          image: imageProvider),
-                    ),
+      itemBuilder: (BuildContext context, int idx)
+    {
+      if (idx == 0) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                SizedBox(
+                  height: 80,width: 220,
+                  child: OverflowBox(
+                    maxWidth: double.infinity,
+                    maxHeight: double.infinity,
+                    child:
+                    Container(
+                      padding: EdgeInsets.only(top: 140),
+                      child:
+                      Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
+                  ),),
+                Container(padding: EdgeInsets.only(left: 12,top: 12),
+                    child:
+                    Text("blast!",
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),)),
+              ],),
+            Container(margin: EdgeInsets.only(left: 32,right: 32),
+              child:
+              Stack(alignment: Alignment.center,
+                children: [
+                  Image.asset('assets/images/circleblast.png', width: 600,),
+                  Container(padding: EdgeInsets.only(left: 12,top: 12),
+                      child:
+                      Column(children: [ Text("Джем",
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),),
+                        IconButton(onPressed: ()  {
+                          player.setUrl("https://kompot.site/music/436.mp3");
+                          player.play();
+                        }, iconSize: 56, icon: Image.asset('assets/images/plays.png',width: 56, height: 56)),],)
                   ),
-                  placeholder: (context, url) => CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
-                ),
-              ),),],),),
-              title: Text(
-                _searchedLangData[idx]['name'],
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Ubuntu',
-                    fontWeight: FontWeight.w500,
-                    color: Color.fromARGB(255, 246, 244, 244)
-                ),
-              ),
-              subtitle: Text(
-                _searchedLangData[idx]['message'],
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Ubuntu',
-                    fontWeight: FontWeight.w300,
-                    color: Color.fromARGB(255, 246, 244, 244)
-                ),
-              ) ,
-              trailing: IconButton(icon: Icon(Icons.more_vert), color: Colors.white, onPressed: () {  },),
-            ),
-          ),
+                ],),),
+            SizedBox(height: 10,),
+            Center(child: Text("Чарт",
+              style: TextStyle(
+                fontSize: 30,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),),),
+            SizedBox(height: 10,),
+
+          ],
         );
+      }else{
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: Material(
+
+          color: Color.fromARGB(255, 15, 15, 16),
+          borderRadius: BorderRadius.circular(5),
+          child: ListTile(
+            contentPadding: EdgeInsets.only(
+                left: 0, right: 0, bottom: 0, top: 0),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5)),
+            onTap: () async {
+              onCallback(_searchedLangData[idx-1]);
+            },
+            leadingAndTrailingTextStyle: TextStyle(),
+            leading: SizedBox(width: 90,
+              height: 60,
+              child: Row(mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width: 30, child: Text(
+                    (idx).toString(),
+                    textAlign: TextAlign.center,
+
+                    style: TextStyle(
+
+                        fontSize: 18,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromARGB(255, 246, 244, 244)
+                    ),
+                  ),), SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: OverflowBox(
+                      maxWidth: double.infinity,
+                      maxHeight: double.infinity,
+                      child: CachedNetworkImage(
+                        imageUrl: _searchedLangData[idx-1]['img'],
+                        imageBuilder: (context, imageProvider) =>
+                            Container(
+                              padding: EdgeInsets.only(
+                                  left: 0, right: 0, bottom: 0, top: 0),
+                              width: 64.0,
+                              height: 64.0,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.circular(5),
+                                image: DecorationImage(
+                                    image: imageProvider),
+                              ),
+                            ),
+                        placeholder: (context, url) =>
+                            CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      ),
+                    ),),
+                ],),),
+            title: Text(
+              _searchedLangData[idx-1]['name'],
+              style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w500,
+                  color: Color.fromARGB(255, 246, 244, 244)
+              ),
+            ),
+            subtitle: Text(
+              _searchedLangData[idx-1]['message'],
+              style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w300,
+                  color: Color.fromARGB(255, 246, 244, 244)
+              ),
+            ),
+            trailing: IconButton(icon: Icon(Icons.more_vert),
+              color: Colors.white,
+              onPressed: () {},),
+          ),
+        ),
+      );
+    }
       },
     );
   }
