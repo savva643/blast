@@ -251,6 +251,8 @@ class _MusicScreenState extends State<MusicScreen> {
                 ],),),
             title: Text(
               _searchedLangData[idx-1]['name'],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   fontSize: 14,
                   fontFamily: 'Montserrat',
@@ -260,6 +262,8 @@ class _MusicScreenState extends State<MusicScreen> {
             ),
             subtitle: Text(
               _searchedLangData[idx-1]['message'],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   fontSize: 14,
                   fontFamily: 'Montserrat',

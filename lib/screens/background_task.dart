@@ -3,7 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'AudioManager.dart';
 
 class AudioPlayerTask extends BackgroundAudioTask {
-  final _player = AudioPlayer();
+  final player = AudioPlayer();
   final AudioManager notifier = AudioManager();
 
   @override
@@ -16,7 +16,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   Future<void> onPlayNewTrack(String url) async {
     // Stop current track if playing
-    await _player.stop();
+    await player.stop();
     notifier.setPlaying(false);
     print("ds");
 
@@ -24,50 +24,58 @@ class AudioPlayerTask extends BackgroundAudioTask {
     await _playNewTrack(url);
   }
 
+  @override
+  Future<void> onPlayMediaItem(MediaItem mediaItem) async {
+    // When a new media item is requested, load and play it
+    await player.setUrl(mediaItem.id); // Assuming mediaItem.id contains the URL
+    player.play();
+  }
+
   Future<void> _playNewTrack(String url) async {
-    await _player.setUrl(url);
-    notifier.setDuration(_player.duration ?? Duration.zero);
-    _player.play();
+    await player.setUrl(url);
+    notifier.setDuration(player.duration ?? Duration.zero);
+    player.play();
     notifier.setPlaying(true);
     _broadcastState();
     print(url);
 
     // Listen for position updates
-    _player.positionStream.listen((position) {
+    player.positionStream.listen((position) {
       notifier.setPosition(position);
       _broadcastState();
     });
 
     // Listen for duration updates (in case it's updated after the track starts playing)
-    _player.durationStream.listen((duration) {
+    player.durationStream.listen((duration) {
       notifier.setDuration(duration ?? Duration.zero);
+      print("jkh"+duration!.inSeconds.toString());
     });
   }
 
   @override
   Future<void> onStop() async {
-    await _player.stop();
+    await player.stop();
     notifier.setPlaying(false);
     await super.onStop();
   }
 
   @override
   Future<void> onPlay() async {
-    _player.play();
+    player.play();
     notifier.setPlaying(true);
     _broadcastState();
   }
 
   @override
   Future<void> onPause() async {
-    _player.pause();
+    player.pause();
     notifier.setPlaying(false);
     _broadcastState();
   }
 
   @override
   Future<void> onSeekTo(Duration position) async {
-    _player.seek(position);
+    player.seek(position);
     notifier.setPosition(position);
     _broadcastState();
   }
@@ -79,11 +87,16 @@ class AudioPlayerTask extends BackgroundAudioTask {
         MediaControl.pause,
         MediaControl.stop,
       ],
-      systemActions: [MediaAction.seek],
+      systemActions: [
+        MediaAction.seek,
+        MediaAction.play,
+        MediaAction.pause,
+        MediaAction.stop,
+      ],
       processingState: AudioProcessingState.ready,
-      playing: _player.playing,
-      position: _player.position,
-      bufferedPosition: _player.bufferedPosition,
+      playing: player.playing,
+      position: player.position,
+      bufferedPosition: player.bufferedPosition,
     );
   }
 }

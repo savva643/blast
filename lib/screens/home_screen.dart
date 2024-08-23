@@ -14,6 +14,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:octo_image/octo_image.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -59,12 +60,20 @@ class _HomeScreenState extends State<HomeScreen>{
 
   Future<void> _playNewTrack(String url) async {
     print("object");
-      await AudioService.customAction('playNewTrack', {'url': url});
-
+    AudioService.playMediaItem(
+      MediaItem(
+        id: url,
+        album: 'New Album',
+        title: 'New Track',
+      ),
+    );
   }
 
   bool frstsd = false;
   Future<void> playmusa(dynamic listok) async {
+    print("object");
+    print(idmus);
+    print(listok["id"]);
     if(idmus != listok["id"]) {
       if(frstsd) {
         _playNewTrack(listok['url']);
@@ -133,9 +142,6 @@ class _HomeScreenState extends State<HomeScreen>{
         builder: (builder){
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
-                return Consumer<AudioManager>(
-                    builder: (context, notifier, child) {
-
                  return Stack(
                   fit: StackFit.expand,
                   children: [
@@ -154,25 +160,22 @@ class _HomeScreenState extends State<HomeScreen>{
                     height: size.height,
 
                     child: Column(children: [
-                      Container(  height: 360, width: 360, margin: EdgeInsets.only(left: 20, right: 20,top: 60),
-                        child:
-                        CachedNetworkImage(
-                          imageUrl: imgmus,
-                          imageBuilder: (context, imageProvider) =>
-                              Container(
-                                width: 400.0,
-                                height: 400.0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.circular(20),
-                                  image: DecorationImage(
-                                      image: imageProvider),
-                                ),
+                      AspectRatio(
+                      aspectRatio: 1.0, // Сохранение пропорций 1:1
+                      child:Container(  height: 360, width: 360, margin: EdgeInsets.only(left: 20, right: 20,top: 60),decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                        clipBehavior: Clip.hardEdge,
+                        child:AspectRatio(
+                              aspectRatio: 1.0, // Сохранение пропорций 1:1
+                              child: Image.network(
+                                imgmus,
+                                height: 400,
+                                width: 400,
+                                fit: BoxFit.cover, // Изображение заполняет контейнер
                               ),
-                          placeholder: (context, url) =>
-                              CircularProgressIndicator(),
-                          errorWidget: (context, url, error) => Icon(Icons.error),
-                        ),),
+                            ))),
                       Text(namemus,
                         style: TextStyle(
                             fontSize: 30,
@@ -187,13 +190,13 @@ class _HomeScreenState extends State<HomeScreen>{
                             fontWeight: FontWeight.w300,
                             color: Color.fromARGB(255, 246, 244, 244)
                         ),),
-                      Padding(padding: EdgeInsets.only(top: 16,left: 22, right: 22), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(notifier.position.inSeconds.toString(),
+                      Padding(padding: EdgeInsets.only(top: 16,left: 22, right: 22), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(AudioService.playbackState.position.inSeconds.toString(),
                         style: TextStyle(
                             fontSize: 16,
                             fontFamily: 'Montserrat',
                             fontWeight: FontWeight.w400,
                             color: Color.fromARGB(255, 246, 244, 244)
-                        ),),Text(notifier.duration.inSeconds.toString(),
+                        ),),Text("180",
                         style: TextStyle(
                             fontSize: 16,
                             fontFamily: 'Montserrat',
@@ -213,8 +216,8 @@ class _HomeScreenState extends State<HomeScreen>{
                           trackShape: RoundedRectSliderTrackShape(),
                         ),
                         child: Slider(
-                          value: notifier.position.inSeconds.toDouble(),
-                          max: notifier.duration.inSeconds.toDouble(),
+                          value: AudioService.playbackState.position.inSeconds.toDouble(),
+                          max: 180,
                           onChanged: (value) {
                             AudioService.seekTo(Duration(seconds: value.toInt()));
                           },
@@ -231,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen>{
                             width: 100
                         ))),
                         SizedBox(height: 50, width: 50, child: IconButton(onPressed: () {
-                          if(notifier.isPlaying){
+                          if(AudioService.playbackState.playing){
                             AudioService.pause();
                             setState(() {
                               iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
@@ -256,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen>{
                             image: AssetImage('assets/images/loveno.png'),
                             width: 100
                         ))),
-                      ],)],))]);});});
+                      ],)],))]);});
         }
     );
   }
@@ -271,7 +274,10 @@ class _HomeScreenState extends State<HomeScreen>{
     return
       Container(
         height: 134+ MediaQuery.of(context).padding.bottom,
-          color: Color.fromARGB(255, 25, 24, 24),
+          decoration: const BoxDecoration(
+              color: Color.fromARGB(255, 25, 24, 24),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15))
+          ),
           child:SafeArea(
 
     child: Container(
@@ -300,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen>{
               _showModalSheet();
             },
 
-            leading:  Padding(padding: EdgeInsets.only(left: 10),
+            leading:  Padding(padding: EdgeInsets.only(left: 10, top: 8),
             child: SizedBox(
                     width: 60,
                     height: 60,
@@ -329,15 +335,20 @@ class _HomeScreenState extends State<HomeScreen>{
                     ),)),
             title: Text(
               namemus,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
               style: TextStyle(
                   fontSize: 14,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w500,
+
                   color: Color.fromARGB(255, 246, 244, 244)
               ),
             ),
             subtitle: Text(
               ispolmus,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   fontSize: 14,
                   fontFamily: 'Montserrat',
@@ -346,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen>{
               ),
             ),
 
-            trailing: Container(              padding: EdgeInsets.only(right: 10),
+            trailing: Container(              padding: EdgeInsets.only(right: 10, top: 8),
               child: IconButton(
                 icon: iconpla,
               color: Colors.white,
