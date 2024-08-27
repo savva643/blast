@@ -19,35 +19,47 @@ const kBgColor = Color(0xFF1604E2);
 
 class MusicScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
-  MusicScreen({Key? key, required this.onCallback}) : super(key: key);
+  final VoidCallback onCallbacki;
+  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki}) : super(key: key);
   @override
-  State<MusicScreen> createState() => _MusicScreenState((dynamic input) {onCallback(input);});
+  State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki);
 
 
 
 
 }
 
-class _MusicScreenState extends State<MusicScreen> {
+class MusicScreenState extends State<MusicScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  var iconpla = Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white,);
+  void updateIcon(Icon newIcon) {
+    setState(() {
+      iconpla = newIcon;
+    });
+  }
   late  Function(dynamic) onCallback;
+  late VoidCallback onCallbacki;
 
   List _langData = [
     {
       'id': '1',
-      'img': 'assets/images/usa.jpeg',
-      'name': 'English',
+      'img': 'https://kompot.site/img/music.jpg',
+      'name': 'Название',
+      'message': 'Имполнитель',
     },
     {
       'id': '2',
-      'img': 'assets/images/russia.png',
-      'name': 'Русский',
+      'img': 'https://kompot.site/img/music.jpg',
+      'name': 'Название',
+      'message': 'Имполнитель',
     },
   ];
   var player;
-  _MusicScreenState(Function(dynamic) onk){
+
+  MusicScreenState(Function(dynamic) onk,VoidCallback onki){
     onCallback = onk;
+    onCallbacki = onki;
   }
 
   @override
@@ -56,6 +68,7 @@ class _MusicScreenState extends State<MusicScreen> {
     postRequest();
     super.initState();
   }
+
   String musicUrl = ""; // Insert your music URL
   String thumbnailImgUrl = "";
   @override
@@ -98,8 +111,20 @@ class _MusicScreenState extends State<MusicScreen> {
   }
 
 
-  List _searchedLangData = [];
-
+  List _searchedLangData = [
+    {
+      'id': '1',
+      'img': 'https://kompot.site/img/music.jpg',
+      'name': 'Название',
+      'message': 'Имполнитель',
+    },
+    {
+      'id': '2',
+      'img': 'https://kompot.site/img/music.jpg',
+      'name': 'Название',
+      'message': 'Имполнитель',
+    },
+  ];
   final _searchLanguageController = TextEditingController();
 
 
@@ -147,7 +172,8 @@ class _MusicScreenState extends State<MusicScreen> {
                       child:
                       Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
                   ),),
-                Container(padding: EdgeInsets.only(left: 12,top: 12),
+                Row(children: [
+                Container(padding: EdgeInsets.only(left: 12,top: 0),
                     child:
                     Text("blast!",
                       style: TextStyle(
@@ -155,7 +181,11 @@ class _MusicScreenState extends State<MusicScreen> {
                         fontFamily: 'Montserrat',
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
-                      ),)),
+                      ),)), Expanded(child: Container()),
+                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                ],),
+
               ],),
             Container(margin: EdgeInsets.only(left: 32,right: 32),
               child:
@@ -164,17 +194,17 @@ class _MusicScreenState extends State<MusicScreen> {
                   Image.asset('assets/images/circleblast.png', width: 600,),
                   Container(padding: EdgeInsets.only(left: 12,top: 12),
                       child:
-                      Column(children: [ Text("Джем",
+                      Column(children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
                         style: TextStyle(
                           fontSize: 40,
                           fontFamily: 'Montserrat',
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
-                        ),),
+                        ),)),Container(margin: EdgeInsets.only(right: 8), child:
                         IconButton(onPressed: ()  {
-                          player.setUrl("https://kompot.site/music/436.mp3");
-                          player.play();
-                        }, iconSize: 56, icon: Image.asset('assets/images/plays.png',width: 56, height: 56)),],)
+                          onCallbacki();
+                        }, iconSize: 64,
+                            icon: iconpla))],)
                   ),
                 ],),),
             SizedBox(height: 10,),
@@ -199,11 +229,11 @@ class _MusicScreenState extends State<MusicScreen> {
           borderRadius: BorderRadius.circular(5),
           child: ListTile(
             contentPadding: EdgeInsets.only(
-                left: 0, right: 0, bottom: 0, top: 0),
+                left: 0, right: 0, bottom: 4, top: 4),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5)),
             onTap: () async {
-              onCallback(_searchedLangData[idx-1]);
+              onCallback(_searchedLangData[idx-1]['idshaz']);
             },
             leadingAndTrailingTextStyle: TextStyle(),
             leading: SizedBox(width: 90,
@@ -300,6 +330,7 @@ class _MusicScreenState extends State<MusicScreen> {
     });
     return response;
   }
+
 
 
 }

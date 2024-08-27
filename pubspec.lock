@@ -230,6 +230,38 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_background_service:
+    dependency: "direct main"
+    description:
+      name: flutter_background_service
+      sha256: "5cc7a675e92848d9f90eaebc62b9917a20ff6ade8fe902acf2780529422fe005"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.8+5"
+  flutter_background_service_android:
+    dependency: transitive
+    description:
+      name: flutter_background_service_android
+      sha256: "08cdf4afa294bb454f494684412a89760be0239d802d35f40722d1e4f458302d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
+  flutter_background_service_ios:
+    dependency: transitive
+    description:
+      name: flutter_background_service_ios
+      sha256: f32d524e2f5bdb5ab956947786c7c6d906f53507ac6d35bb99a8c84be55b8e15
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
+  flutter_background_service_platform_interface:
+    dependency: transitive
+    description:
+      name: flutter_background_service_platform_interface
+      sha256: "54fc969fbe9365d3f7db44c6fd20c1ac7c9e5252c4294c6514c83ef75144c612"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1+3"
   flutter_cache_manager:
     dependency: transitive
     description:
@@ -321,10 +353,10 @@ packages:
     dependency: "direct main"
     description:
       name: just_audio
-      sha256: b7cb6bbf3750caa924d03f432ba401ec300fd90936b3f73a9b33d58b1e96286b
+      sha256: d8e8aaf417d33e345299c17f6457f72bd4ba0c549dc34607abb5183a354edc4d
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.37"
+    version: "0.9.40"
   just_audio_platform_interface:
     dependency: transitive
     description:
@@ -337,10 +369,10 @@ packages:
     dependency: transitive
     description:
       name: just_audio_web
-      sha256: "134356b0fe3d898293102b33b5fd618831ffdc72bb7a1b726140abdf22772b70"
+      sha256: b163878529d9b028c53a6972fcd58cae2405bcd11cbfcea620b6fb9f151429d6
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.9"
+    version: "0.4.12"
   just_audio_windows:
     dependency: "direct main"
     description:
@@ -513,10 +545,10 @@ packages:
     dependency: transitive
     description:
       name: rxdart
-      sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
+      sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
       url: "https://pub.dev"
     source: hosted
-    version: "0.27.7"
+    version: "0.28.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -529,10 +561,10 @@ packages:
     dependency: transitive
     description:
       name: shared_preferences_android
-      sha256: a7e8467e9181cef109f601e3f65765685786c1a738a83d7fbbde377589c0d974
+      sha256: "480ba4345773f56acda9abf5f50bd966f581dac5d514e5fc4a18c62976bbba7e"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.1"
+    version: "2.3.2"
   shared_preferences_foundation:
     dependency: transitive
     description:

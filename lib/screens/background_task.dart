@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'AudioManager.dart';
@@ -5,7 +7,6 @@ import 'AudioManager.dart';
 class AudioPlayerTask extends BackgroundAudioTask {
   final player = AudioPlayer();
   final AudioManager notifier = AudioManager();
-
   @override
   Future<void> onStart(Map<String, dynamic>? params) async {
     final url = params?['url'] as String?;
@@ -14,42 +15,63 @@ class AudioPlayerTask extends BackgroundAudioTask {
     }
   }
 
-  Future<void> onPlayNewTrack(String url) async {
-    // Stop current track if playing
-    await player.stop();
-    notifier.setPlaying(false);
-    print("ds");
-
-    // Load the new track
-    await _playNewTrack(url);
-  }
 
   @override
   Future<void> onPlayMediaItem(MediaItem mediaItem) async {
     // When a new media item is requested, load and play it
     await player.setUrl(mediaItem.id); // Assuming mediaItem.id contains the URL
-    player.play();
+    player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
+      await player.play();
+      notifier.setPlaying(true);
+      _broadcastState();
+      await player.positionStream.listen((position) {
+        notifier.setPosition(position);
+        AudioServiceBackground.sendCustomEvent({
+          'position': position.inMilliseconds,
+          'duration': player.duration?.inMilliseconds ?? 0,
+        });
+        _broadcastState();
+      });
+
+      player.processingStateStream.firstWhere((state) => state == ProcessingState.completed).then((_) async {
+        await player.pause();
+      });
+      // Listen for duration updates (in case it's updated after the track starts playing)
+      await player.durationStream.listen((duration) {
+        notifier.setDuration(duration ?? Duration.zero);
+        print("jkh"+duration!.inSeconds.toString());
+      });
+    });
   }
 
   Future<void> _playNewTrack(String url) async {
     await player.setUrl(url);
     notifier.setDuration(player.duration ?? Duration.zero);
-    player.play();
-    notifier.setPlaying(true);
-    _broadcastState();
+    player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
+      await player.play();
+      notifier.setPlaying(true);
+      _broadcastState();
+      await player.positionStream.listen((position) {
+        notifier.setPosition(position);
+        AudioServiceBackground.sendCustomEvent({
+          'position': position.inMilliseconds,
+          'duration': player.duration?.inMilliseconds ?? 0,
+        });
+        _broadcastState();
+      });
+
+      // Listen for duration updates (in case it's updated after the track starts playing)
+      await player.durationStream.listen((duration) {
+        notifier.setDuration(duration ?? Duration.zero);
+        print("jkh"+duration!.inSeconds.toString());
+      });
+    });
     print(url);
 
     // Listen for position updates
-    player.positionStream.listen((position) {
-      notifier.setPosition(position);
-      _broadcastState();
-    });
 
-    // Listen for duration updates (in case it's updated after the track starts playing)
-    player.durationStream.listen((duration) {
-      notifier.setDuration(duration ?? Duration.zero);
-      print("jkh"+duration!.inSeconds.toString());
-    });
+
+
   }
 
   @override
@@ -61,21 +83,21 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   Future<void> onPlay() async {
-    player.play();
+    await player.play();
     notifier.setPlaying(true);
     _broadcastState();
   }
 
   @override
   Future<void> onPause() async {
-    player.pause();
+    await player.pause();
     notifier.setPlaying(false);
     _broadcastState();
   }
 
   @override
   Future<void> onSeekTo(Duration position) async {
-    player.seek(position);
+    await player.seek(position);
     notifier.setPosition(position);
     _broadcastState();
   }
@@ -97,6 +119,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
       playing: player.playing,
       position: player.position,
       bufferedPosition: player.bufferedPosition,
+
     );
   }
 }

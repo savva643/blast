@@ -99,15 +99,19 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               child:
               Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
               ),),
-          Container(padding: EdgeInsets.only(left: 12,top: 12),
-              child:
-              Text("blast!",
-                style: TextStyle(
-                  fontSize: 40,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),)),
+          Row(children: [
+            Container(padding: EdgeInsets.only(left: 12,top: 0),
+                child:
+                Text("blast!",
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),)), Expanded(child: Container()),
+            Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+            Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
+          ],),
         ],),
             Container(margin: EdgeInsets.only(left: 32,right: 32),
               child:
