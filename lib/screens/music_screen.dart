@@ -323,7 +323,7 @@ class MusicScreenState extends State<MusicScreen> {
       }),
     );
     String dff = response.body.toString();
-    print(dff);
+
     setState(() {
       _langData = jsonDecode(dff);
       _searchedLangData = _langData[0];

@@ -113,25 +113,13 @@ class _VideoScreenState extends State<VideoScreen> {
             Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
           ],),
         ],),
-            Container(margin: EdgeInsets.only(left: 32,right: 32),
+            Container(margin: EdgeInsets.only(top: 0),
               child:
             Stack(alignment: Alignment.center,
               children: [
-              Image.asset('assets/images/circleblast.png', width: 600,),
-              Container(padding: EdgeInsets.only(left: 12,top: 12),
-                  child:
-                      Column(children: [ Text("Джем",
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),),
-                        IconButton(onPressed: ()  {
-                           player.setUrl("https://kompot.site/music/436.mp3");
-                           player.play();
-                        }, iconSize: 56, icon: Image.asset('assets/images/plays.png',width: 56, height: 56)),],)
-                  ),
+                Container(width: size.width, height: 400, child:
+                _loadListView()
+                )
             ],),),
 
           ],
@@ -170,66 +158,89 @@ class _VideoScreenState extends State<VideoScreen> {
     setState(() => _searchedLangData = _langData);
   }
 
-  Widget _loadGridView() {
-    return GridView(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisExtent: 170.0,
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 10,
-      ),
-      children: List.generate(_searchedLangData.length, (idx) {
-        return Material(
-          borderRadius: BorderRadius.circular(10),
-          color: Color.fromARGB(255, 244, 244, 246),
-          child: InkWell(
-            splashColor: Colors.redAccent,
-            borderRadius: BorderRadius.circular(10),
-            onTap: () async {
+  Widget _loadListView() {
+    Size size = MediaQuery.of(context).size;
+    return ListView.builder(
+      itemCount: _searchedLangData.length,
+      itemBuilder: (BuildContext context, int idx)
+      {
+          return Container(
+            height: 300,
+            margin: const EdgeInsets.only(bottom: 10),
+            child: Material(
 
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            Container(
-              alignment: Alignment.topLeft,
-              margin: const EdgeInsets.only(left: 10,top: 6),
-              child:Text(
-                  _langData[idx]['name'],
-                  textAlign: TextAlign.start,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontFamily: "Montserrat",
-                    fontWeight: FontWeight.w600,
+              color: Color.fromARGB(255, 15, 15, 16),
+              borderRadius: BorderRadius.circular(5),
+              child: ListTile(
+                contentPadding: EdgeInsets.only(
+                    left: 0, right: 0, bottom: 4, top: 4),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)),
+                onTap: () async {
+
+                },
+                leadingAndTrailingTextStyle: TextStyle(),
+                leading:  Transform.translate(
+                    offset: Offset(0, 180),
+                    child: AspectRatio(aspectRatio: 1, child:  SizedBox(width: size.width, child:  CachedNetworkImage(
+                            imageUrl: _searchedLangData[idx]['imgvidos'],
+                            imageBuilder: (context, imageProvider) =>
+                                Container(
+                                  padding: EdgeInsets.only(
+                                      left: 0, right: 0, bottom: 0, top: 0),
+                                  width: size.width,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.rectangle,
+                                    borderRadius: BorderRadius.circular(5),
+                                    image: DecorationImage(
+                                        image: imageProvider),
+                                  ),
+                                ),
+                            placeholder: (context, url) =>
+                                CircularProgressIndicator(),
+                            errorWidget: (context, url, error) => Icon(Icons.error),
+                          ),)
+                        ),),
+                title: Text(
+                  _searchedLangData[idx]['name'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w500,
+                      color: Color.fromARGB(255, 246, 244, 244)
                   ),
                 ),
-            ),
-            Container(
-              alignment: Alignment.bottomCenter,
-              child:SizedBox(
-                  width: 110,
-                  height: 110,
-                  child: CachedNetworkImage(
-                    imageUrl: _searchedLangData[idx]['img'],
+                subtitle: Text(
+                  _searchedLangData[idx]['message'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w300,
+                      color: Color.fromARGB(255, 246, 244, 244)
                   ),
                 ),
+                trailing: IconButton(icon: Icon(Icons.more_vert),
+                  color: Colors.white,
+                  onPressed: () {},),
+              ),
             ),
-              ],
-            ),
-          ),
-        );
-      }),
+          );
+      },
     );
   }
+
+
   Future<http.Response> postRequest () async {
-    var urli = Uri.parse("https://magazinchik.keeppixel.store/flutterapi.php?getcategory=1");
+    var urli = Uri.parse("https://kompot.site/getvideomus");
 
     var response = await http.post(urli,
       headers: {"Content-Type": "application/json; charset=UTF-8"},
       body: jsonEncode(<String, String>{
-        'login': "klkjh",
+        'lim': "20",
       }),
     );
     String dff = response.body.toString();
