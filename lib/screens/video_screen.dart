@@ -117,7 +117,7 @@ class _VideoScreenState extends State<VideoScreen> {
               child:
             Stack(alignment: Alignment.center,
               children: [
-                Container(width: size.width, height: 400, child:
+                Container(width: size.width, height: size.height-200, child:
                 _loadListView()
                 )
             ],),),
@@ -164,70 +164,11 @@ class _VideoScreenState extends State<VideoScreen> {
       itemCount: _searchedLangData.length,
       itemBuilder: (BuildContext context, int idx)
       {
-          return Container(
-            height: 300,
-            margin: const EdgeInsets.only(bottom: 10),
-            child: Material(
-
-              color: Color.fromARGB(255, 15, 15, 16),
-              borderRadius: BorderRadius.circular(5),
-              child: ListTile(
-                contentPadding: EdgeInsets.only(
-                    left: 0, right: 0, bottom: 4, top: 4),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5)),
-                onTap: () async {
-
-                },
-                leadingAndTrailingTextStyle: TextStyle(),
-                leading:  Transform.translate(
-                    offset: Offset(0, 180),
-                    child: AspectRatio(aspectRatio: 1, child:  SizedBox(width: size.width, child:  CachedNetworkImage(
-                            imageUrl: _searchedLangData[idx]['imgvidos'],
-                            imageBuilder: (context, imageProvider) =>
-                                Container(
-                                  padding: EdgeInsets.only(
-                                      left: 0, right: 0, bottom: 0, top: 0),
-                                  width: size.width,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    borderRadius: BorderRadius.circular(5),
-                                    image: DecorationImage(
-                                        image: imageProvider),
-                                  ),
-                                ),
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => Icon(Icons.error),
-                          ),)
-                        ),),
-                title: Text(
-                  _searchedLangData[idx]['name'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                      color: Color.fromARGB(255, 246, 244, 244)
-                  ),
-                ),
-                subtitle: Text(
-                  _searchedLangData[idx]['message'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w300,
-                      color: Color.fromARGB(255, 246, 244, 244)
-                  ),
-                ),
-                trailing: IconButton(icon: Icon(Icons.more_vert),
-                  color: Colors.white,
-                  onPressed: () {},),
-              ),
-            ),
+          return CustomTile(
+            title: _searchedLangData[idx]['name'],
+            subtitle: _searchedLangData[idx]['message'],
+            imageUrl: _searchedLangData[idx]['imgvidos'],
+            wih: size.width
           );
       },
     );
@@ -254,7 +195,73 @@ class _VideoScreenState extends State<VideoScreen> {
 
 
 }
+class CustomTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String imageUrl;
+  final double wih;
+  CustomTile({
+    required this.title,
+    required this.subtitle,
+    required this.imageUrl,
+    required this.wih,
+  });
 
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [AspectRatio(aspectRatio: 16/9, child:
+          CachedNetworkImage(
+            imageUrl: imageUrl,
+            imageBuilder: (context, imageProvider) =>
+                Container(
+                  padding: EdgeInsets.only(
+                      left: 0, right: 0, bottom: 0, top: 0),
+                  width: wih,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(18),
+                    image: DecorationImage(
+                        image: imageProvider, fit: BoxFit.fitWidth),
+                  ),
+                ),
+            placeholder: (context, url) =>
+                CircularProgressIndicator(),
+            errorWidget: (context, url, error) => Icon(Icons.error),)
+          ),
+          SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.start,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 18,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w500,
+                color: Color.fromARGB(255, 246, 244, 244)
+            ),
+          ),
+          Text(
+            subtitle,
+            textAlign: TextAlign.start,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w300,
+                color: Color.fromARGB(255, 246, 244, 244)
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 
 
