@@ -18,9 +18,11 @@ import 'package:http/http.dart' as http;
 const kBgColor = Color(0xFF1604E2);
 
 class VideoScreen extends StatefulWidget {
-  const VideoScreen({Key? key}) : super(key: key);
+  final  Function(dynamic) onCallback;
+  const VideoScreen({Key? key, required this.onCallback}) : super(key: key);
+
   @override
-  State<VideoScreen> createState() => _VideoScreenState();
+  State<VideoScreen> createState() => _VideoScreenState((dynamic input) {onCallback(input);});
 
 
 
@@ -30,7 +32,7 @@ class VideoScreen extends StatefulWidget {
 class _VideoScreenState extends State<VideoScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-
+  late Function(dynamic) onCallback;
   List _langData = [
     {
       'id': '1',
@@ -135,6 +137,10 @@ class _VideoScreenState extends State<VideoScreen> {
 
   final _searchLanguageController = TextEditingController();
 
+  _VideoScreenState(Function(dynamic) onk) {
+    onCallback = onk;
+  }
+
 
   @override
   void dispose() {
@@ -168,7 +174,9 @@ class _VideoScreenState extends State<VideoScreen> {
             title: _searchedLangData[idx]['name'],
             subtitle: _searchedLangData[idx]['message'],
             imageUrl: _searchedLangData[idx]['imgvidos'],
-            wih: size.width
+            wih: size.width,
+            urlo: _searchedLangData[idx]['urlvid'],
+            onCallback: (dynamic input) {onCallback(input);},
           );
       },
     );
@@ -200,18 +208,23 @@ class CustomTile extends StatelessWidget {
   final String subtitle;
   final String imageUrl;
   final double wih;
+  final String urlo;
+  Function(dynamic) onCallback;
   CustomTile({
     required this.title,
     required this.subtitle,
     required this.imageUrl,
     required this.wih,
+    required this.urlo,
+    required this.onCallback,
   });
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Column(
+      child: Stack(children: [ Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [AspectRatio(aspectRatio: 16/9, child:
           CachedNetworkImage(
@@ -258,7 +271,20 @@ class CustomTile extends StatelessWidget {
             ),
           ),
         ],
-      ),
+      ),AspectRatio(aspectRatio: 16/10.4, child: ElevatedButton(
+        onPressed: () {
+          onCallback(urlo);
+        },
+
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18), // Скругленные углы
+          ),
+          backgroundColor: Colors.transparent, // Прозрачный фон
+          shadowColor: Colors.transparent, // Убираем тень
+          elevation: 0, // Убираем эффект возвышенности
+        ), child: Container(width: wih,),
+      ))],)
     );
   }
 }

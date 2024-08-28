@@ -18,7 +18,8 @@ import 'package:octo_image/octo_image.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:video_player/video_player.dart';
+import 'package:video_player_win/video_player_win.dart';
 import 'AudioManager.dart';
 import 'background_task.dart';
 import 'music_screen.dart';
@@ -42,6 +43,33 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>{
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<MusicScreenState> _childKey = GlobalKey<MusicScreenState>();
+
+
+
+  //videoblock
+  late WinVideoPlayerController _controller;
+  late Future<void> _initializeVideoPlayerFuture;
+
+  void playVideo(String urlo){
+    print(urlo);
+    _controller = WinVideoPlayerController.network(
+      urlo, // Замените на ваш URL видео
+    );
+
+    // Инициализация видео
+    _initializeVideoPlayerFuture = _controller.initialize();
+    _controller.initialize().then((value) {
+      if (_controller.value.isInitialized) {
+        _controller.play();
+        setState(() {});
+      } else {
+        print("video file load failed");
+      }
+    });
+
+    _showModalSheet();
+  }
+
 
 
   String shazid = "0";
@@ -260,6 +288,21 @@ class _HomeScreenState extends State<HomeScreen>{
                           height: size.height,
 
                           child: Column(children: [
+                            FutureBuilder(
+                              future: _initializeVideoPlayerFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.done) {
+                                  // Отображаем видеоплеер
+                                  return AspectRatio(
+                                    aspectRatio: _controller.value.aspectRatio,
+                                    child: WinVideoPlayer(_controller),
+                                  );
+                                } else {
+                                  // Показать индикатор загрузки
+                                  return Center(child: CircularProgressIndicator());
+                                }
+                              },
+                            ),
                             AspectRatio(
                                 aspectRatio: 1.0, // Сохранение пропорций 1:1
                                 child:Container(  height: 360, width: 360, margin: EdgeInsets.only(left: 20, right: 20,top: 60),decoration: BoxDecoration(
@@ -309,6 +352,7 @@ class _HomeScreenState extends State<HomeScreen>{
                                   fontWeight: FontWeight.w400,
                                   color: Color.fromARGB(255, 246, 244, 244)
                               ),),],)),
+                            SizedBox(height: 8,),
                             SizedBox(height: 8,  child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 8.0,
@@ -590,7 +634,9 @@ class _HomeScreenState extends State<HomeScreen>{
     MusicScreen(key: _childKey,onCallback: (dynamic input) {
       getaboutmus(input, false);
     }, onCallbacki: postRequesty),
-    VideoScreen(),
+    VideoScreen(onCallback: (dynamic input) {
+      playVideo(input);
+    }),
   ];
 
   bool isjemnow = false;
@@ -598,6 +644,7 @@ class _HomeScreenState extends State<HomeScreen>{
   @override
   void dispose() {
     super.dispose();
+    _controller.dispose();
   }
   String _jemData = "132";
   Future<void> postRequesty () async {

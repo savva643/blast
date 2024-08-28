@@ -47,6 +47,8 @@ dependencies:
   audio_service: ^0.18.15
   octo_image: ^2.1.0
   flutter_background_service: ^0.2.0
+  video_player: ^2.5.1
+  video_player_win: ^2.3.11
 
 dev_dependencies:
   flutter_test:

@@ -7,8 +7,11 @@
 #include "generated_plugin_registrant.h"
 
 #include <just_audio_windows/just_audio_windows_plugin.h>
+#include <video_player_win/video_player_win_plugin_c_api.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   JustAudioWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("JustAudioWindowsPlugin"));
+  VideoPlayerWinPluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("VideoPlayerWinPluginCApi"));
 }
