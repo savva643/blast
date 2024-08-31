@@ -175,7 +175,7 @@ class _VideoScreenState extends State<VideoScreen> {
             subtitle: _searchedLangData[idx]['message'],
             imageUrl: _searchedLangData[idx]['imgvidos'],
             wih: size.width,
-            urlo: _searchedLangData[idx]['urlvid'],
+            urlo: _searchedLangData[idx]['idshaz'],
             onCallback: (dynamic input) {onCallback(input);},
           );
       },

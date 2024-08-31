@@ -48,8 +48,6 @@ class AudioPlayerTask extends BackgroundAudioTask {
     await player.setUrl(url);
     notifier.setDuration(player.duration ?? Duration.zero);
     player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
-      await player.play();
-      notifier.setPlaying(true);
       _broadcastState();
       await player.positionStream.listen((position) {
         notifier.setPosition(position);

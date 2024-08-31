@@ -49,6 +49,9 @@ dependencies:
   flutter_background_service: ^0.2.0
   video_player: ^2.5.1
   video_player_win: ^2.3.11
+  media_kit: ^1.1.11
+  media_kit_video: ^1.2.5 # For video rendering.
+  media_kit_libs_video: ^1.0.5
 
 dev_dependencies:
   flutter_test:

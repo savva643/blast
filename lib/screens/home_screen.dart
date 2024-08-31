@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
-
+import 'package:vector_math/vector_math_64.dart' as vector;
 import 'package:audio_service/audio_service.dart';
 import 'package:blast/screens/playlist_screen.dart';
 import 'package:blast/screens/video_screen.dart';
@@ -14,12 +14,13 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'package:media_kit_video/media_kit_video_controls/src/controls/methods/video_state.dart';
 import 'package:octo_image/octo_image.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:video_player/video_player.dart';
-import 'package:video_player_win/video_player_win.dart';
 import 'AudioManager.dart';
 import 'background_task.dart';
 import 'music_screen.dart';
@@ -40,38 +41,56 @@ class HomeScreen extends StatefulWidget {
 
 
 
-class _HomeScreenState extends State<HomeScreen>{
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin{
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<MusicScreenState> _childKey = GlobalKey<MusicScreenState>();
 
+  late final videob = Player();
+  // Create a [VideoController] to handle video output from [Player].
+  late final controller = VideoController(videob);
 
 
   //videoblock
-  late WinVideoPlayerController _controller;
-  late Future<void> _initializeVideoPlayerFuture;
+  bool isplad = false;
+  Future<void> playVideo(String shazid) async {
+    if(shazid != this.shazid){
+      var urli = Uri.parse("https://kompot.site/getaboutmus?sidi="+shazid);
 
-  void playVideo(String urlo){
-    print(urlo);
-    _controller = WinVideoPlayerController.network(
-      urlo, // Замените на ваш URL видео
-    );
+      var response = await http.post(urli,
+        headers: {"Content-Type": "application/json; charset=UTF-8"},
+        body: jsonEncode(<String, String>{
+          'sidi': shazid,
+        }),
+      );
+      String dff = response.body.toString();
+      print(dff);
+      setState(() {
+        _langData[0] = jsonDecode(dff);
+        videoope = true;
+        videob.open(Media(_langData[0]['vidos']));
+        _toogleAnimky();
+        _showModalSheet();
 
-    // Инициализация видео
-    _initializeVideoPlayerFuture = _controller.initialize();
-    _controller.initialize().then((value) {
-      if (_controller.value.isInitialized) {
-        _controller.play();
-        setState(() {});
-      } else {
-        print("video file load failed");
-      }
-    });
+        iconpla = Icon(Icons.pause_rounded, size: 40,);
+        if(isjemnow){
+          _childKey.currentState?.updateIcon(Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+        }
+        namemus = _langData[0]["name"];
+        ispolmus = _langData[0]["message"];
+        imgmus = _langData[0]['img'];
+        idmus = _langData[0]['id'];
+        shazid = _langData[0]['idshaz'];
+      });
 
-    _showModalSheet();
+    }else{
+      playpause();
+    }
+
   }
 
 
-
+  double squareScaleA = 0;
+  double squareScaleB = 0;
   String shazid = "0";
   String idmus = "0";
   String namemus = "Название";
@@ -93,6 +112,17 @@ class _HomeScreenState extends State<HomeScreen>{
         });
       }
     });
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _animation = AlignmentTween(
+      begin: Alignment.center,
+      end: Alignment.centerLeft,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
     postRequesty();
   }
 
@@ -130,25 +160,101 @@ class _HomeScreenState extends State<HomeScreen>{
     });
 
     }else{
-      if(AudioService.playbackState.playing){
-        AudioService.pause();
+      playpause();
+    }
+  }
+
+  void playpause(){
+    if(videoope){
+      if(controller.player.state.playing){
+        controller.player.pause();
         setState(() {
           iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-          if(isjemnow){
-            _childKey.currentState?.updateIcon(Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white));
+          if (isjemnow) {
+            _childKey.currentState?.updateIcon(Icon(
+                Icons.play_arrow_rounded, size: 64, color: Colors.white));
           }
         });
       }else{
+        controller.player.play();
+        setState(() {
+          iconpla = Icon(Icons.pause_rounded, size: 40,);
+          if (isjemnow) {
+            _childKey.currentState?.updateIcon(
+                Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+          }
+        });
+      }
+    }else {
+      if (AudioService.playbackState.playing) {
+        AudioService.pause();
+        setState(() {
+          iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+          if (isjemnow) {
+            _childKey.currentState?.updateIcon(Icon(
+                Icons.play_arrow_rounded, size: 64, color: Colors.white));
+          }
+        });
+      } else {
         AudioService.play();
         setState(() {
           iconpla = Icon(Icons.pause_rounded, size: 40,);
-          if(isjemnow){
-            _childKey.currentState?.updateIcon(Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+          if (isjemnow) {
+            _childKey.currentState?.updateIcon(
+                Icon(Icons.pause_rounded, size: 64, color: Colors.white));
           }
         });
       }
     }
   }
+
+
+  late AnimationController _controller;
+  late Animation<Alignment> _animation;
+
+  //block for anim
+  double imgwh = 360;
+  double dsds = 20;
+  double dsds2 = 60;
+  double videoopacity = 0;
+  double opacity = 1;
+
+  double opacityi1 = 1;
+  double opacityi2 = 0;
+  Alignment ali = Alignment.center;
+  void _toogleAnimky(){
+    Size size = MediaQuery.of(context).size;
+    setState(() {
+      imgwh = videoope ? 80 : 360;
+      dsds = videoope ? 8 : 20;
+      if(size.width <= 640) {
+        dsds2 = videoope ? ((size.width / 16) * 9) + 80 : 60;
+      }else{
+        dsds2 = videoope ? ((640 / 16) * 9) + 80 : 60;
+      }
+      squareScaleA = videoope ?  -80 : 0;
+      squareScaleB = videoope ?  0 : 80;
+      opacity = videoope ?  0 : 1;
+      videoopacity = videoope ?  1 : 0;
+      ali = videoope ?  Alignment.centerLeft : Alignment.center;
+      videoope ? _controller.forward() : _controller.reverse();
+      if(videoope == false){
+        opacityi1 = 1;
+        opacityi2 = 0;
+      }
+    });
+
+  }
+
+  void _setvi(){
+    setState(() {
+      videoope = !videoope;
+      _toogleAnimky();
+    });
+  }
+
+
+  bool videoope = false;
   List _langData = [
   {
   'id': '1',
@@ -197,23 +303,7 @@ class _HomeScreenState extends State<HomeScreen>{
       }
 
     }else{
-      if(AudioService.playbackState.playing){
-        AudioService.pause();
-        setState(() {
-          iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-          if(isjemnow){
-            _childKey.currentState?.updateIcon(Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white));
-          }
-        });
-      }else{
-        AudioService.play();
-        setState(() {
-          iconpla = Icon(Icons.pause_rounded, size: 40,);
-          if(isjemnow){
-            _childKey.currentState?.updateIcon(Icon(Icons.pause_rounded, size: 64, color: Colors.white));
-          }
-        });
-      }
+      playpause();
     }
 
   }
@@ -221,6 +311,7 @@ class _HomeScreenState extends State<HomeScreen>{
   String thumbnailImgUrl = "";
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
         key: _scaffoldKey,
 
@@ -240,9 +331,24 @@ class _HomeScreenState extends State<HomeScreen>{
         backgroundColor: const Color.fromARGB(255, 15, 15, 16),
         bottomNavigationBar: buildMyNavBar(context),
 
-        body: pages[pageIndex]
-    );
-  }
+        body:LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              // При изменении размеров экрана обновляется состояние
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                setState(() {
+                  Size size = MediaQuery.of(context).size;
+                  if(size.width <= 640) {
+                    dsds2 = videoope ? ((size.width / 16) * 9) + 80 : 60;
+                  }else{
+                    dsds2 = videoope ? ((640 / 16) * 9) + 80 : 60;
+                  }
+                });
+              });
+              return pages[pageIndex];
+              }
+              )
+  );
+}
   double  _currentPosition = 0;
   double  _totalDuration = 1;
   double _currentValue = 3;
@@ -263,7 +369,9 @@ class _HomeScreenState extends State<HomeScreen>{
         builder: (builder){
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
-                return StreamBuilder(
+
+
+                      return StreamBuilder(
                     stream: AudioService.positionStream,
                     builder: (context, snapshot) {
                         return Stack(
@@ -284,43 +392,54 @@ class _HomeScreenState extends State<HomeScreen>{
                         ),
                         blendMode: BlendMode.srcATop,
                       ),
+
                       Container(
                           height: size.height,
+                          child: Stack(children: [
+                          Column(children: [
+                      AnimatedOpacity(opacity: videoopacity, duration: Duration(milliseconds: 400), child: Container(
+                              margin: EdgeInsets.only(top: 60),
+                              child:  AspectRatio(
+                      aspectRatio: 16/9,
+                      child:  MaterialDesktopVideoControlsTheme(
+                      normal: MaterialDesktopVideoControlsThemeData(
 
-                          child: Column(children: [
-                            FutureBuilder(
-                              future: _initializeVideoPlayerFuture,
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState == ConnectionState.done) {
-                                  // Отображаем видеоплеер
-                                  return AspectRatio(
-                                    aspectRatio: _controller.value.aspectRatio,
-                                    child: WinVideoPlayer(_controller),
-                                  );
-                                } else {
-                                  // Показать индикатор загрузки
-                                  return Center(child: CircularProgressIndicator());
-                                }
-                              },
-                            ),
-                            AspectRatio(
-                                aspectRatio: 1.0, // Сохранение пропорций 1:1
-                                child:Container(  height: 360, width: 360, margin: EdgeInsets.only(left: 20, right: 20,top: 60),decoration: BoxDecoration(
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                    clipBehavior: Clip.hardEdge,
-                                    child:AspectRatio(
-                                      aspectRatio: 1.0, // Сохранение пропорций 1:1
-                                      child: Image.network(
-                                        imgmus,
-                                        height: 400,
-                                        width: 400,
-                                        fit: BoxFit.cover, // Изображение заполняет контейнер
-                                      ),
-                                    ))),
-                            Text(namemus,
-                              textAlign: TextAlign.center,
+                        // Modify theme options:
+                      seekBarThumbColor: Colors.blue,
+                      seekBarPositionColor: Colors.blue,
+                      toggleFullscreenOnDoublePress: false,
+                      ),
+                      fullscreen: const MaterialDesktopVideoControlsThemeData( seekBarThumbColor: Colors.blue,
+                        topButtonBarMargin: EdgeInsets.only(top: 20, left: 30),
+                        topButtonBar: [Text("blast!",
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),)],
+                      seekBarPositionColor: Colors.blue,),
+                      child:  Video(
+                      controller: controller,
+                      ),
+                      ),
+                      ),)),
+                          Row(children: [AnimatedOpacity(opacity: opacityi2, duration: Duration(seconds: 0), child: AnimatedContainer(alignment: Alignment.centerLeft, margin: EdgeInsets.only(left: 20, right: 20, top: 20), height: 80, width: 80, decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                              clipBehavior: Clip.antiAliasWithSaveLayer,
+                              duration: Duration(milliseconds: 0),
+                              child: AspectRatio(
+                                  aspectRatio: 1, // Сохранение пропорций 1:1
+                                  child:Image.network(
+                                    imgmus,
+                                    height: imgwh, width: imgwh,
+                                    fit: BoxFit.contain, // Изображ
+                                  )))),
+                      AnimatedOpacity(opacity: videoopacity, duration: Duration(milliseconds: 400), child:  AnimatedContainer(margin: EdgeInsets.only(top: 20), transform: Matrix4.translation(vector.Vector3(0, squareScaleB, 0)),  duration: Duration(milliseconds: 400),child:
+                            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(namemus,
+                              textAlign: TextAlign.start,
                               overflow: TextOverflow.fade,
                               maxLines: 1,
                               style: TextStyle(
@@ -329,7 +448,50 @@ class _HomeScreenState extends State<HomeScreen>{
                                   fontWeight: FontWeight.w500,
                                   color: Color.fromARGB(255, 246, 244, 244)
                               ),),
-                            Text(ispolmus,
+                              Text(ispolmus,
+                                overflow: TextOverflow.fade,
+                                maxLines: 1,
+                                textAlign: TextAlign.start,
+                                style: TextStyle(
+                                    fontSize: 24,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w300,
+                                    color: Color.fromARGB(255, 246, 244, 244)
+                                ),)
+                            ],),))
+
+                          ],),
+                          ]),Column(children: [
+                          AnimatedOpacity(opacity: opacityi1, duration: Duration(seconds: 0), child: AnimatedBuilder(
+                      animation: _animation,
+                      builder: (context, child) {
+                      return Align(
+                      alignment: _animation.value,
+                      child:
+                            AnimatedContainer( margin: EdgeInsets.only(left: 20, right: 20, top: dsds2), height: imgwh, width: imgwh, decoration: BoxDecoration(
+                                  shape: BoxShape.rectangle,
+                                  borderRadius: BorderRadius.circular(dsds),
+                                ),
+                                    clipBehavior: Clip.antiAliasWithSaveLayer,
+                                    duration: Duration(milliseconds: 400),
+                                    child: AspectRatio(
+                                        aspectRatio: 1, // Сохранение пропорций 1:1
+                                        child:Image.network(
+                                        imgmus,
+                                      height: imgwh, width: imgwh,
+                                        fit: BoxFit.contain, // Изображ
+                                    ))));})),
+                      AnimatedOpacity(opacity: opacity, duration: Duration(milliseconds: 400), onEnd: (){ setState(() { if(videoope){opacityi1 = 0; opacityi2 = 1;} }); }, child: AnimatedContainer(duration: Duration(milliseconds: 400), transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child:  Text(namemus,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.fade,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  color: Color.fromARGB(255, 246, 244, 244)
+                              ),))),
+                          AnimatedOpacity(opacity: opacity, duration: Duration(milliseconds: 400), child:  AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: Text(ispolmus,
                               overflow: TextOverflow.fade,
                               maxLines: 1,
                               textAlign: TextAlign.center,
@@ -338,8 +500,8 @@ class _HomeScreenState extends State<HomeScreen>{
                                   fontFamily: 'Montserrat',
                                   fontWeight: FontWeight.w300,
                                   color: Color.fromARGB(255, 246, 244, 244)
-                              ),),
-                            Padding(padding: EdgeInsets.only(top: 16,left: 22, right: 22), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(_formatDuration(Duration(milliseconds: _currentPosition.toInt())),
+                              ),))),
+                              AnimatedOpacity(opacity: opacity, duration: Duration(milliseconds: 400), child:  AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child:  Padding(padding: EdgeInsets.only(top: 16,left: 22, right: 22), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(_formatDuration(Duration(milliseconds: _currentPosition.toInt())),
                               style: TextStyle(
                                   fontSize: 16,
                                   fontFamily: 'Montserrat',
@@ -351,9 +513,9 @@ class _HomeScreenState extends State<HomeScreen>{
                                   fontFamily: 'Montserrat',
                                   fontWeight: FontWeight.w400,
                                   color: Color.fromARGB(255, 246, 244, 244)
-                              ),),],)),
+                              ),),],)))),
                             SizedBox(height: 8,),
-                            SizedBox(height: 8,  child: SliderTheme(
+                              AnimatedOpacity(opacity: opacity, duration: Duration(milliseconds: 400), child:  AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: SizedBox(height: 8,  child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 8.0,
                                 tickMarkShape: RoundSliderTickMarkShape(tickMarkRadius: 24),
@@ -386,10 +548,10 @@ class _HomeScreenState extends State<HomeScreen>{
                                     );
                                   }
                                 },
-                              ),)),
+                              ),)))),
 
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.center, children: [
-                              SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, icon: Image(
+                      AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.center, children: [
+                              SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {setState(() { _setvi(); }); }, icon: Image(
                                   color: Color.fromARGB(255, 255, 255, 255),
                                   image: AssetImage('assets/images/unloveno.png'),
                                   width: 100
@@ -399,27 +561,7 @@ class _HomeScreenState extends State<HomeScreen>{
                                   image: AssetImage('assets/images/reveuws.png'),
                                   width: 100
                               ))),
-                              SizedBox(height: 50, width: 50, child: IconButton(onPressed: () {
-                                if(AudioService.playbackState.playing){
-                                  AudioService.pause();
-                                  setState(() {
-                                    iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-                                    _updateIcon(Icon(Icons.play_arrow_rounded, size: 40,));
-                                    if(isjemnow){
-                                      _childKey.currentState?.updateIcon(Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white));
-                                    }
-                                  });
-                                }else{
-                                  AudioService.play();
-                                  setState(() {
-                                    iconpla = Icon(Icons.pause_rounded, size: 40,);
-                                    _updateIcon(Icon(Icons.pause_rounded, size: 40,));
-                                    if(isjemnow){
-                                      _childKey.currentState?.updateIcon(Icon(Icons.pause_rounded, size: 64, color: Colors.white));
-                                    }
-                                  });
-                                }
-                              }, padding: EdgeInsets.zero, icon: Icon(iconpla.icon, size: 50, color: Colors.white,))),
+                              SizedBox(height: 50, width: 50, child: IconButton(onPressed: () {setState(() {playpause();});}, padding: EdgeInsets.zero, icon: Icon(iconpla.icon, size: 50, color: Colors.white,))),
                               SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, icon: Image(
                                 color: Color.fromARGB(255, 255, 255, 255),
                                 image: AssetImage('assets/images/nexts.png'),
@@ -431,7 +573,7 @@ class _HomeScreenState extends State<HomeScreen>{
                                   image: AssetImage('assets/images/loveno.png'),
                                   width: 100
                               ))),
-                            ],)],))]);});});
+                            ],))],)],))]);});});
         }
     );
   }
@@ -535,25 +677,7 @@ class _HomeScreenState extends State<HomeScreen>{
                                   color: Colors.white,
                                   padding: EdgeInsets.only(right: 2,bottom: 2),
                                   onPressed: () {
-                                    if(AudioService.playbackState.playing){
-                                      AudioService.pause();
-                                      setState(() {
-                                        iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-                                        _updateIcon(Icon(Icons.play_arrow_rounded, size: 40,));
-                                        if(isjemnow){
-                                          _childKey.currentState?.updateIcon(Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white));
-                                        }
-                                      });
-                                    }else{
-                                      AudioService.play();
-                                      setState(() {
-                                        iconpla = Icon(Icons.pause_rounded, size: 40,);
-                                        _updateIcon(Icon(Icons.pause_rounded, size: 40,));
-                                        if(isjemnow){
-                                          _childKey.currentState?.updateIcon(Icon(Icons.pause_rounded, size: 64, color: Colors.white));
-                                        }
-                                      });
-                                    }
+                                    playpause();
                                   },),)
                           ),
                         ),
@@ -644,7 +768,7 @@ class _HomeScreenState extends State<HomeScreen>{
   @override
   void dispose() {
     super.dispose();
-    _controller.dispose();
+    videob.dispose();
   }
   String _jemData = "132";
   Future<void> postRequesty () async {
@@ -665,23 +789,7 @@ class _HomeScreenState extends State<HomeScreen>{
         isjemnow = true;
       });
     }else{
-      if(AudioService.playbackState.playing){
-        AudioService.pause();
-        setState(() {
-          iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-          if(isjemnow){
-            _childKey.currentState?.updateIcon(Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white));
-          }
-        });
-      }else{
-        AudioService.play();
-        setState(() {
-          iconpla = Icon(Icons.pause_rounded, size: 40,);
-          if(isjemnow){
-            _childKey.currentState?.updateIcon(Icon(Icons.pause_rounded, size: 64, color: Colors.white));
-          }
-        });
-      }
+      playpause();
     }
   }
 

@@ -2,11 +2,13 @@ import 'package:blast/screens/AudioManager.dart';
 import 'package:blast/screens/splash_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_session/audio_session.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  MediaKit.ensureInitialized();
   runApp(ChangeNotifierProvider(create: (_) => AudioManager(),
   child: EasyLocalization(
     supportedLocales: [
