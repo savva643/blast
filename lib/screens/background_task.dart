@@ -9,7 +9,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
   final AudioManager notifier = AudioManager();
   @override
   Future<void> onStart(Map<String, dynamic>? params) async {
-    final url = params?['url'] as String?;
+    final url = params?['url'] as MediaItem?;
     if (url != null) {
       await _playNewTrack(url);
     }
@@ -20,10 +20,19 @@ class AudioPlayerTask extends BackgroundAudioTask {
   Future<void> onPlayMediaItem(MediaItem mediaItem) async {
     // When a new media item is requested, load and play it
     await player.setUrl(mediaItem.id); // Assuming mediaItem.id contains the URL
+
+
     player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
       await player.play();
       notifier.setPlaying(true);
       _broadcastState();
+      AudioServiceBackground.setMediaItem(MediaItem(
+          id: mediaItem.id,
+          artUri: mediaItem.artUri,
+          artist: mediaItem.artist,
+          title: mediaItem.title,
+          duration: player.duration
+      ));
       await player.positionStream.listen((position) {
         notifier.setPosition(position);
         AudioServiceBackground.sendCustomEvent({
@@ -31,7 +40,11 @@ class AudioPlayerTask extends BackgroundAudioTask {
           'duration': player.duration?.inMilliseconds ?? 0,
         });
         _broadcastState();
+
+
       });
+
+
 
       player.processingStateStream.firstWhere((state) => state == ProcessingState.completed).then((_) async {
         await player.pause();
@@ -44,11 +57,18 @@ class AudioPlayerTask extends BackgroundAudioTask {
     });
   }
 
-  Future<void> _playNewTrack(String url) async {
-    await player.setUrl(url);
+  Future<void> _playNewTrack(MediaItem mediaItem) async {
+    await player.setUrl(mediaItem.id);
     notifier.setDuration(player.duration ?? Duration.zero);
     player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
       _broadcastState();
+      AudioServiceBackground.setMediaItem(MediaItem(
+          id: mediaItem.id,
+          artUri: mediaItem.artUri,
+          artist: mediaItem.artist,
+          title: mediaItem.title,
+          duration: player.duration
+      ));
       await player.positionStream.listen((position) {
         notifier.setPosition(position);
         AudioServiceBackground.sendCustomEvent({
@@ -64,7 +84,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
         print("jkh"+duration!.inSeconds.toString());
       });
     });
-    print(url);
+    print(mediaItem);
 
     // Listen for position updates
 
@@ -105,14 +125,13 @@ class AudioPlayerTask extends BackgroundAudioTask {
       controls: [
         MediaControl.play,
         MediaControl.pause,
-        MediaControl.stop,
       ],
       systemActions: [
         MediaAction.seek,
         MediaAction.play,
         MediaAction.pause,
-        MediaAction.stop,
       ],
+
       processingState: AudioProcessingState.ready,
       playing: player.playing,
       position: player.position,

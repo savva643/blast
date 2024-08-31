@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       setState(() {
         _langData[0] = jsonDecode(dff);
         videoope = true;
-        vidaftermus = false;
+        vidaftermus = _langData[0]['id'];
         videob.open(Media(_langData[0]['vidos']));
         _toogleAnimky();
         if(!frommus) {
@@ -115,6 +115,88 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         });
       }
     });
+    AudioService.playbackStateStream.listen((PlaybackState state) {
+      setState(() {
+        if(videoope){
+          if(!state.playing){
+            setState(() {
+              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(Icon(
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
+              }
+            });
+          }else{
+            setState(() {
+              iconpla = Icon(Icons.pause_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(
+                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+              }
+            });
+          }
+        }else {
+          if (!state.playing) {
+            setState(() {
+              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(Icon(
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
+              }
+            });
+          } else {
+            setState(() {
+              iconpla = Icon(Icons.pause_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(
+                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+              }
+            });
+          }
+        }
+      });
+    });
+    controller.player.stream.playing.listen((bool state) {
+      setState(() {
+        if(videoope){
+          if(!state){
+            setState(() {
+              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(Icon(
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
+              }
+            });
+          }else{
+            setState(() {
+              iconpla = Icon(Icons.pause_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(
+                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+              }
+            });
+          }
+        }else {
+          if (!state) {
+            setState(() {
+              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(Icon(
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
+              }
+            });
+          } else {
+            setState(() {
+              iconpla = Icon(Icons.pause_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(
+                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+              }
+            });
+          }
+        }
+      });
+    });
     _controller = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
@@ -134,8 +216,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     AudioService.playMediaItem(
       MediaItem(
         id: url,
-        album: 'New Album',
-        title: 'New Track',
+        artUri: Uri.parse(_langData[0]['img']),
+        artist: _langData[0]['message'],
+        title: _langData[0]['name'],
       ),
     );
 
@@ -165,6 +248,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         playmusa(_langData[0], false);
         if(videoope){
           videoope = false;
+          _toogleAnimky();
           controller.player.pause();
         }
       }
@@ -263,32 +347,29 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       videoope = !videoope;
       if(!videoope){
         controller.player.pause();
-        if(vidaftermus){
+        if(musaftervid == vidaftermus){
           playpause();
         }else{
           playmusa(_langData[0], true);
-          vidaftermus = true;
-          musaftervid = true;
         }
         AudioService.seekTo(controller.player.state.position);
         _toogleAnimky();
       }else{
         AudioService.pause();
-        if(vidaftermus){
+        if(musaftervid == vidaftermus){
           playpause();
           _toogleAnimky();
         }else{
+          _toogleAnimky();
           playVideo(shazid, true);
-          musaftervid = true;
-          vidaftermus = true;
         }
         controller.player.seek(AudioService.playbackState.position);
       }
     });
   }
 
-  bool vidaftermus = false;
-  bool musaftervid = false;
+  String vidaftermus = "false";
+  String musaftervid = "false";
 
   bool videoope = false;
   List _langData = [
@@ -302,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> playmusa(dynamic listok, bool frmvid) async {
     print("object");
     print(idmus);
-    musaftervid = false;
+    musaftervid = listok["id"];
     _totalDuration = 1;
     _currentPosition = 0;
     print(listok["id"]);
@@ -325,10 +406,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         frstsd = true;
         await AudioService.start(
           backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
-          androidNotificationChannelName: 'Audio Service Demo',
+          androidNotificationChannelName: 'blast!',
           androidNotificationColor: 0xFF2196f3,
-          androidNotificationIcon: 'mipmap/ic_launcher',
-          params: {'url': listok['url']},
+          androidNotificationIcon: 'drawable/mus_logo_foreground',
+          params: {'url': MediaItem(
+            id: _langData[0]['url'],
+            artUri: Uri.parse(_langData[0]['img']),
+            artist: _langData[0]['message'],
+            title: _langData[0]['name'],
+          )},
         );
         setState(() {
           namemus = listok["name"];
@@ -499,25 +585,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                           ],),
                           ]),Column(children: [
-                          AnimatedOpacity(opacity: opacityi1, duration: Duration(seconds: 0), child: AnimatedBuilder(
+                      AspectRatio(
+                      aspectRatio: 1, // Сохранение пропорций 1:1
+                      child:  AnimatedOpacity(opacity: opacityi1, duration: Duration(seconds: 0), child: AnimatedBuilder(
                       animation: _animation,
                       builder: (context, child) {
                       return Align(
                       alignment: _animation.value,
                       child:
-                            AnimatedContainer( margin: EdgeInsets.only(left: 20, right: 20, top: dsds2), height: imgwh, width: imgwh, decoration: BoxDecoration(
+                           AnimatedContainer( margin: EdgeInsets.only(left: 30, right: 30, top: dsds2), height: imgwh, width: imgwh, decoration: BoxDecoration(
                                   shape: BoxShape.rectangle,
                                   borderRadius: BorderRadius.circular(dsds),
                                 ),
-                                    clipBehavior: Clip.antiAliasWithSaveLayer,
+
+                                    clipBehavior: Clip.hardEdge,
                                     duration: Duration(milliseconds: 400),
                                     child: AspectRatio(
                                         aspectRatio: 1, // Сохранение пропорций 1:1
                                         child:Image.network(
                                         imgmus,
                                       height: imgwh, width: imgwh,
-                                        fit: BoxFit.contain, // Изображ
-                                    ))));})),
+                                        fit: BoxFit.cover, // Изображ
+                                    ))));}))),
                       AnimatedOpacity(opacity: opacity, duration: Duration(milliseconds: 400), onEnd: (){ setState(() { if(videoope){opacityi1 = 0; opacityi2 = 1;} }); }, child: AnimatedContainer(duration: Duration(milliseconds: 400), transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child:  Text(namemus,
                               textAlign: TextAlign.center,
                               overflow: TextOverflow.fade,
