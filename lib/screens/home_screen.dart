@@ -52,8 +52,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   //videoblock
   bool isplad = false;
-  Future<void> playVideo(String shazid) async {
-    if(shazid != this.shazid){
+  Future<void> playVideo(String shazid, bool frommus) async {
+    if(shazid != this.shazid || frommus){
       var urli = Uri.parse("https://kompot.site/getaboutmus?sidi="+shazid);
 
       var response = await http.post(urli,
@@ -67,9 +67,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       setState(() {
         _langData[0] = jsonDecode(dff);
         videoope = true;
+        vidaftermus = false;
         videob.open(Media(_langData[0]['vidos']));
         _toogleAnimky();
-        _showModalSheet();
+        if(!frommus) {
+          _showModalSheet();
+        }
 
         iconpla = Icon(Icons.pause_rounded, size: 40,);
         if(isjemnow){
@@ -156,7 +159,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     print(dff);
     setState(() {
       _langData[0] = jsonDecode(dff);
-      playmusa(_langData[0]);
+      if(_langData[0]['vidos'] != '0' && videoope){
+        playVideo(_langData[0]['idshaz'], false);
+      }else {
+        playmusa(_langData[0], false);
+        if(videoope){
+          videoope = false;
+          controller.player.pause();
+        }
+      }
     });
 
     }else{
@@ -247,12 +258,37 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _setvi(){
+    print(vidaftermus);
     setState(() {
       videoope = !videoope;
-      _toogleAnimky();
+      if(!videoope){
+        controller.player.pause();
+        if(vidaftermus){
+          playpause();
+        }else{
+          playmusa(_langData[0], true);
+          vidaftermus = true;
+          musaftervid = true;
+        }
+        AudioService.seekTo(controller.player.state.position);
+        _toogleAnimky();
+      }else{
+        AudioService.pause();
+        if(vidaftermus){
+          playpause();
+          _toogleAnimky();
+        }else{
+          playVideo(shazid, true);
+          musaftervid = true;
+          vidaftermus = true;
+        }
+        controller.player.seek(AudioService.playbackState.position);
+      }
     });
   }
 
+  bool vidaftermus = false;
+  bool musaftervid = false;
 
   bool videoope = false;
   List _langData = [
@@ -263,13 +299,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   'message': 'Имполнитель',
   },];
   bool frstsd = false;
-  Future<void> playmusa(dynamic listok) async {
+  Future<void> playmusa(dynamic listok, bool frmvid) async {
     print("object");
     print(idmus);
+    musaftervid = false;
     _totalDuration = 1;
     _currentPosition = 0;
     print(listok["id"]);
-    if(idmus != listok["id"]) {
+    if(idmus != listok["id"] || frmvid) {
       if(frstsd) {
         _playNewTrack(listok['url']);
         AudioService.play();
@@ -759,7 +796,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       getaboutmus(input, false);
     }, onCallbacki: postRequesty),
     VideoScreen(onCallback: (dynamic input) {
-      playVideo(input);
+      playVideo(input, false);
     }),
   ];
 
