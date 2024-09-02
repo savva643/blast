@@ -120,7 +120,7 @@ class _VideoScreenState extends State<VideoScreen> {
             Stack(alignment: Alignment.center,
               children: [
                 Container(width: size.width, height: size.height-200, child:
-                _loadListView()
+                size.width > 1200 ? _loadGridView() : size.width > 800 ? _loadGridView2() : _loadListView()
                 )
             ],),),
 
@@ -164,6 +164,52 @@ class _VideoScreenState extends State<VideoScreen> {
     setState(() => _searchedLangData = _langData);
   }
 
+  Widget _loadGridView2() {
+    Size size = MediaQuery.of(context).size;
+    return GridView(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisExtent: ((size.width/16)*4.1),
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 10,
+      ),
+      children: List.generate(_searchedLangData.length, (idx) {
+        return CustomTile(
+          title: _searchedLangData[idx]['name'],
+          subtitle: _searchedLangData[idx]['message'],
+          imageUrl: _searchedLangData[idx]['imgvidos'],
+          wih: size.width,
+          urlo: _searchedLangData[idx]['idshaz'],
+          onCallback: (dynamic input) {onCallback(input);},
+        );
+      }),
+    );
+  }
+
+  Widget _loadGridView() {
+    Size size = MediaQuery.of(context).size;
+    return GridView(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisExtent: ((size.width/16)*3),
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 10,
+      ),
+      children: List.generate(_searchedLangData.length, (idx) {
+        return CustomTile(
+          title: _searchedLangData[idx]['name'],
+          subtitle: _searchedLangData[idx]['message'],
+          imageUrl: _searchedLangData[idx]['imgvidos'],
+          wih: size.width,
+          urlo: _searchedLangData[idx]['idshaz'],
+          onCallback: (dynamic input) {onCallback(input);},
+        );
+      }),
+    );
+  }
+
+
+
   Widget _loadListView() {
     Size size = MediaQuery.of(context).size;
     return ListView.builder(
@@ -186,12 +232,7 @@ class _VideoScreenState extends State<VideoScreen> {
   Future<http.Response> postRequest () async {
     var urli = Uri.parse("https://kompot.site/getvideomus");
 
-    var response = await http.post(urli,
-      headers: {"Content-Type": "application/json; charset=UTF-8"},
-      body: jsonEncode(<String, String>{
-        'lim': "20",
-      }),
-    );
+    var response = await http.get(urli);
     String dff = response.body.toString();
     print(dff);
     setState(() {
@@ -224,7 +265,7 @@ class CustomTile extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Stack(children: [ Column(
+      child:  Stack(children: [ Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [AspectRatio(aspectRatio: 16/9, child:
           CachedNetworkImage(
@@ -271,7 +312,7 @@ class CustomTile extends StatelessWidget {
             ),
           ),
         ],
-      ),AspectRatio(aspectRatio: 16/10.4, child: ElevatedButton(
+      ),SizedBox(height: ((size.width/16)*9)+40, width: size.width,  child: ElevatedButton(
         onPressed: () {
           onCallback(urlo);
         },

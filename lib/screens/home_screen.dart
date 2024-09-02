@@ -52,16 +52,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   //videoblock
   bool isplad = false;
-  Future<void> playVideo(String shazid, bool frommus) async {
-    if(shazid != this.shazid || frommus){
-      var urli = Uri.parse("https://kompot.site/getaboutmus?sidi="+shazid);
+  Future<void> playVideo(String shazidi, bool frommus) async {
+    if(shazid != shazidi || frommus){
+      var urli = Uri.parse("https://kompot.site/getaboutmus?sidi="+shazidi);
 
-      var response = await http.post(urli,
-        headers: {"Content-Type": "application/json; charset=UTF-8"},
-        body: jsonEncode(<String, String>{
-          'sidi': shazid,
-        }),
-      );
+      var response = await http.get(urli);
       String dff = response.body.toString();
       print(dff);
       setState(() {
@@ -72,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         _toogleAnimky();
         if(!frommus) {
           _showModalSheet();
+          opacityi1 = 0; opacityi2 = 1;
         }
 
         iconpla = Icon(Icons.pause_rounded, size: 40,);
@@ -117,25 +113,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
     AudioService.playbackStateStream.listen((PlaybackState state) {
       setState(() {
-        if(videoope){
-          if(!state.playing){
-            setState(() {
-              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-              if (isjemnow) {
-                _childKey.currentState?.updateIcon(Icon(
-                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
-              }
-            });
-          }else{
-            setState(() {
-              iconpla = Icon(Icons.pause_rounded, size: 40,);
-              if (isjemnow) {
-                _childKey.currentState?.updateIcon(
-                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
-              }
-            });
-          }
-        }else {
+        if(!videoope) {
           if (!state.playing) {
             setState(() {
               iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
@@ -166,6 +144,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _childKey.currentState?.updateIcon(Icon(
                     Icons.play_arrow_rounded, size: 64, color: Colors.white));
               }
+              AudioService.seekTo(Duration(milliseconds: 1));
             });
           }else{
             setState(() {
@@ -174,24 +153,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _childKey.currentState?.updateIcon(
                     Icon(Icons.pause_rounded, size: 64, color: Colors.white));
               }
-            });
-          }
-        }else {
-          if (!state) {
-            setState(() {
-              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-              if (isjemnow) {
-                _childKey.currentState?.updateIcon(Icon(
-                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
-              }
-            });
-          } else {
-            setState(() {
-              iconpla = Icon(Icons.pause_rounded, size: 40,);
-              if (isjemnow) {
-                _childKey.currentState?.updateIcon(
-                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
-              }
+              AudioService.seekTo(Duration(milliseconds: 1));
             });
           }
         }
@@ -232,12 +194,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       }
     var urli = Uri.parse("https://kompot.site/getaboutmus?sidi="+shazid);
 
-    var response = await http.post(urli,
-      headers: {"Content-Type": "application/json; charset=UTF-8"},
-      body: jsonEncode(<String, String>{
-        'sidi': shazid,
-      }),
-    );
+    var response = await http.get(urli);
     String dff = response.body.toString();
     print(dff);
     setState(() {
@@ -477,6 +434,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   double _currentValue = 3;
 
 
+
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -640,7 +598,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   fontWeight: FontWeight.w400,
                                   color: Color.fromARGB(255, 246, 244, 244)
                               ),),],)))),
-                            SizedBox(height: 8,),
+                            SizedBox(height: 4,),
                               AnimatedOpacity(opacity: opacity, duration: Duration(milliseconds: 400), child:  AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: SizedBox(height: 8,  child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 8.0,
@@ -658,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   if (snapshot.hasData && !snapshot.hasError && _totalDuration > 0) {
                                     final position = snapshot.data as Duration;
                                     return Slider(
-                                      value: position.inMilliseconds.toDouble(),
+                                      value: _currentPosition,
                                       max: _totalDuration,
                                       onChanged: (value) {
                                         AudioService.seekTo(Duration(milliseconds: value.toInt()));
@@ -675,7 +633,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   }
                                 },
                               ),)))),
-
+                              SizedBox(height: 22,),
                       AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.center, children: [
                               SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {setState(() { _setvi(); }); }, icon: Image(
                                   color: Color.fromARGB(255, 255, 255, 255),
@@ -746,7 +704,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 _showModalSheet();
                               },
 
-                              leading:  Padding(padding: EdgeInsets.only(left: 10, top: 8),
+                              leading: Padding(padding: Platform.isWindows || kIsWeb ?  EdgeInsets.only(left: 10, top: 8) :  EdgeInsets.only(left: 10, top: 4),
                                   child: SizedBox(
                                     width: 60,
                                     height: 60,
@@ -901,12 +859,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if(!isjemnow) {
       var urli = Uri.parse("https://kompot.site/getjemmus");
 
-      var response = await http.post(urli,
-        headers: {"Content-Type": "application/json; charset=UTF-8"},
-        body: jsonEncode(<String, String>{
-          'lim': "20",
-        }),
-      );
+      var response = await http.get(urli);
       String dff = response.body.toString();
       print(dff);
       setState(() {

@@ -223,6 +223,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       }),
     );
   }
+
   Future<http.Response> postRequest () async {
     var urli = Uri.parse("https://magazinchik.keeppixel.store/flutterapi.php?getcategory=1");
 
