@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 
+import 'package:blast/screens/search_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +21,10 @@ const kBgColor = Color(0xFF1604E2);
 class MusicScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
   final VoidCallback onCallbacki;
-  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki}) : super(key: key);
+  final VoidCallback hie;
+  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie}) : super(key: key);
   @override
-  State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki);
+  State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki, hie);
 
 
 
@@ -40,7 +42,7 @@ class MusicScreenState extends State<MusicScreen> {
   }
   late  Function(dynamic) onCallback;
   late VoidCallback onCallbacki;
-
+  late VoidCallback showsearch;
   List _langData = [
     {
       'id': '1',
@@ -57,9 +59,10 @@ class MusicScreenState extends State<MusicScreen> {
   ];
   var player;
 
-  MusicScreenState(Function(dynamic) onk,VoidCallback onki){
+  MusicScreenState(Function(dynamic) onk,VoidCallback onki, VoidCallback fg){
     onCallback = onk;
     onCallbacki = onki;
+    showsearch = fg;
   }
 
   @override
@@ -121,7 +124,7 @@ class MusicScreenState extends State<MusicScreen> {
                       onCallbacki();
                     }, iconSize: 74,
                         icon: iconpla))],)
-                )), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+                )), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
                 Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)],),)
               ],),)],)),],),))  : _loadListView(),
       ),
@@ -378,7 +381,7 @@ class MusicScreenState extends State<MusicScreen> {
     fontWeight: FontWeight.w800,
     color: Colors.white,
     )))), Expanded(child: Container()),
-                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
                   Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
                 ],),
 

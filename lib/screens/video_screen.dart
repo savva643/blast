@@ -19,10 +19,11 @@ const kBgColor = Color(0xFF1604E2);
 
 class VideoScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
-  const VideoScreen({Key? key, required this.onCallback}) : super(key: key);
+  final VoidCallback hie;
+  const VideoScreen({Key? key, required this.onCallback, required this.hie}) : super(key: key);
 
   @override
-  State<VideoScreen> createState() => _VideoScreenState((dynamic input) {onCallback(input);});
+  State<VideoScreen> createState() => _VideoScreenState((dynamic input) {onCallback(input);}, hie);
 
 
 
@@ -31,7 +32,7 @@ class VideoScreen extends StatefulWidget {
 
 class _VideoScreenState extends State<VideoScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
+  late VoidCallback showsearch;
   late Function(dynamic) onCallback;
   List _langData = [
     {
@@ -86,7 +87,7 @@ class _VideoScreenState extends State<VideoScreen> {
                 ],
               )),
           child:
-        ListView(
+        Column(
           children: [
             Stack(
         children: [
@@ -111,7 +112,7 @@ class _VideoScreenState extends State<VideoScreen> {
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                   ),)), Expanded(child: Container()),
-            Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+            Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
             Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
           ],),
         ],),
@@ -119,7 +120,7 @@ class _VideoScreenState extends State<VideoScreen> {
               child:
             Stack(alignment: Alignment.center,
               children: [
-                Container(width: size.width, height: size.height-200, child:
+                Container(width: size.width, height: size.height-214, child:
                 size.width > 1200 ? _loadGridView() : size.width > 800 ? _loadGridView2() : _loadListView()
                 )
             ],),),
@@ -137,8 +138,9 @@ class _VideoScreenState extends State<VideoScreen> {
 
   final _searchLanguageController = TextEditingController();
 
-  _VideoScreenState(Function(dynamic) onk) {
+  _VideoScreenState(Function(dynamic) onk, VoidCallback fg) {
     onCallback = onk;
+    showsearch = fg;
   }
 
 

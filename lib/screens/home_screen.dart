@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:blast/screens/search_screen.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
 import 'package:audio_service/audio_service.dart';
 import 'package:blast/screens/playlist_screen.dart';
@@ -424,7 +425,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   }
                 });
               });
-              return pages[pageIndex];
+              return showsearch ? SearchScreen(onCallback: (dynamic input) {
+                getaboutmus(input, false);
+              }, onCallbacki: postRequesty, hie: closeserch) :  pages[pageIndex];
               }
               )
   );
@@ -433,7 +436,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   double  _totalDuration = 1;
   double _currentValue = 3;
 
+  bool showsearch = false;
 
+  void showserch(){
+    setState(() {
+      showsearch = true;
+    });
+  }
+
+  void closeserch(){
+    setState(() {
+      showsearch = false;
+    });
+  }
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -841,10 +856,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     PlaylistScreen(),
     MusicScreen(key: _childKey,onCallback: (dynamic input) {
       getaboutmus(input, false);
-    }, onCallbacki: postRequesty),
+    }, onCallbacki: postRequesty, hie: showserch),
     VideoScreen(onCallback: (dynamic input) {
       playVideo(input, false);
-    }),
+    }, hie: showserch),
   ];
 
   bool isjemnow = false;
