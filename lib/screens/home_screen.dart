@@ -392,7 +392,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String thumbnailImgUrl = "";
   @override
   Widget build(BuildContext context) {
-
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
         key: _scaffoldKey,
 
@@ -411,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ),
         backgroundColor: const Color.fromARGB(255, 15, 15, 16),
         bottomNavigationBar: buildMyNavBar(context),
-
+        extendBody: true,
         body:LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               // При изменении размеров экрана обновляется состояние
@@ -427,7 +427,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               });
               return showsearch ? SearchScreen(onCallback: (dynamic input) {
                 getaboutmus(input, false);
-              }, onCallbacki: postRequesty, hie: closeserch) :  pages[pageIndex];
+              }, onCallbacki: postRequesty, hie: closeserch) : Container(height: size.height, child:  IndexedStack(
+                index: pageIndex, // Отображение выбранного экрана
+                children: pages,
+              ));
               }
               )
   );
@@ -683,20 +686,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       iconpla = newIcon;
     });
   }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      pageIndex = index;
+    });
+  }
+
+
   Container buildMyNavBar(BuildContext context) {
     return
       Container(
           height: 134+ MediaQuery.of(context).padding.bottom,
           decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 25, 24, 24),
+              color: Color.fromARGB(120, 25, 24, 24),
               borderRadius: BorderRadius.vertical(top: Radius.circular(15))
           ),
-          child:SafeArea(
+          child:
+          ClipRect(
+          child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), // Настройка степени размытия
+    child:
+          SafeArea(
 
               child: Container(
 
                 decoration: const BoxDecoration(
-                    color: Color.fromARGB(255, 25, 24, 24),
+                    color: Color.fromARGB(120, 25, 24, 24),
                     borderRadius: BorderRadius.vertical(top: Radius.circular(15))
                 ),
                 child:
@@ -708,7 +724,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         height: 72,
                         child: Material(
 
-                          color: Color.fromARGB(255, 25, 24, 24),
+                          color: Color.fromARGB(0, 25, 24, 24),
                           borderRadius: BorderRadius.circular(15),
                           child: ListTile(
                               contentPadding: EdgeInsets.only(
@@ -847,13 +863,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ],
                         ),
                       ),
-                    ]),))
+                    ]),))))
       );
   }
   int pageIndex = 1;
 
   late List<StatefulWidget> pages = [
-    PlaylistScreen(),
+    PlaylistScreen(onCallback: (dynamic input) {
+      playVideo(input, false);
+    }, hie: showserch),
     MusicScreen(key: _childKey,onCallback: (dynamic input) {
       getaboutmus(input, false);
     }, onCallbacki: postRequesty, hie: showserch),

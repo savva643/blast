@@ -238,6 +238,7 @@ class LoginScreenState extends State<LoginScreen> {
         if(_langData[0]['status'] == "true"){
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString("token", _langData[0]['token']);
+          print("gkjhjk"+_langData[0]['token']);
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => HomeScreen()),

@@ -70,6 +70,7 @@ class MusicScreenState extends State<MusicScreen> {
   void initState()
   {
     postRequest();
+    getpr();
     super.initState();
   }
 
@@ -95,7 +96,7 @@ class MusicScreenState extends State<MusicScreen> {
       ),
       backgroundColor: const Color.fromARGB(255, 15, 15, 16),
       body: SafeArea(
-
+bottom: false,
         child:
         Container(
           decoration: new BoxDecoration(
@@ -126,7 +127,23 @@ class MusicScreenState extends State<MusicScreen> {
                     }, iconSize: 74,
                         icon: iconpla))],)
                 )), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)],),)
+                Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                  imageUrl: imgprofile, // Replace with your image URL
+                  imageBuilder: (context, imageProvider) => Container(
+                    margin: EdgeInsets.only(right: 3, top: 3),
+                    width: 100.0, // Set the width of the circular image
+                    height: 100.0, // Set the height of the circular image
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.cover, // Adjusts the image inside the circle
+                      ),
+                    ),
+                  ),
+                  placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
+                  errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
+                )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)],),)
               ],),)],)),],),))  : _loadListView(),
       ),
 
@@ -178,7 +195,7 @@ class MusicScreenState extends State<MusicScreen> {
   Widget _loadListViewMore() {
     Size size = MediaQuery.of(context).size;
     return ListView.builder(
-      itemCount: _searchedLangData.length,
+      itemCount: _searchedLangData.length+1,
       itemBuilder: (BuildContext context, int idx)
       {
           return SizedBox(child: idx == 0 ?  Column(
@@ -332,11 +349,14 @@ class MusicScreenState extends State<MusicScreen> {
     );
   }
 
-
+  Future<String?> getSettings(String key) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key); // Get a string value using the key
+  }
 
    Widget _loadListView() {
     return ListView.builder(
-      itemCount: _searchedLangData.length,
+      itemCount: _searchedLangData.length+1,
       itemBuilder: (BuildContext context, int idx)
     {
       if (idx == 0) {
@@ -383,7 +403,23 @@ class MusicScreenState extends State<MusicScreen> {
     color: Colors.white,
     )))), Expanded(child: Container()),
                   Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) =>  LoginScreen()));}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) =>  LoginScreen()));}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                    imageUrl: imgprofile, // Replace with your image URL
+                    imageBuilder: (context, imageProvider) => Container(
+                      margin: EdgeInsets.only(right: 3, top: 3),
+                      width: 100.0, // Set the width of the circular image
+                      height: 100.0, // Set the height of the circular image
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover, // Adjusts the image inside the circle
+                        ),
+                      ),
+                    ),
+                    placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
+                    errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
+                  )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
                 ],),
 
               ],),
@@ -526,7 +562,26 @@ class MusicScreenState extends State<MusicScreen> {
     return response;
   }
 
+  String imgprofile = "";
 
+  Future<void> getpr () async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ds = prefs.getString("token");
+    if(ds != ""){
+      print("object"+ds!);
+    var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
+
+    var response = await http.get(urli);
+    String dff = response.body.toString();
+
+    setState(() {
+      var _langData = jsonDecode(dff);
+
+      imgprofile = _langData["img_kompot"];
+      print("object"+imgprofile);
+    });
+    }
+  }
 
 }
 

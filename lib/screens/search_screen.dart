@@ -67,6 +67,7 @@ class SearchScreenState extends State<SearchScreen> {
   @override
   void initState()
   {
+    getpr();
     super.initState();
   }
 
@@ -92,9 +93,10 @@ class SearchScreenState extends State<SearchScreen> {
       ),
       backgroundColor: const Color.fromARGB(255, 15, 15, 16),
       body: SafeArea(
-
+        bottom: false,
         child:
         Container(
+          height: size.height,
           decoration: new BoxDecoration(
               gradient: new LinearGradient(
                 begin: Alignment.topCenter,
@@ -140,29 +142,45 @@ class SearchScreenState extends State<SearchScreen> {
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
                     )), backgroundColor: WidgetStatePropertyAll(Color.fromARGB(255, 15, 15, 16)), leading: Icon(Icons.search, color: Colors.white60),)),
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                      imageUrl: imgprofile, // Replace with your image URL
+                      imageBuilder: (context, imageProvider) => Container(
+                        margin: EdgeInsets.only(right: 3, top: 3),
+                        width: 100.0, // Set the width of the circular image
+                        height: 100.0, // Set the height of the circular image
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover, // Adjusts the image inside the circle
+                          ),
+                        ),
+                      ),
+                      placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
+                      errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
+                    )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
                   ],),
+                  Container(padding: EdgeInsets.only(top: 70), height: size.height,
+                    child:
+                    Stack(alignment: Alignment.center,
+                      children: [
+                        Container(width: size.width, child: showls ? _loadListView() : Container(child: Center(child: Column(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.center, children: [Text("Войдите чтобвы видеть историю поиска",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),), SizedBox(height: 8,), TextButton(onPressed: (){}, child: Text("Войти",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),))],),),),
+                        )
+                      ],),)
                 ],),
-              Container(margin: EdgeInsets.only(top: 0),
-                child:
-                Stack(alignment: Alignment.center,
-                  children: [
-                    Container(width: size.width, height: size.height-214, child: showls ? _loadListView() : Container(child: Center(child: Column(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.center, children: [Text("Войдите чтобвы видеть историю поиска",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),), SizedBox(height: 8,), TextButton(onPressed: (){}, child: Text("Войти",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),))],),),),
-                    )
-                  ],),),
 
             ],
           ),
@@ -208,7 +226,26 @@ bool showls = false;
 
 
 
+  String imgprofile = "";
 
+  Future<void> getpr () async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ds = prefs.getString("token");
+    if(ds != ""){
+      print("object"+ds!);
+      var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
+
+      var response = await http.get(urli);
+      String dff = response.body.toString();
+
+      setState(() {
+        var _langData = jsonDecode(dff);
+
+        imgprofile = _langData["img_kompot"];
+        print("object"+imgprofile);
+      });
+    }
+  }
 
   _clearSearch() {
     _searchLanguageController.clear();
@@ -218,14 +255,14 @@ bool showls = false;
   Widget _loadListView() {
     Size size = MediaQuery.of(context).size;
     return ListView.builder(
-      itemCount: _searchedLangData.length,
+      itemCount: _searchedLangData.length+1,
       itemBuilder: (BuildContext context, int idx)
       {
         return SizedBox(child: idx == 0 ?  Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 10,),
-            Container(margin: EdgeInsets.only(right: 10), child:
+            Container(margin: EdgeInsets.only(left: 10), child:
             Text("Треки",
               style: TextStyle(
                 fontSize: 30,
@@ -243,7 +280,7 @@ bool showls = false;
           margin: const EdgeInsets.only(bottom: 10),
           child: Material(
 
-            color: Color.fromARGB(255, 15, 15, 16),
+            color: Color.fromARGB(0, 15, 15, 16),
             borderRadius: BorderRadius.circular(5),
             child: ListTile(
               contentPadding: EdgeInsets.only(

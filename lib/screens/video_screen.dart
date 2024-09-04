@@ -50,6 +50,7 @@ class _VideoScreenState extends State<VideoScreen> {
   void initState()
   {
     postRequest();
+    getpr();
     super.initState();
   }
   String musicUrl = ""; // Insert your music URL
@@ -73,10 +74,12 @@ class _VideoScreenState extends State<VideoScreen> {
           ),
         ),
       ),
-
+      extendBody: true,
       body: SafeArea(
+        bottom: false,
         child:
         Container(
+          height: size.height,
           decoration: new BoxDecoration(
               gradient: new LinearGradient(
                 begin: Alignment.topCenter,
@@ -89,7 +92,7 @@ class _VideoScreenState extends State<VideoScreen> {
           child:
         Column(
           children: [
-            Stack(
+           Stack(
         children: [
             SizedBox(
               height: 80,width: 220,
@@ -113,17 +116,29 @@ class _VideoScreenState extends State<VideoScreen> {
                     color: Colors.white,
                   ),)), Expanded(child: Container()),
             Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-            Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
+            Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+              imageUrl: imgprofile, // Replace with your image URL
+              imageBuilder: (context, imageProvider) => Container(
+                margin: EdgeInsets.only(right: 3, top: 3),
+                width: 100.0, // Set the width of the circular image
+                height: 100.0, // Set the height of the circular image
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover, // Adjusts the image inside the circle
+                  ),
+                ),
+              ),
+              placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
+              errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
+            )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
           ],),
+          Container(padding: EdgeInsets.only(top: 80), height: size.height,
+            child:size.width > 1200 ? _loadGridView() : size.width > 800 ? _loadGridView2() : _loadListView()
+            ,),
         ],),
-            Container(margin: EdgeInsets.only(top: 0),
-              child:
-            Stack(alignment: Alignment.center,
-              children: [
-                Container(width: size.width, height: size.height-214, child:
-                size.width > 1200 ? _loadGridView() : size.width > 800 ? _loadGridView2() : _loadListView()
-                )
-            ],),),
+
 
           ],
         ),
@@ -214,7 +229,7 @@ class _VideoScreenState extends State<VideoScreen> {
 
   Widget _loadListView() {
     Size size = MediaQuery.of(context).size;
-    return ListView.builder(
+    return Container(height: size.height, child: ListView.builder(
       itemCount: _searchedLangData.length,
       itemBuilder: (BuildContext context, int idx)
       {
@@ -227,6 +242,7 @@ class _VideoScreenState extends State<VideoScreen> {
             onCallback: (dynamic input) {onCallback(input);},
           );
       },
+    )
     );
   }
 
@@ -243,7 +259,26 @@ class _VideoScreenState extends State<VideoScreen> {
     });
     return response;
   }
+  String imgprofile = "";
 
+  Future<void> getpr () async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ds = prefs.getString("token");
+    if(ds != ""){
+      print("object"+ds!);
+      var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
+
+      var response = await http.get(urli);
+      String dff = response.body.toString();
+
+      setState(() {
+        var _langData = jsonDecode(dff);
+
+        imgprofile = _langData["img_kompot"];
+        print("object"+imgprofile);
+      });
+    }
+  }
 
 }
 class CustomTile extends StatelessWidget {
@@ -330,6 +365,8 @@ class CustomTile extends StatelessWidget {
       ))],)
     );
   }
+
+
 }
 
 
