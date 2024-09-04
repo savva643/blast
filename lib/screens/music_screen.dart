@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 
+import 'package:blast/screens/login.dart';
 import 'package:blast/screens/search_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -382,7 +383,7 @@ class MusicScreenState extends State<MusicScreen> {
     color: Colors.white,
     )))), Expanded(child: Container()),
                   Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) =>  LoginScreen()));}, icon: Icon(Icons.circle, size: 46, color: Colors.white,)),)
                 ],),
 
               ],),
