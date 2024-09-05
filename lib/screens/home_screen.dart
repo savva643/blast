@@ -22,6 +22,7 @@ import 'package:octo_image/octo_image.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'AudioManager.dart';
 import 'background_task.dart';
 import 'music_screen.dart';
@@ -652,30 +653,42 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 },
                               ),)))),
                               SizedBox(height: 22,),
-                      AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.center, children: [
-                              SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {setState(() { _setvi(); }); }, icon: Image(
+                              AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.center, children: [
+                                SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {setState(() { _setvi(); }); }, icon: Image(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    image: AssetImage('assets/images/unloveno.png'),
+                                    width: 100
+                                ))),
+                                SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, icon: Image(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    image: AssetImage('assets/images/reveuws.png'),
+                                    width: 100
+                                ))),
+                                SizedBox(height: 50, width: 50, child: IconButton(onPressed: () {setState(() {playpause();});}, padding: EdgeInsets.zero, icon: Icon(iconpla.icon, size: 50, color: Colors.white,))),
+                                SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, icon: Image(
                                   color: Color.fromARGB(255, 255, 255, 255),
-                                  image: AssetImage('assets/images/unloveno.png'),
-                                  width: 100
-                              ))),
-                              SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, icon: Image(
+                                  image: AssetImage('assets/images/nexts.png'),
+                                  width: 120,
+                                  height: 120,
+                                ))),
+                                SizedBox(width: 50, height: 50, child: IconButton(onPressed: () {}, icon: Image(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    image: AssetImage('assets/images/loveno.png'),
+                                    width: 100
+                                ))),
+                              ],)),
+                              SizedBox(height: 22,),
+                              AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.center, children: [
+                                SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, padding: EdgeInsets.zero, icon: Icon(Icons.devices_rounded, size: 50, color: Colors.white,))),
+                                SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, padding: EdgeInsets.zero, icon: Icon(Icons.queue_music_rounded, size: 50, color: Colors.white,))),
+                                SizedBox(height: 50, width: 50, child:IconButton(onPressed: () {}, padding: EdgeInsets.zero, icon: Icon(Icons.playlist_add_rounded, size: 50, color: Colors.white,))),
+                                SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, padding: EdgeInsets.zero, icon: Image(
                                   color: Color.fromARGB(255, 255, 255, 255),
-                                  image: AssetImage('assets/images/reveuws.png'),
-                                  width: 100
-                              ))),
-                              SizedBox(height: 50, width: 50, child: IconButton(onPressed: () {setState(() {playpause();});}, padding: EdgeInsets.zero, icon: Icon(iconpla.icon, size: 50, color: Colors.white,))),
-                              SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, icon: Image(
-                                color: Color.fromARGB(255, 255, 255, 255),
-                                image: AssetImage('assets/images/nexts.png'),
-                                width: 120,
-                                height: 120,
-                              ))),
-                              SizedBox(width: 50, height: 50, child: IconButton(onPressed: () {}, icon: Image(
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  image: AssetImage('assets/images/loveno.png'),
-                                  width: 100
-                              ))),
-                            ],))],)],))]);});});
+                                  image: AssetImage('assets/images/video.png'),
+                                  width: 120,
+                                  height: 120,
+                                ))),
+                              ],))],)],))]);});});
         }
     );
   }
@@ -690,6 +703,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void _onItemTapped(int index) {
     setState(() {
       pageIndex = index;
+    });
+  }
+
+  void connectToWebSocket() {
+    final channel = WebSocketChannel.connect(Uri.parse('ws://webos-tv-ip:8080'));
+
+    channel.sink.add('Hello from Flutter');
+
+    channel.stream.listen((message) {
+      print('Received from webOS: $message');
     });
   }
 
