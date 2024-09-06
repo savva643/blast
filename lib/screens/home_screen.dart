@@ -679,7 +679,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               ],)),
                               SizedBox(height: 22,),
                               AnimatedContainer(duration: Duration(milliseconds: 400) , transform: Matrix4.translation(vector.Vector3(0, squareScaleA, 0)),child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.center, children: [
-                                SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, padding: EdgeInsets.zero, icon: Icon(Icons.devices_rounded, size: 50, color: Colors.white,))),
+                                SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {connectToWebSocket();}, padding: EdgeInsets.zero, icon: Icon(Icons.devices_rounded, size: 50, color: Colors.white,))),
                                 SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, padding: EdgeInsets.zero, icon: Icon(Icons.queue_music_rounded, size: 50, color: Colors.white,))),
                                 SizedBox(height: 50, width: 50, child:IconButton(onPressed: () {}, padding: EdgeInsets.zero, icon: Icon(Icons.playlist_add_rounded, size: 50, color: Colors.white,))),
                                 SizedBox(width: 50, height: 50, child:IconButton(onPressed: () {}, padding: EdgeInsets.zero, icon: Image(
@@ -707,10 +707,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void connectToWebSocket() {
-    final channel = WebSocketChannel.connect(Uri.parse('ws://webos-tv-ip:8080'));
+    final channel = WebSocketChannel.connect(Uri.parse('ws://127.0.0.1:6732'));
 
-    channel.sink.add('Hello from Flutter');
-
+    List<dynamic> sdc = [{"type":"openmus", "id":_langData[0]["id"],  "idshaz":_langData[0]["idshaz"],  "vidos":videoope.toString(),  "timecurrent":_currentPosition.toString()}];
+    String jsonString = jsonEncode(sdc[0]);
+    channel.sink.add(jsonString);
+    print(jsonString);
     channel.stream.listen((message) {
       print('Received from webOS: $message');
     });
