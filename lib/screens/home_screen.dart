@@ -1213,7 +1213,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       String dff = response.body.toString();
       print(dff);
       setState(() {
-        devicelis = [];
+        devicelis.clear();
         List<dynamic> dj = jsonDecode(dff);
         devicelis.add({"id": "0","ip": "","name": "Это устройство","status": "true", "connected": "1"});
         for (var num in dj){
@@ -1333,7 +1333,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-
+                connectdevice(devicelis[idx]);
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
@@ -1341,16 +1341,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 child: Row(mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(width: 30, child: Text(
-                      (idx).toString(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
-                          color: devicelis[idx]['status'] == "true" ? Colors.white : Colors.grey
-                      ),
-                    ),), SizedBox(
+                          SizedBox(
                       width: 60,
                       height: 60,
                       child: Icon(Icons.device_unknown_rounded, color: devicelis[idx]['status'] == "true" ? Colors.white : Colors.grey,),),
