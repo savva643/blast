@@ -349,10 +349,6 @@ bottom: false,
     );
   }
 
-  Future<String?> getSettings(String key) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(key); // Get a string value using the key
-  }
 
    Widget _loadListView() {
     return ListView.builder(
