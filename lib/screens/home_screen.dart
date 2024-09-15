@@ -109,6 +109,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     getnamedevice();
+    _startServer();
+    _getLocalIp();
     AudioService.customEventStream.listen((event) {
       if(!devicecon) {
         if (event != null) {
@@ -497,6 +499,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         )
     );
   }
+
+  HttpServer? _server;
+  List<WebSocket> _clients = [];
+  bool _isServerRunning = false;
+
 
   double _currentPosition = 0;
   double _totalDuration = 1;
@@ -1238,8 +1245,82 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   bool isjemnow = false;
 
+
+  Future<void> _startServer() async {
+    try {
+      // Bind the server to localhost on port 6732
+      _server = await HttpServer.bind('localhost', 6732);
+      setState(() {
+        _isServerRunning = true;
+        adddevicetopull();
+      });
+      print('WebSocket server is running on ws://localhost:6732');
+
+      // Listen for incoming HTTP requests and upgrade them to WebSocket connections
+      await for (HttpRequest request in _server!) {
+        if (WebSocketTransformer.isUpgradeRequest(request)) {
+          WebSocket socket = await WebSocketTransformer.upgrade(request);
+          _handleClient(socket);
+        } else {
+          request.response
+            ..statusCode = HttpStatus.forbidden
+            ..close();
+        }
+      }
+    } catch (e) {
+      print('Error starting WebSocket server: $e');
+    }
+  }
+
+  // Stop the WebSocket server
+  void _stopServer() {
+    _server?.close();
+    _clients.forEach((client) => client.close());
+    _clients.clear();
+    setState(() {
+      _isServerRunning = false;
+    });
+    print('WebSocket server stopped');
+  }
+
+  // Handle WebSocket client connection
+  void _handleClient(WebSocket socket) {
+    print('Client connected: ${socket.hashCode}');
+    _clients.add(socket);
+
+    // Listen for messages from the client
+    socket.listen((message) {
+      print('Received message: $message');
+      dynamic dj = jsonDecode(message);
+      if(dj["type"].toString() == "checkonline"){
+
+      }else if(dj["type"].toString() == "connect"){
+        dj.removeWhere("connect");
+        print(dj);
+        connectdeviceinme(dj);
+      }
+      _broadcastMessage(message);
+    }, onDone: () {
+      print('Client disconnected: ${socket.hashCode}');
+      _clients.remove(socket);
+    }, onError: (error) {
+      print('WebSocket error: $error');
+    });
+  }
+
+  // Broadcast message to all connected clients
+  void _broadcastMessage(String message) {
+    for (var client in _clients) {
+      if (client.readyState == WebSocket.open) {
+        client.add(message);
+      }
+    }
+  }
+
+
   @override
   void dispose() {
+    _stopServer();
     super.dispose();
     videob.dispose();
   }
@@ -1364,6 +1445,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   late WebSocketChannel channeldev;
   dynamic devici = {"id": "0"};
   bool devicecon = false;
+
+  bool deviceconinme = false;
+  dynamic devicinme = {"id": "0"};
+
+  void connectdeviceinme(dynamic sdv){
+    if(sdv["id"]!=devicinme["id"]) {
+      devicinme = sdv;
+      deviceconinme = true;
+    }
+  }
+
   void connectdevice(dynamic sdv){
     if(sdv["id"]!=devici["id"]) {
       channeldev =
@@ -1460,7 +1552,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   String _deviceName = 'Unknown Device';
-
+  String _os = 'Unknown OS';
   Future<void> getnamedevice() async {
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
 
@@ -1469,30 +1561,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         setState(() {
           _deviceName = androidInfo.model; // Gets the device model name for Android
+          _os = "Android";
         });
       } else if (Platform.isIOS) {
         IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
         setState(() {
           _deviceName = iosInfo.name; // Gets the name set by the user on iOS
+          _os = "iOS";
         });
       } else if (Platform.isMacOS) {
         MacOsDeviceInfo macInfo = await deviceInfo.macOsInfo;
         setState(() {
           _deviceName = macInfo.computerName; // Gets the computer name on macOS
+          _os = "macOS";
         });
       } else if (Platform.isWindows) {
         WindowsDeviceInfo windowsInfo = await deviceInfo.windowsInfo;
         setState(() {
           _deviceName = windowsInfo.computerName; // Gets the computer name on Windows
+          _os = "Windows";
         });
       } else if (Platform.isLinux) {
         LinuxDeviceInfo linuxInfo = await deviceInfo.linuxInfo;
         setState(() {
           _deviceName = linuxInfo.name; // Gets the name of the Linux machine
+          _os = "Linux";
         });
       } else if (kIsWeb) {
         setState(() {
           _deviceName = "Web Browser"; // Gets the browser's user agent string for Web
+          _os = "Web";
         });
       } else {
         setState(() {
@@ -1562,6 +1660,38 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
+
+  Future<void> _getLocalIp() async {
+    try {
+      // Get the list of network interfaces
+      List<NetworkInterface> interfaces = await NetworkInterface.list(
+        includeLoopback: false, // Exclude loopback addresses
+        type: InternetAddressType.IPv4, // We are interested in IPv4 addresses
+      );
+
+      // Select the first active interface's IP address
+      if (interfaces.isNotEmpty) {
+        setState(() {
+          _localIp = interfaces.first.addresses.first.address;
+        });
+      } else {
+        setState(() {
+          _localIp = 'No active network interface found.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _localIp = 'Failed to get local IP: $e';
+      });
+    }
+  }
+  String? _localIp;
+  Future<void> adddevicetopull() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? tr = prefs.getString("token");
+    http.Response response = await http.get(Uri.parse("https://kompot.site/getdeviceblast?createip="+_localIp!+"&tokeni="+tr!+"&name="+_deviceName+"&os="+_os));
+
+  }
 
 
   Future<Uri> installmusic(String url, String filename) async {
