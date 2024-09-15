@@ -23,7 +23,6 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
 
     player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
-      await player.play();
       notifier.setPlaying(true);
       _broadcastState();
       AudioServiceBackground.setMediaItem(MediaItem(

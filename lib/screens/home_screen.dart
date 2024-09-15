@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:path_provider/path_provider.dart';
 import 'package:blast/screens/search_screen.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
@@ -109,11 +110,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.initState();
     getnamedevice();
     AudioService.customEventStream.listen((event) {
-      if (event != null) {
-        setState(() {
-          _currentPosition = event['position'].toDouble();
+      if(!devicecon) {
+        if (event != null) {
+          setState(() {
+            _currentPosition = event['position'].toDouble();
+            _totalDuration = event['duration'].toDouble();
+            print(event['duration'].toString());
+          });
+        }
+      }else{
+        setnewState(() {
           _totalDuration = event['duration'].toDouble();
-          print(event['duration'].toString());
         });
       }
     });
@@ -192,8 +199,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Future<void> getaboutmus(String shazid, bool jem) async {
+    print(shazid+"jkljl"+this.shazid);
     if (shazid != this.shazid) {
-
         if (!jem) {
           isjemnow = false;
           _childKey.currentState?.updateIcon(
@@ -205,10 +212,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         String dff = response.body.toString();
         print(dff);
         setState(() {
+          print("hyhg");
           _langData[0] = jsonDecode(dff);
           if (_langData[0]['vidos'] != '0' && videoope) {
             playVideo(_langData[0]['idshaz'], false);
           } else {
+            print("thytfyjyju");
             playmusa(_langData[0], false);
             if (videoope) {
               videoope = false;
@@ -224,45 +233,58 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void playpause() {
-    if (videoope) {
-      if (controller.player.state.playing) {
-        controller.player.pause();
-        setState(() {
-          iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-          if (isjemnow) {
-            _childKey.currentState?.updateIcon(Icon(
-                Icons.play_arrow_rounded, size: 64, color: Colors.white));
-          }
-        });
+    if(devicecon) {
+      List<dynamic> sdc = [
+        {
+          "type": "media",
+          "what": "play",
+          "iddevice": "2",
+        }
+      ];
+      String jsonString = jsonEncode(sdc[0]);
+      channeldev.sink.add(jsonString);
+      print(jsonString);
+    }else{
+      if (videoope) {
+        if (controller.player.state.playing) {
+          controller.player.pause();
+          setState(() {
+            iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+            if (isjemnow) {
+              _childKey.currentState?.updateIcon(Icon(
+                  Icons.play_arrow_rounded, size: 64, color: Colors.white));
+            }
+          });
+        } else {
+          controller.player.play();
+          setState(() {
+            iconpla = Icon(Icons.pause_rounded, size: 40,);
+            if (isjemnow) {
+              _childKey.currentState?.updateIcon(
+                  Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+            }
+          });
+        }
       } else {
-        controller.player.play();
-        setState(() {
-          iconpla = Icon(Icons.pause_rounded, size: 40,);
-          if (isjemnow) {
-            _childKey.currentState?.updateIcon(
-                Icon(Icons.pause_rounded, size: 64, color: Colors.white));
-          }
-        });
-      }
-    } else {
-      if (AudioService.playbackState.playing) {
-        AudioService.pause();
-        setState(() {
-          iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
-          if (isjemnow) {
-            _childKey.currentState?.updateIcon(Icon(
-                Icons.play_arrow_rounded, size: 64, color: Colors.white));
-          }
-        });
-      } else {
-        AudioService.play();
-        setState(() {
-          iconpla = Icon(Icons.pause_rounded, size: 40,);
-          if (isjemnow) {
-            _childKey.currentState?.updateIcon(
-                Icon(Icons.pause_rounded, size: 64, color: Colors.white));
-          }
-        });
+        if (AudioService.playbackState.playing) {
+          AudioService.pause();
+          setState(() {
+            iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+            if (isjemnow) {
+              _childKey.currentState?.updateIcon(Icon(
+                  Icons.play_arrow_rounded, size: 64, color: Colors.white));
+            }
+          });
+        } else {
+          AudioService.play();
+          setState(() {
+            iconpla = Icon(Icons.pause_rounded, size: 40,);
+            if (isjemnow) {
+              _childKey.currentState?.updateIcon(
+                  Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+            }
+          });
+        }
       }
     }
   }
@@ -356,7 +378,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _currentPosition = 0;
     print(listok["id"]);
     if(devicecon){
-
+      List<dynamic> sdc = [
+        {
+          "type": "openmus",
+          "id": listok["id"],
+          "idshaz": listok["idshaz"],
+          "vidos": videoope.toString(),
+          "timecurrent": "0",
+          "iddevice": "2"
+        }
+      ];
+      String jsonString = jsonEncode(sdc[0]);
+      channeldev.sink.add(jsonString);
+      setState(() {
+        namemus = listok["name"];
+        ispolmus = listok["message"];
+        imgmus = listok['img'];
+        idmus = listok['id'];
+        shazid = listok['idshaz'];
+      });
+      _playNewTrack(listok['url']);
     }else {
       if (idmus != listok["id"] || frmvid) {
         if (frstsd) {
@@ -492,6 +533,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         builder: (builder) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
+                setnewState = setState;
                 return StreamBuilder(
                     stream: AudioService.positionStream,
                     builder: (context, snapshot) {
@@ -795,10 +837,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                       value: _currentPosition,
                                                       max: _totalDuration,
                                                       onChanged: (value) {
-                                                        AudioService.seekTo(
-                                                            Duration(
-                                                                milliseconds: value
-                                                                    .toInt()));
+                      if(devicecon) {
+                        Duration jda = Duration(milliseconds: value.toInt());
+                        List<dynamic> sdc = [
+                          {
+                            "type": "media",
+                            "what": "seekto",
+                            "timecurrent": jda.inSeconds,
+                            "iddevice": "2"
+                          }
+                        ];
+                        String jsonString = jsonEncode(sdc[0]);
+                        channeldev.sink.add(jsonString);
+                      }else {
+                        AudioService.seekTo(
+                            Duration(
+                                milliseconds: value
+                                    .toInt()));
+                      }
                                                       },
                                                     );
                                                   } else {
@@ -973,8 +1029,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         builder: (builder) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
+                setmdState = setState;
                 return Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
+                  padding: EdgeInsets.only(left: 10, right: 10, top: 20),
                   decoration: BoxDecoration(borderRadius: BorderRadius.vertical(top: Radius.circular(16)), color: Color.fromARGB(255, 15, 15, 16)),
                   child: _loaddevicelist(),);
               }
@@ -982,11 +1039,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         }
     );
   }
+  late StateSetter setmdState;
+  late StateSetter setnewState;
 
   void connectToWebSocket() {
-    getdivecs();
-    _showModalSheetu();
 
+    _showModalSheetu();
+    getdivecs();
 
   }
 
@@ -1202,65 +1261,202 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
+
   List<dynamic> devicelis = [];
 
   Future<void> getdivecs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
      String? tr = prefs.getString("token");
       var urli = Uri.parse("https://kompot.site/getdeviceblast?getdevices="+tr!);
-
       var response = await http.get(urli);
       String dff = response.body.toString();
       print(dff);
-      setState(() {
+      setmdState(() {
         devicelis.clear();
         List<dynamic> dj = jsonDecode(dff);
-        devicelis.add({"id": "0","ip": "","name": "Это устройство","status": "true", "connected": "1"});
-        for (var num in dj){
+        if(devici["id"]!= "0"){
+          devicelis.add({
+            "id": "0",
+            "ip": "",
+            "name": "Это устройство",
+            "status": "true",
+            "connected": "0"
+          });
+        }else {
+          devicelis.add({
+            "id": "0",
+            "ip": "",
+            "name": "Это устройство",
+            "status": "true",
+            "connected": "1"
+          });
+        }
+        for (var num in dj) {
+          if(num["id"]!=devici["id"]){
           String ipixa = num["ip"];
-          final channel = WebSocketChannel.connect(Uri.parse('ws://'+ipixa+':6732'));
+          try{
+          final channel = WebSocketChannel.connect(
+              Uri.parse('ws://' + ipixa + ':6732'));
 
-          List<dynamic> sdc = [{"type":"checkonline"}];
+
+
+          List<dynamic> sdc = [{"type": "checkonline"}];
           String jsonString = jsonEncode(sdc[0]);
           channel.sink.add(jsonString);
           channel.stream.listen((message) {
             List<dynamic> sdbf = [];
             print('Recived: $message');
             sdbf.add(jsonDecode(message));
-            if(sdbf[0]["status"].toString() == "true"){
+            if (sdbf[0]["status"].toString() == "true") {
               print('Connected: $message');
-              channel.sink.close(status.normalClosure, 'Client closed connection');
-              devicelis.add({"id": num["id"],"ip": num["ip"],"name": num["name"],"status": "true", "connected": "0"});
-            }else{
-              devicelis.add({"id": num["id"],"ip": num["ip"],"name": num["name"],"status": "false", "connected": "0"});
-            }
+              channel.sink.close(
+                  status.normalClosure, 'Client closed connection');
+              setState(() {
+                setmdState(() {
+              devicelis.add({
+                "id": num["id"],
+                "ip": num["ip"],
+                "name": num["name"],
+                "status": "true",
+                "connected": "0"
+              });
+                });
+              });
+            } else {
+              setmdState(() {
+              devicelis.add({
+                "id": num["id"],
+                "ip": num["ip"],
+                "name": num["name"],
+                "status": "false",
+                "connected": "0"
 
+              });
+              channel.sink.close(
+                  status.normalClosure, 'Client closed connection');
+              });
+            }
           });
 
+        }catch(eer){
+            devicelis.add({
+              "id": num["id"],
+              "ip": num["ip"],
+              "name": num["name"],
+              "status": "false",
+              "connected": "0"
+            });
+          }
+          }else{
+            setmdState(() {
+            devicelis.add({
+              "id": num["id"],
+              "ip": num["ip"],
+              "name": num["name"],
+              "status": "true",
+              "connected": "1"
+            });
+            });
+          }
         }
       });
   }
   late WebSocketChannel channeldev;
-  dynamic devici;
+  dynamic devici = {"id": "0"};
   bool devicecon = false;
   void connectdevice(dynamic sdv){
-    channeldev = WebSocketChannel.connect(Uri.parse('ws://'+sdv["ip"]+':6732'));
-    List<dynamic> sdc = [{"type":"connect", "name":_deviceName, "id":"2"}];
-    String jsonString = jsonEncode(sdc[0]);
-    channeldev.sink.add(jsonString);
-    print(jsonString);
-    channeldev.stream.listen((message) {
-      List<dynamic> sdbf = [];
-      print('Recived: $message');
-      sdbf.add(jsonDecode(message));
-      if(sdbf[0]["status"].toString() == "true"){
-        devici = sdv;
-        List<dynamic> sdc = [{"type":"openmus", "id":_langData[0]["id"],  "idshaz":_langData[0]["idshaz"],  "vidos":videoope.toString(),  "timecurrent":_currentPosition.toString(), "iddevice":"2"}];
-        String jsonString = jsonEncode(sdc[0]);
-        channeldev.sink.add(jsonString);
-        print(jsonString);
-      }
-    });
+    if(sdv["id"]!=devici["id"]) {
+      channeldev =
+          WebSocketChannel.connect(Uri.parse('ws://' + sdv["ip"] + ':6732'));
+      List<dynamic> sdc = [{"type": "connect", "name": _deviceName, "id": "2"}];
+      String jsonString = jsonEncode(sdc[0]);
+      channeldev.sink.add(jsonString);
+      print(jsonString);
+      channeldev.stream.listen((message) {
+        List<dynamic> sdbf = [];
+        print('Recived: $message');
+        sdbf.add(jsonDecode(message));
+        if (sdbf[0]["status"].toString() == "true") {
+          devici = sdv;
+          devicecon = true;
+          Duration sc = Duration(milliseconds: _currentPosition.toInt());
+          List<dynamic> sdc = [
+            {
+              "type": "openmus",
+              "id": _langData[0]["id"],
+              "idshaz": _langData[0]["idshaz"],
+              "vidos": videoope.toString(),
+              "timecurrent": sc.inSeconds.toString(),
+              "iddevice": "2"
+            }
+          ];
+          String jsonString = jsonEncode(sdc[0]);
+          channeldev.sink.add(jsonString);
+          print(jsonString);
+        }else if (sdbf[0]["status"].toString() == "play") {
+              if(sdbf[0]["playing"].toString() == "false"){
+                setState(() {
+                  setnewState(() {
+                  iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+                  if (isjemnow) {
+                    _childKey.currentState?.updateIcon(Icon(
+                        Icons.play_arrow_rounded, size: 64, color: Colors.white));
+                  }
+                  });
+                });
+              }else{
+                setState(() {
+                  setnewState(() {
+                  iconpla = Icon(Icons.pause_rounded, size: 40,);
+                  if (isjemnow) {
+                    _childKey.currentState?.updateIcon(
+                        Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+                  }
+                  });});
+              }
+        }else if (sdbf[0]["status"].toString() == "seek") {
+          setnewState(() {
+          Duration sdfsad = Duration(seconds:double.parse(sdbf[0]["timecur"].toString()).toInt());
+          _currentPosition = sdfsad.inMilliseconds.toDouble();
+          });
+          if(sdbf[0]["playing"].toString() == "false"){
+            setState(() {
+              setnewState(() {
+              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(Icon(
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
+              }
+              });});
+          }else{
+            setState(() {
+              setnewState(() {
+              iconpla = Icon(Icons.pause_rounded, size: 40,);
+              if (isjemnow) {
+                _childKey.currentState?.updateIcon(
+                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+              }
+              });});
+          }
+        }
+        });
+    }else{
+      Duration sc = Duration(milliseconds: _currentPosition.toInt());
+      List<dynamic> sdc = [
+        {
+          "type": "openmus",
+          "id": _langData[0]["id"],
+          "idshaz": _langData[0]["idshaz"],
+          "vidos": videoope.toString(),
+          "timecurrent": sc.inSeconds.toString(),
+          "iddevice": "2"
+        }
+      ];
+      String jsonString = jsonEncode(sdc[0]);
+      channeldev.sink.add(jsonString);
+    }
+    AudioService.pause();
+    Navigator.pop(context);
   }
 
   String _deviceName = 'Unknown Device';
@@ -1336,7 +1532,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 connectdevice(devicelis[idx]);
               },
               leadingAndTrailingTextStyle: TextStyle(),
-              leading: SizedBox(width: 90,
+              leading: SizedBox(width: 60,
                 height: 60,
                 child: Row(mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -1364,6 +1560,58 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         );
       },
     );
+  }
+
+
+
+  Future<Uri> installmusic(String url, String filename) async {
+    Directory tempDir = await getApplicationDocumentsDirectory();
+    String tempPath = tempDir.path;
+    File tempFile = File('$tempPath/$filename');
+
+    http.Response response = await http.get(Uri.parse(url));
+    // todo - check status
+    await tempFile.writeAsBytes(response.bodyBytes, flush: true);
+
+    dynamic mrp = {"id":"","shazid":"","img":"","name":"", "message":"","textmus":"", "url":tempFile.uri};
+
+    return tempFile.uri;
+  }
+
+
+  void showtextmus(){
+
+  }
+
+  void addplaylist(){
+
+  }
+
+  void reactionmus(){
+
+  }
+
+  void deletemus(){
+
+  }
+
+  void sharemus(){
+
+  }
+
+
+
+  void setqualitymus(){
+
+  }
+
+  void nextmusic(){
+
+  }
+
+
+  void previosmusic(){
+
   }
 
 }
