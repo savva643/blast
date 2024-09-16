@@ -941,7 +941,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                             SizedBox(width: 50,
                                                 height: 50,
                                                 child: IconButton(
-                                                    onPressed: () {},
+                                                    onPressed: () {installmusic(_langData[0]);},
                                                     icon: Image(
                                                         color: Color.fromARGB(
                                                             255, 255, 255, 255),
@@ -1293,7 +1293,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       print('Received message: $message');
       dynamic dj = jsonDecode(message);
       if(dj["type"].toString() == "checkonline"){
-
+        print('{"name":"'+_deviceName+'", "status":"true"}');
+        _broadcastMessage('{"name":"$_deviceName", "status":"true"}');
       }else if(dj["type"].toString() == "connect"){
         dj.removeWhere("connect");
         print(dj);
@@ -1694,17 +1695,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
 
-  Future<Uri> installmusic(String url, String filename) async {
+  Future<Uri> installmusic(dynamic mus) async {
     Directory tempDir = await getApplicationDocumentsDirectory();
     String tempPath = tempDir.path;
+    String filename = mus["id"].toString() + ".mp3";
     File tempFile = File('$tempPath/$filename');
 
-    http.Response response = await http.get(Uri.parse(url));
+    http.Response response = await http.get(Uri.parse(mus["url"]));
     // todo - check status
     await tempFile.writeAsBytes(response.bodyBytes, flush: true);
-
-    dynamic mrp = {"id":"","shazid":"","img":"","name":"", "message":"","textmus":"", "url":tempFile.uri};
-
+    DateTime now = DateTime.now();
+    String formattedDateTime = DateFormat('yyyyMMddHHmmss').format(now);
+    dynamic mrp = {"id":mus["id"],"shazid":mus["shazid"],"img":mus["img"],"name":mus["name"], "message":mus["message"],"textmus":mus["textmus"], "url":tempFile.uri,"date":formattedDateTime};
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? dfrd = prefs.getStringList("installmus");
+    List<String> ds = [];
+    if(dfrd != null){
+      ds = dfrd;
+    }
+    ds.add(mrp.toString());
+    await prefs.setStringList("installmus", ds);
+    print(mrp.toString());
     return tempFile.uri;
   }
 

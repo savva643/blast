@@ -49,6 +49,19 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       'name': 'Русский',
     },
   ];
+
+  List _langDatamus = [
+    {
+      'id': '1',
+      'img': 'assets/images/usa.jpeg',
+      'name': 'English',
+    },
+    {
+      'id': '2',
+      'img': 'assets/images/russia.png',
+      'name': 'Русский',
+    },
+  ];
   @override
   void initState()
   {
@@ -302,6 +315,54 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 onPressed: () {},),
             ),
           ),
+        ) : idx == 3 ?
+        Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          child: Material(
+
+            color: Color.fromARGB(0, 15, 15, 16),
+            borderRadius: BorderRadius.circular(5),
+            child: ListTile(
+              contentPadding: EdgeInsets.only(
+                  left: 0, right: 0, bottom: 4, top: 4),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)),
+              onTap: () async {
+
+              },
+              leadingAndTrailingTextStyle: TextStyle(),
+              leading: SizedBox(width: 90,
+                height: 60,
+                child: Row(mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: OverflowBox(
+                        maxWidth: double.infinity,
+                        maxHeight: double.infinity,
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0), // Радиус закругления углов
+                            child: Image(image: AssetImage('assets/images/installmus.png'), width: 60,)),
+                      ),),
+                  ],),),
+              title: Text(
+                "Скаченное",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w500,
+                    color: Color.fromARGB(255, 246, 244, 244)
+                ),
+              ),
+              trailing: IconButton(icon: Icon(Icons.more_vert),
+                color: Colors.white,
+                onPressed: () {},),
+            ),
+          ),
         ) :
         Container(
           margin: const EdgeInsets.only(bottom: 10),
@@ -433,7 +494,23 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       });
     }
   }
+  Future<void> loadmusinplilsr(String id) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ds = prefs.getString("token");
 
+    var urli = Uri.parse("https://kompot.site/getmusfromplaylist?token="+ds!+"&=playlist"+id);
+    var response = await http.get(urli);
+    String dff = response.body.toString();
+    print("hjk"+dff);
+    setState(() {
+      _langDatamus = jsonDecode(dff)[0];
+    });
+  }
+
+
+  Widget hl(BuildContext co){
+    return Container();
+  }
 
 }
 
@@ -509,6 +586,9 @@ class CustomTile extends StatelessWidget {
         ))],)
     );
   }
+
+
+
 
 
 }
