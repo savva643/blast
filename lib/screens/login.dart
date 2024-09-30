@@ -4,6 +4,7 @@ import 'dart:io';
 
 
 import 'package:blast/screens/home_screen.dart';
+import 'package:blast/screens/music_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -241,7 +242,7 @@ class LoginScreenState extends State<LoginScreen> {
           print("gkjhjk"+_langData[0]['token']);
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => HomeScreen()),
+            MaterialPageRoute(builder: (context) => MusicScreen(onCallback: (dynamic sd){}, onCallbacki: (){}, hie: (){})),
                 (Route<dynamic> route) => false, // Удаление всех предыдущих маршрутов
           );
         }

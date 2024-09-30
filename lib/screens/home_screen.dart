@@ -499,6 +499,48 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         )
     );
   }
+  final GlobalKey<NavigatorState> _playlistNavigatorKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _homeNavigatorKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _videoNavigatorKey = GlobalKey<NavigatorState>();
+
+  // Метод для получения текущего навигатора
+  GlobalKey<NavigatorState> _getNavigatorKey(int index) {
+    switch (index) {
+      case 0:
+        return _playlistNavigatorKey;
+      case 1:
+        return _homeNavigatorKey;
+      case 2:
+        return _videoNavigatorKey;
+      default:
+        return _homeNavigatorKey;
+    }
+  }
+
+  void _openSearchPage(BuildContext context) {
+    Navigator.of(context).push(_createSearchRoute());
+  }
+
+  // Анимация открытия страницы поиска
+  Route _createSearchRoute() {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(onCallback: (dynamic input) {
+        getaboutmus(input, false);
+      }, onCallbacki: postRequesty, hie: closeserch),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset(0.0, 0.0);
+        const curve = Curves.easeInOut;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+  }
 
   HttpServer? _server;
   List<WebSocket> _clients = [];
@@ -1230,17 +1272,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       );
   }
   int pageIndex = 1;
+  Widget _buildNavigator(GlobalKey<NavigatorState> navigatorKey, Widget page) {
+    return Navigator(
+      key: navigatorKey,
+      onGenerateRoute: (routeSettings) {
+        return MaterialPageRoute(
+          builder: (context) => page,
+        );
+      },
+    );
+  }
 
-  late List<StatefulWidget> pages = [
-    PlaylistScreen(onCallback: (dynamic input) {
+  late List<Widget> pages = [
+    _buildNavigator(_playlistNavigatorKey, PlaylistScreen(onCallback: (dynamic input) {
       playVideo(input, false);
-    }, hie: showserch),
-    MusicScreen(key: _childKey,onCallback: (dynamic input) {
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
+    _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey,onCallback: (dynamic input) {
       getaboutmus(input, false);
-    }, onCallbacki: postRequesty, hie: showserch),
-    VideoScreen(onCallback: (dynamic input) {
+    }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
+    _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
       playVideo(input, false);
-    }, hie: showserch),
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
   ];
 
   bool isjemnow = false;

@@ -131,7 +131,7 @@ class SearchScreenState extends State<SearchScreen> {
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
                           ),)), Expanded(child: Container()),
-                    Container(margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: (){closesearch();}, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),Container(margin: EdgeInsets.only(top: 18), width: size.width-260, height: 40, child: SearchBar(hintText: 'Навзвание трека',  onChanged: (text){postRequest(text);}, shadowColor: WidgetStatePropertyAll(Colors.transparent), side: WidgetStatePropertyAll(const BorderSide(color: Colors.white10, width: 2)), overlayColor: WidgetStatePropertyAll(Colors.white10), hintStyle: WidgetStatePropertyAll(TextStyle(
+                    Container(margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),Container(margin: EdgeInsets.only(top: 18), width: size.width-260, height: 40, child: SearchBar(hintText: 'Навзвание трека',  onChanged: (text){postRequest(text);}, shadowColor: WidgetStatePropertyAll(Colors.transparent), side: WidgetStatePropertyAll(const BorderSide(color: Colors.white10, width: 2)), overlayColor: WidgetStatePropertyAll(Colors.white10), hintStyle: WidgetStatePropertyAll(TextStyle(
                       fontSize: 16,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w500,
