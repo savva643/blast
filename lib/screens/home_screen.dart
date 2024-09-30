@@ -893,9 +893,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 height: 50,
                                                 child: IconButton(
                                                     onPressed: () {
-                                                      setState(() {
-                                                        _setvi();
-                                                      });
+
                                                     }, icon: Image(
                                                     color: Color.fromARGB(
                                                         255, 255, 255, 255),
@@ -993,7 +991,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                             SizedBox(width: 50,
                                                 height: 50,
                                                 child: IconButton(
-                                                    onPressed: () {},
+                                                    onPressed: () {setState(() {
+                                                      _setvi();
+                                                    });},
                                                     padding: EdgeInsets.zero,
                                                     icon: Image(
                                                       color: Color.fromARGB(

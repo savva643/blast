@@ -248,7 +248,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         maxHeight: double.infinity,
                         child:  ClipRRect(
                           borderRadius: BorderRadius.circular(8.0), // Радиус закругления углов
-                          child: Image(image: AssetImage('assets/images/music.jpg'), width: 60,)),
+                          child: Image(image: AssetImage('assets/images/history.png'), width: 60,)),
                       ),),
                   ],),),
               title: Text(
