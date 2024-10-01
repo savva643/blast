@@ -62,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> playVideo(String shazidi, bool frommus) async {
     if (shazid != shazidi || frommus) {
       var urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazidi);
-
       var response = await http.get(urli);
       String dff = response.body.toString();
       print(dff);
@@ -128,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
     AudioService.playbackStateStream.listen((PlaybackState state) {
       setState(() {
+        print("dsfxv"+videoope.toString());
         if (!videoope) {
           if (!state.playing) {
             setState(() {
@@ -146,6 +146,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               }
             });
           }
+        }else{
+
         }
       });
     });
@@ -331,10 +333,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
   }
 
-  void _setvi() {
+  void _setvi(String dfg, bool ds, bool vid) {
     print(vidaftermus);
     setState(() {
       videoope = !videoope;
+      if (vid){
+        videoope = vid;
+      }
       if (!videoope) {
         controller.player.pause();
         if (musaftervid == vidaftermus) {
@@ -351,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _toogleAnimky();
         } else {
           _toogleAnimky();
-          playVideo(shazid, true);
+          playVideo(dfg, ds);
         }
         controller.player.seek(AudioService.playbackState.position);
       }
@@ -516,6 +521,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         return _homeNavigatorKey;
     }
   }
+
+
 
   void _openSearchPage(BuildContext context) {
     Navigator.of(context).push(_createSearchRoute());
@@ -1034,7 +1041,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 height: 50,
                                                 child: IconButton(
                                                     onPressed: () {setState(() {
-                                                      _setvi();
+                                                      _setvi(shazid, true, false);
                                                     });},
                                                     padding: EdgeInsets.zero,
                                                     icon: Image(
@@ -1285,13 +1292,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   late List<Widget> pages = [
     _buildNavigator(_playlistNavigatorKey, PlaylistScreen(onCallback: (dynamic input) {
-      playVideo(input, false);
+      getaboutmus(input, false);
     }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
     _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey,onCallback: (dynamic input) {
       getaboutmus(input, false);
     }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
     _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
-      playVideo(input, false);
+      _setvi(input, false, true);
     }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
   ];
 
@@ -1747,7 +1754,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
 
-  Future<Uri> installmusic(dynamic mus) async {
+  Future<void> installmusic(dynamic mus) async {
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? sac = prefs.getStringList("installmusid");
+    if (sac != null) {
+      if (sac.isNotEmpty) {
+        if (sac.contains(_langData[0]["idshaz"])) {
+          
+        }else{
+          ins(mus);
+        }
+      }else{
+        ins(mus);
+      }
+    }else{
+      ins(mus);
+    }
+  }
+
+  Future<void> ins(dynamic mus) async {
     Directory tempDir = await getApplicationDocumentsDirectory();
     String tempPath = tempDir.path;
     String filename = mus["id"].toString() + ".mp3";
@@ -1758,19 +1784,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     await tempFile.writeAsBytes(response.bodyBytes, flush: true);
     DateTime now = DateTime.now();
     String formattedDateTime = DateFormat('yyyyMMddHHmmss').format(now);
-    dynamic mrp = {"id":mus["id"],"shazid":mus["shazid"],"img":mus["img"],"name":mus["name"], "message":mus["message"],"textmus":mus["textmus"], "url":tempFile.uri,"date":formattedDateTime};
+    String mrp = '{"id":"' + mus["id"] + '","idshaz":"' + mus["idshaz"] +
+        '","img":"' + mus["img"] + '","name":"' + mus["name"] +
+        '", "message":"' + mus["message"] + '","txt":"' + mus["txt"] +
+        '", "url":"' + tempFile.uri.toString() + '","date":"' +
+        formattedDateTime + '"}';
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? dfrd = prefs.getStringList("installmus");
-    List<String> ds = [];
-    if(dfrd != null){
-      ds = dfrd;
+    String? dfrd = prefs.getString("installmus");
+    List<String>? sac = prefs.getStringList("installmusid");
+    List<dynamic> ds = [];
+    List<String> fsaf = [];
+    if (dfrd != null) {
+      ds = jsonDecode(dfrd);
+    }
+    if (sac != null) {
+      fsaf = sac;
     }
     ds.add(mrp.toString());
-    await prefs.setStringList("installmus", ds);
+    fsaf.add(mus["idshaz"]);
+    await prefs.setStringList("installmusid", fsaf);
+    await prefs.setString("installmus", jsonEncode(ds));
     print(mrp.toString());
-    return tempFile.uri;
   }
-
 
   void showtextmus(){
 

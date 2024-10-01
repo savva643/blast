@@ -78,6 +78,7 @@ class MusicScreenState extends State<MusicScreen> {
   String thumbnailImgUrl = "";
   @override
   Widget build(BuildContext context) {
+
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       key: _scaffoldKey,
@@ -338,9 +339,20 @@ bottom: false,
                       color: Color.fromARGB(255, 246, 244, 244)
                   ),
                 ),
-                trailing: IconButton(icon: Icon(Icons.more_vert),
-                  color: Colors.white,
-                  onPressed: () {},),
+                trailing:  Padding(
+                  padding: EdgeInsets.only(right: 20.0), // Set padding as needed
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min, // This ensures Row takes minimal width
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.more_vert),
+                        color: Colors.white,
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           )
@@ -351,6 +363,7 @@ bottom: false,
 
 
    Widget _loadListView() {
+     Size size = MediaQuery.of(context).size;
     return ListView.builder(
       itemCount: _searchedLangData.length+1,
       itemBuilder: (BuildContext context, int idx)
@@ -533,9 +546,10 @@ bottom: false,
                   color: Color.fromARGB(255, 246, 244, 244)
               ),
             ),
-            trailing: IconButton(icon: Icon(Icons.more_vert),
+            trailing: Container(padding: EdgeInsets.only(right: 4), child:  Row( mainAxisSize: MainAxisSize.min, // This ensures Row takes minimal width
+              mainAxisAlignment: MainAxisAlignment.end,  children: [_searchedLangData[idx-1]['install'] == "1" ? Icon(Icons.file_download_outlined, color: Colors.green,) : Container(), _searchedLangData[idx-1]['install'] == "1" ? SizedBox(width: 4,) :  Container(), IconButton(icon: Icon(Icons.more_vert),
               color: Colors.white,
-              onPressed: () {},),
+              onPressed: () {},)],)) ,
           ),
         ),
       );
@@ -550,10 +564,28 @@ bottom: false,
 
     var response = await http.get(urli);
     String dff = response.body.toString();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? sac = prefs.getStringList("installmusid");
 
     setState(() {
-      _langData = jsonDecode(dff);
-      _searchedLangData = _langData[0];
+      _langData =  jsonDecode(dff)[0];
+      for (var i = 0; i < _langData.length; i++) {
+        if (sac != null) {
+          if (!sac.isEmpty) {
+            if (sac.contains(_langData[i]["idshaz"])) {
+              (_langData[i] as Map<String, dynamic>)["install"] = "1";
+            } else {
+              (_langData[i] as Map<String, dynamic>)["install"] = "0";
+            }
+          } else {
+            (_langData[i] as Map<String, dynamic>)["install"] = "0";
+          }
+        }else{
+          (_langData[i] as Map<String, dynamic>)["install"] = "0";
+        }
+      }
+      _searchedLangData = _langData;
+
     });
     return response;
   }

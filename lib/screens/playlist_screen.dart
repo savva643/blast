@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 
+import 'package:blast/screens/mus_in_playlist.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -193,14 +194,37 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     super.dispose();
   }
 
+  void _openSearchPage(BuildContext context, String fds) {
+    Navigator.of(context).push(_createSearchRoute(fds));
+  }
 
+  // Анимация открытия страницы поиска
+  Route _createSearchRoute(String fds) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => MusInPlaylistScreen(onCallback: (dynamic input) {
+        onCallback(input);
+      }, onCallbacki: fds, hie: showsearch),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset(0.0, 0.0);
+        const curve = Curves.easeInOut;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+  }
 
 
 
   Widget _loadListView() {
     Size size = MediaQuery.of(context).size;
     return ListView.builder(
-      itemCount: _searchedLangData.length+1,
+      itemCount: _searchedLangData.length+2,
       itemBuilder: (BuildContext context, int idx)
       {
         return SizedBox(child: idx == 0 ?  Column(
@@ -232,7 +256,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-
+                _openSearchPage(context, _searchedLangData[idx-2]['id']);
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
@@ -280,7 +304,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-
+                _openSearchPage(context, _searchedLangData[idx-2]['id']);
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
@@ -328,7 +352,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-
+                _openSearchPage(context, "install");
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
@@ -376,7 +400,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-
+                _openSearchPage(context, _searchedLangData[idx-2]['id']);
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
@@ -391,7 +415,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         maxWidth: double.infinity,
                         maxHeight: double.infinity,
                         child: CachedNetworkImage(
-                          imageUrl: _searchedLangData[idx-1]['img'],
+                          imageUrl: _searchedLangData[idx-2]['img'],
                           imageBuilder: (context, imageProvider) =>
                               Container(
                                 padding: EdgeInsets.only(
@@ -412,7 +436,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       ),),
                   ],),),
               title: Text(
-                _searchedLangData[idx-1]['name'],
+                _searchedLangData[idx-2]['name'],
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -473,8 +497,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         crossAxisSpacing: 20,
         mainAxisSpacing: 10,
       ),
-      children: List.generate(_searchedLangData.length, (idx) {
-        return idx == 0 ?  CustomTile(title: "История", imageUrl: 'assets/images/music.jpg', wih: size.width, fd: true,) : idx == 1 ?  CustomTile(title: "Мне нравится", imageUrl: "assets/images/loveplaylist.gif", wih: size.width,fd: true,) : CustomTile(title: _searchedLangData[idx]['name'], imageUrl: _searchedLangData[idx]['img'], wih: size.width,fd: false,);
+      children: List.generate(_searchedLangData.length+1, (idx) {
+        return idx == 0 ?  CustomTile(title: "История", imageUrl: 'assets/images/history.png', wih: size.width, fd: true,) : idx == 1 ?  CustomTile(title: "Мне нравится", imageUrl: "assets/images/loveplaylist.gif", wih: size.width,fd: true,) : idx == 2 ?  CustomTile(title: "Скаченное", imageUrl: "assets/images/installmus.png", wih: size.width,fd: true,) : CustomTile(title: _searchedLangData[idx-1]['name'], imageUrl: _searchedLangData[idx-1]['img'], wih: size.width,fd: false,);
       }),))]
     );
   }
@@ -494,18 +518,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       });
     }
   }
-  Future<void> loadmusinplilsr(String id) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? ds = prefs.getString("token");
 
-    var urli = Uri.parse("https://kompot.site/getmusfromplaylist?token="+ds!+"&=playlist"+id);
-    var response = await http.get(urli);
-    String dff = response.body.toString();
-    print("hjk"+dff);
-    setState(() {
-      _langDatamus = jsonDecode(dff)[0];
-    });
-  }
 
 
   Widget hl(BuildContext co){

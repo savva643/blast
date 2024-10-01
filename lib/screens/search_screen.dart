@@ -121,6 +121,7 @@ class SearchScreenState extends State<SearchScreen> {
                         child:
                         Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
                     ),),
+
                   Row(children: [
                     Container(padding: EdgeInsets.only(left: 12,top: 0),
                         child:
@@ -131,17 +132,7 @@ class SearchScreenState extends State<SearchScreen> {
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
                           ),)), Expanded(child: Container()),
-                    Container(margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),Container(margin: EdgeInsets.only(top: 18), width: size.width-260, height: 40, child: SearchBar(hintText: 'Навзвание трека',  onChanged: (text){postRequest(text);}, shadowColor: WidgetStatePropertyAll(Colors.transparent), side: WidgetStatePropertyAll(const BorderSide(color: Colors.white10, width: 2)), overlayColor: WidgetStatePropertyAll(Colors.white10), hintStyle: WidgetStatePropertyAll(TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white60,
-                    )), textStyle: WidgetStatePropertyAll(TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
-                    )), backgroundColor: WidgetStatePropertyAll(Color.fromARGB(255, 15, 15, 16)), leading: Icon(Icons.search, color: Colors.white60),)),
+
                     Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                       imageUrl: imgprofile, // Replace with your image URL
                       imageBuilder: (context, imageProvider) => Container(
@@ -160,7 +151,18 @@ class SearchScreenState extends State<SearchScreen> {
                       errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
                     )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
                   ],),
-                  Container(padding: EdgeInsets.only(top: 70), height: size.height,
+          Container(margin: EdgeInsets.only(top: 60), width: size.width, child: Row(children: [Container(margin: EdgeInsets.only(top: 16), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),Container(margin: EdgeInsets.only(top: 18), width: size.width-60, height: 40, child: SearchBar(hintText: 'Навзвание трека',  onChanged: (text){postRequest(text);}, shadowColor: WidgetStatePropertyAll(Colors.transparent), side: WidgetStatePropertyAll(const BorderSide(color: Colors.white10, width: 2)), overlayColor: WidgetStatePropertyAll(Colors.white10), hintStyle: WidgetStatePropertyAll(TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white60,
+                  )), textStyle: WidgetStatePropertyAll(TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  )), backgroundColor: WidgetStatePropertyAll(Color.fromARGB(255, 15, 15, 16)), leading: Icon(Icons.search, color: Colors.white60),)),],),),
+                  Container(padding: EdgeInsets.only(top: 124), height: size.height,
                     child:
                     Stack(alignment: Alignment.center,
                       children: [
@@ -295,19 +297,7 @@ bool showls = false;
                 height: 60,
                 child: Row(mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 30, child: Text(
-                      (idx).toString(),
-                      textAlign: TextAlign.center,
-
-                      style: TextStyle(
-
-                          fontSize: 18,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
-                          color: Color.fromARGB(255, 246, 244, 244)
-                      ),
-                    ),), SizedBox(
+                  children: [SizedBox(
                       width: 60,
                       height: 60,
                       child: OverflowBox(

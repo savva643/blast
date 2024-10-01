@@ -21,7 +21,7 @@ const kBgColor = Color(0xFF1604E2);
 
 class MusInPlaylistScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
-  final VoidCallback onCallbacki;
+  final String onCallbacki;
   final VoidCallback hie;
   MusInPlaylistScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie}) : super(key: key);
   @override
@@ -42,7 +42,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     });
   }
   late  Function(dynamic) onCallback;
-  late VoidCallback onCallbacki;
+  late String palylsitid;
   late VoidCallback showsearch;
   List _langData = [
     {
@@ -60,16 +60,20 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   ];
   var player;
 
-  MusInPlaylistScreenState(Function(dynamic) onk,VoidCallback onki, VoidCallback fg){
+  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg){
     onCallback = onk;
-    onCallbacki = onki;
+    palylsitid = onki;
     showsearch = fg;
   }
 
   @override
   void initState()
   {
-    postRequest();
+    if(palylsitid != "install") {
+      loadmusinplilsr(palylsitid);
+    }else{
+      installedmus();
+    }
     getpr();
     super.initState();
   }
@@ -108,43 +112,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                   Color.fromARGB(255, 15, 15, 16),
                 ],
               )),
-          child: size.width > 800 ? SizedBox(width: size.width, height: size.height, child: Container(width: size.width, height: size.height, child: Row(children: [ SizedBox(height: size.height, width: size.width/2, child:_loadListViewMore()),  Container(width: size.width/2,
-              child: Stack(alignment: Alignment.topRight, children: [ Center(child:
-              Stack(alignment: Alignment.center,
-                children: [
-                  Image.asset('assets/images/circleblast.png', width: 600,),
-                  Center(child:Container(padding: EdgeInsets.only(left: 12,top: 12),
-                      child:
-                      Column(mainAxisAlignment: MainAxisAlignment.center,children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
-                        style: TextStyle(
-                          fontSize: 50,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),)),Container(margin: EdgeInsets.only(right: 8), child:
-                      IconButton(onPressed: ()  {
-                        onCallbacki();
-                      }, iconSize: 74,
-                          icon: iconpla))],)
-                  )), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
-                      imageUrl: imgprofile, // Replace with your image URL
-                      imageBuilder: (context, imageProvider) => Container(
-                        margin: EdgeInsets.only(right: 3, top: 3),
-                        width: 100.0, // Set the width of the circular image
-                        height: 100.0, // Set the height of the circular image
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover, // Adjusts the image inside the circle
-                          ),
-                        ),
-                      ),
-                      placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
-                      errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                    )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)],),)
-                ],),)],)),],),))  : _loadListView(),
+          child: _loadListView(),
         ),
 
       ),
@@ -382,22 +350,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
                           ),)),
-                    Container(padding: EdgeInsets.only(left: 6,top: 2),child:  TextButton(onPressed: () {}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                          (Set<MaterialState> states) {
-                        if (states.contains(MaterialState.pressed)) {
-                          return Colors.grey[900]; // Darker grey when pressed
-                        } else if (states.contains(MaterialState.hovered)) {
-                          return Colors.grey[700]; // Lighter grey when hovered
-                        }
-                        return Colors.grey[800]; // Default grey color
-                      },
-                    ), ),child: Text("alpha",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        )))), Expanded(child: Container()),
+                   Expanded(child: Container()),
                     Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
                     Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) =>  LoginScreen()));}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                       imageUrl: imgprofile, // Replace with your image URL
@@ -419,45 +372,24 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                   ],),
 
                 ],),
-              Container(margin: EdgeInsets.only(left: 32,right: 32),
-                child:
-                Stack(alignment: Alignment.center,
-                  children: [
-                    Image.asset('assets/images/circleblast.png', width: 800,),
-                    Container(padding: EdgeInsets.only(left: 12,top: 12),
-                        child:
-                        Column(children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),)),Container(margin: EdgeInsets.only(right: 8), child:
-                        IconButton(onPressed: ()  {
-                          onCallbacki();
-                        }, iconSize: 64,
-                            icon: iconpla))],)
-                    ),
-                  ],),),
-              SizedBox(height: 10,),
-              Center(child: Text("Чарт",
+              Container(margin: EdgeInsets.only(left: 10), child:
+              Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),), Text("Плейлисты",
                 style: TextStyle(
                   fontSize: 30,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
-                ),),),
-              SizedBox(height: 10,),
-
+                ),)],)),
             ],
           );
         }else{
-
+          print("idx");
+          print(_searchedLangData[idx-1]['img']);
           return Container(
             margin: const EdgeInsets.only(bottom: 10),
             child: Material(
 
-              color: Color.fromARGB(255, 15, 15, 16),
+              color: Color.fromARGB(0, 15, 15, 16),
               borderRadius: BorderRadius.circular(5),
               child: ListTile(
                 contentPadding: EdgeInsets.only(
@@ -472,19 +404,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                   height: 60,
                   child: Row(mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(width: 30, child: Text(
-                        (idx).toString(),
-                        textAlign: TextAlign.center,
-
-                        style: TextStyle(
-
-                            fontSize: 18,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                            color: Color.fromARGB(255, 246, 244, 244)
-                        ),
-                      ),), SizedBox(
+                    children: [ SizedBox(
                         width: 60,
                         height: 60,
                         child: OverflowBox(
@@ -544,18 +464,30 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     );
   }
 
+  Future<void> installedmus() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? dfrd = prefs.getString("installmus");
 
-  Future<http.Response> postRequest () async {
-    var urli = Uri.parse("https://kompot.site/gettopmusic?lim=20&token=1");
+    print("dfrd");
+    print(jsonDecode(dfrd!));
+    setState(() {
+      _langData = jsonDecode(jsonDecode(dfrd!).toString());
+      _searchedLangData = jsonDecode(jsonDecode(dfrd!).toString());
+    });
+  }
 
+  Future<void> loadmusinplilsr(String id) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ds = prefs.getString("token");
+    print("https://kompot.site/getmusfromplaylist?token="+ds!+"&playlst="+id);
+    var urli = Uri.parse("https://kompot.site/getmusfromplaylist?token="+ds!+"&playlst="+id);
     var response = await http.get(urli);
     String dff = response.body.toString();
-
+    print("hjk"+dff);
     setState(() {
-      _langData = jsonDecode(dff);
-      _searchedLangData = _langData[0];
+      _langData = jsonDecode(dff)[0];
+      _searchedLangData = jsonDecode(dff)[0];
     });
-    return response;
   }
 
   String imgprofile = "";
