@@ -338,27 +338,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     setState(() {
       videoope = !videoope;
       if (vid){
-        videoope = vid;
-      }
-      if (!videoope) {
-        controller.player.pause();
-        if (musaftervid == vidaftermus) {
-          playpause();
-        } else {
-          playmusa(_langData[0], true);
-        }
-        AudioService.seekTo(controller.player.state.position);
-        _toogleAnimky();
-      } else {
         AudioService.pause();
-        if (musaftervid == vidaftermus) {
-          playpause();
+        videoope = vid;
+        playVideo(dfg, ds);
+      }else {
+        if (!videoope) {
+          controller.player.pause();
+          if (musaftervid == vidaftermus) {
+            playpause();
+          } else {
+            playmusa(_langData[0], true);
+          }
+          AudioService.seekTo(controller.player.state.position);
           _toogleAnimky();
         } else {
-          _toogleAnimky();
-          playVideo(dfg, ds);
+          AudioService.pause();
+          if (musaftervid == vidaftermus) {
+            playpause();
+            _toogleAnimky();
+          } else {
+            _toogleAnimky();
+            playVideo(dfg, ds);
+          }
+          controller.player.seek(AudioService.playbackState.position);
         }
-        controller.player.seek(AudioService.playbackState.position);
       }
     });
   }
@@ -571,6 +574,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       showsearch = false;
     });
   }
+  bool _isBottomSheetOpen = false;
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -580,486 +584,591 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _showModalSheet() {
-    Size size = MediaQuery
-        .of(context)
-        .size;
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (builder) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                setnewState = setState;
-                return StreamBuilder(
-                    stream: AudioService.positionStream,
-                    builder: (context, snapshot) {
-                      return Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Container(
-                              color: const Color.fromARGB(255, 15, 15, 16),),
-                            Image.network(
-                              imgmus, // URL вашей фоновой картинки
-                              fit: BoxFit.cover,
-                            ),
-                            Container(
-                              color: Colors.black.withOpacity(
-                                  0.5), // Контейнер для применения размытия
-                            ),
-                            BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                color: Colors.black.withOpacity(
-                                    0), // Контейнер для применения размытия
-                              ),
-                              blendMode: BlendMode.srcATop,
-                            ),
+    if (!_isBottomSheetOpen) { // Проверяем, открыт ли BottomSheet
+      _isBottomSheetOpen = true;
+      Size size = MediaQuery
+          .of(context)
+          .size;
+      showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (builder) {
+            return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  setnewState = setState;
 
-                            Container(
-                                height: size.height,
-                                child: Stack(children: [
-                                  Column(children: [
-                                    AnimatedOpacity(opacity: videoopacity,
-                                        duration: Duration(milliseconds: 400),
-                                        child: Container(
-                                          margin: EdgeInsets.only(top: 60),
-                                          child: AspectRatio(
-                                            aspectRatio: 16 / 9,
-                                            child: MaterialDesktopVideoControlsTheme(
-                                              normal: MaterialDesktopVideoControlsThemeData(
+                  return StreamBuilder(
+                      stream: AudioService.positionStream,
+                      builder: (context, snapshot) {
+                        return GestureDetector(
+                            onDoubleTapDown: (details) =>
+                                _onDoubleTap(details, context),
+                            child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Container(
+                                    color: const Color.fromARGB(
+                                        255, 15, 15, 16),),
+                                  Image.network(
+                                    imgmus, // URL вашей фоновой картинки
+                                    fit: BoxFit.cover,
+                                  ),
+                                  Container(
+                                    color: Colors.black.withOpacity(
+                                        0.5), // Контейнер для применения размытия
+                                  ),
+                                  BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                        sigmaX: 10, sigmaY: 10),
+                                    child: Container(
+                                      color: Colors.black.withOpacity(
+                                          0), // Контейнер для применения размытия
+                                    ),
+                                    blendMode: BlendMode.srcATop,
+                                  ),
 
-                                                // Modify theme options:
-                                                seekBarThumbColor: Colors.blue,
-                                                seekBarPositionColor: Colors
-                                                    .blue,
-                                                toggleFullscreenOnDoublePress: false,
-                                              ),
-                                              fullscreen: const MaterialDesktopVideoControlsThemeData(
-                                                seekBarThumbColor: Colors.blue,
-                                                topButtonBarMargin: EdgeInsets
-                                                    .only(top: 20, left: 30),
-                                                topButtonBar: [Text("blast!",
-                                                  style: TextStyle(
-                                                    fontSize: 40,
-                                                    fontFamily: 'Montserrat',
-                                                    fontWeight: FontWeight.w900,
-                                                    color: Colors.white,
-                                                  ),)
-                                                ],
-                                                seekBarPositionColor: Colors
-                                                    .blue,),
-                                              child: Video(
-                                                controller: controller,
-                                              ),
-                                            ),
-                                          ),)),
-                                    Row(children: [
-                                      AnimatedOpacity(opacity: opacityi2,
-                                          duration: Duration(seconds: 0),
-                                          child: AnimatedContainer(
-                                              alignment: Alignment.centerLeft,
-                                              margin: EdgeInsets.only(
-                                                  left: 20, right: 20, top: 20),
-                                              height: 80,
-                                              width: 80,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.rectangle,
-                                                borderRadius: BorderRadius
-                                                    .circular(8),
-                                              ),
-                                              clipBehavior: Clip
-                                                  .antiAliasWithSaveLayer,
+                                  Container(
+                                      height: size.height,
+                                      child: Stack(children: [
+                                        Column(children: [
+                                          AnimatedOpacity(opacity: videoopacity,
                                               duration: Duration(
-                                                  milliseconds: 0),
-                                              child: AspectRatio(
-                                                  aspectRatio: 1,
-                                                  // Сохранение пропорций 1:1
-                                                  child: Image.network(
-                                                    imgmus,
-                                                    height: imgwh, width: imgwh,
-                                                    fit: BoxFit
-                                                        .contain, // Изображ
-                                                  )))),
-                                      AnimatedOpacity(opacity: videoopacity,
-                                          duration: Duration(milliseconds: 400),
-                                          child: AnimatedContainer(
-                                            margin: EdgeInsets.only(top: 20),
-                                            transform: Matrix4.translation(
-                                                vector.Vector3(
-                                                    0, squareScaleB, 0)),
-                                            duration: Duration(
-                                                milliseconds: 400),
-                                            child:
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment
-                                                  .start,
-                                              children: [Text(namemus,
-                                                textAlign: TextAlign.start,
-                                                overflow: TextOverflow.fade,
-                                                maxLines: 1,
-                                                style: TextStyle(
-                                                    fontSize: 30,
-                                                    fontFamily: 'Montserrat',
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Color.fromARGB(
-                                                        255, 246, 244, 244)
-                                                ),),
-                                                Text(ispolmus,
-                                                  overflow: TextOverflow.fade,
-                                                  maxLines: 1,
-                                                  textAlign: TextAlign.start,
-                                                  style: TextStyle(
-                                                      fontSize: 24,
-                                                      fontFamily: 'Montserrat',
-                                                      fontWeight: FontWeight
-                                                          .w300,
-                                                      color: Color.fromARGB(
-                                                          255, 246, 244, 244)
-                                                  ),)
-                                              ],),))
+                                                  milliseconds: 400),
+                                              child: Container(
+                                                margin: EdgeInsets.only(
+                                                    top: 60),
+                                                child: AspectRatio(
+                                                  aspectRatio: 16 / 9,
+                                                  child: MaterialDesktopVideoControlsTheme(
+                                                    normal: MaterialDesktopVideoControlsThemeData(
 
-                                    ],),
-                                  ]), Column(children: [
-                                    AspectRatio(
-                                        aspectRatio: 1,
-                                        // Сохранение пропорций 1:1
-                                        child: AnimatedOpacity(
-                                            opacity: opacityi1,
-                                            duration: Duration(seconds: 0),
-                                            child: AnimatedBuilder(
-                                                animation: _animation,
-                                                builder: (context, child) {
-                                                  return Align(
-                                                      alignment: _animation
-                                                          .value,
-                                                      child:
-                                                      AnimatedContainer(
-                                                          margin: EdgeInsets
-                                                              .only(left: 30,
-                                                              right: 30,
-                                                              top: dsds2),
+                                                      // Modify theme options:
+                                                      seekBarThumbColor: Colors
+                                                          .blue,
+                                                      seekBarPositionColor: Colors
+                                                          .blue,
+                                                      toggleFullscreenOnDoublePress: false,
+                                                    ),
+                                                    fullscreen: const MaterialDesktopVideoControlsThemeData(
+                                                      seekBarThumbColor: Colors
+                                                          .blue,
+                                                      topButtonBarMargin: EdgeInsets
+                                                          .only(
+                                                          top: 20, left: 30),
+                                                      topButtonBar: [
+                                                        Text("blast!",
+                                                          style: TextStyle(
+                                                            fontSize: 40,
+                                                            fontFamily: 'Montserrat',
+                                                            fontWeight: FontWeight
+                                                                .w900,
+                                                            color: Colors.white,
+                                                          ),)
+                                                      ],
+                                                      seekBarPositionColor: Colors
+                                                          .blue,),
+                                                    child: Video(
+                                                      controller: controller,
+                                                    ),
+                                                  ),
+                                                ),)),
+                                          Row(children: [
+                                            AnimatedOpacity(opacity: opacityi2,
+                                                duration: Duration(seconds: 0),
+                                                child: AnimatedContainer(
+                                                    alignment: Alignment
+                                                        .centerLeft,
+                                                    margin: EdgeInsets.only(
+                                                        left: 20,
+                                                        right: 20,
+                                                        top: 20),
+                                                    height: 80,
+                                                    width: 80,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.rectangle,
+                                                      borderRadius: BorderRadius
+                                                          .circular(8),
+                                                    ),
+                                                    clipBehavior: Clip
+                                                        .antiAliasWithSaveLayer,
+                                                    duration: Duration(
+                                                        milliseconds: 0),
+                                                    child: AspectRatio(
+                                                        aspectRatio: 1,
+                                                        // Сохранение пропорций 1:1
+                                                        child: Image.network(
+                                                          imgmus,
                                                           height: imgwh,
                                                           width: imgwh,
-                                                          decoration: BoxDecoration(
-                                                            shape: BoxShape
-                                                                .rectangle,
-                                                            borderRadius: BorderRadius
-                                                                .circular(dsds),
-                                                          ),
+                                                          fit: BoxFit
+                                                              .contain, // Изображ
+                                                        )))),
+                                            AnimatedOpacity(
+                                                opacity: videoopacity,
+                                                duration: Duration(
+                                                    milliseconds: 400),
+                                                child: AnimatedContainer(
+                                                  margin: EdgeInsets.only(
+                                                      top: 20),
+                                                  transform: Matrix4
+                                                      .translation(
+                                                      vector.Vector3(
+                                                          0, squareScaleB, 0)),
+                                                  duration: Duration(
+                                                      milliseconds: 400),
+                                                  child:
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment
+                                                        .start,
+                                                    children: [Text(namemus,
+                                                      textAlign: TextAlign
+                                                          .start,
+                                                      overflow: TextOverflow
+                                                          .fade,
+                                                      maxLines: 1,
+                                                      style: TextStyle(
+                                                          fontSize: 30,
+                                                          fontFamily: 'Montserrat',
+                                                          fontWeight: FontWeight
+                                                              .w500,
+                                                          color: Color.fromARGB(
+                                                              255, 246, 244,
+                                                              244)
+                                                      ),),
+                                                      Text(ispolmus,
+                                                        overflow: TextOverflow
+                                                            .fade,
+                                                        maxLines: 1,
+                                                        textAlign: TextAlign
+                                                            .start,
+                                                        style: TextStyle(
+                                                            fontSize: 24,
+                                                            fontFamily: 'Montserrat',
+                                                            fontWeight: FontWeight
+                                                                .w300,
+                                                            color: Color
+                                                                .fromARGB(
+                                                                255, 246, 244,
+                                                                244)
+                                                        ),)
+                                                    ],),))
 
-                                                          clipBehavior: Clip
-                                                              .hardEdge,
-                                                          duration: Duration(
-                                                              milliseconds: 400),
-                                                          child: AspectRatio(
-                                                              aspectRatio: 1,
-                                                              // Сохранение пропорций 1:1
-                                                              child: Image
-                                                                  .network(
-                                                                imgmus,
+                                          ],),
+                                        ]), Column(children: [
+                                          AspectRatio(
+                                              aspectRatio: 1,
+                                              // Сохранение пропорций 1:1
+                                              child: AnimatedOpacity(
+                                                  opacity: opacityi1,
+                                                  duration: Duration(
+                                                      seconds: 0),
+                                                  child: AnimatedBuilder(
+                                                      animation: _animation,
+                                                      builder: (context,
+                                                          child) {
+                                                        return Align(
+                                                            alignment: _animation
+                                                                .value,
+                                                            child:
+                                                            AnimatedContainer(
+                                                                margin: EdgeInsets
+                                                                    .only(
+                                                                    left: 30,
+                                                                    right: 30,
+                                                                    top: dsds2),
                                                                 height: imgwh,
                                                                 width: imgwh,
-                                                                fit: BoxFit
-                                                                    .cover, // Изображ
-                                                              ))));
-                                                }))),
-                                    AnimatedOpacity(opacity: opacity,
-                                        duration: Duration(milliseconds: 400),
-                                        onEnd: () {
-                                          setState(() {
-                                            if (videoope) {
-                                              opacityi1 = 0;
-                                              opacityi2 = 1;
-                                            }
-                                          });
-                                        },
-                                        child: AnimatedContainer(
-                                            duration: Duration(
-                                                milliseconds: 400),
-                                            transform: Matrix4.translation(
-                                                vector.Vector3(
-                                                    0, squareScaleA, 0)),
-                                            child: Text(namemus,
-                                              textAlign: TextAlign.center,
-                                              overflow: TextOverflow.fade,
-                                              maxLines: 1,
-                                              style: TextStyle(
-                                                  fontSize: 30,
-                                                  fontFamily: 'Montserrat',
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Color.fromARGB(
-                                                      255, 246, 244, 244)
-                                              ),))),
-                                    AnimatedOpacity(opacity: opacity,
-                                        duration: Duration(milliseconds: 400),
-                                        child: AnimatedContainer(
-                                            duration: Duration(
-                                                milliseconds: 400),
-                                            transform: Matrix4.translation(
-                                                vector.Vector3(
-                                                    0, squareScaleA, 0)),
-                                            child: Text(ispolmus,
-                                              overflow: TextOverflow.fade,
-                                              maxLines: 1,
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                  fontSize: 24,
-                                                  fontFamily: 'Montserrat',
-                                                  fontWeight: FontWeight.w300,
-                                                  color: Color.fromARGB(
-                                                      255, 246, 244, 244)
-                                              ),))),
-                                    AnimatedOpacity(opacity: opacity,
-                                        duration: Duration(milliseconds: 400),
-                                        child: AnimatedContainer(
-                                            duration: Duration(
-                                                milliseconds: 400),
-                                            transform: Matrix4.translation(
-                                                vector.Vector3(
-                                                    0, squareScaleA, 0)),
-                                            child: Padding(
-                                                padding: EdgeInsets.only(
-                                                    top: 16,
-                                                    left: 22,
-                                                    right: 22),
-                                                child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment
-                                                      .spaceBetween,
-                                                  children: [
-                                                    Text(_formatDuration(
-                                                        Duration(
-                                                            milliseconds: _currentPosition
-                                                                .toInt())),
-                                                      style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontFamily: 'Montserrat',
-                                                          fontWeight: FontWeight
-                                                              .w400,
-                                                          color: Color.fromARGB(
-                                                              255, 246, 244,
-                                                              244)
-                                                      ),),
-                                                    Text(_formatDuration(
-                                                        Duration(
-                                                            milliseconds: _totalDuration
-                                                                .toInt())),
-                                                      style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontFamily: 'Montserrat',
-                                                          fontWeight: FontWeight
-                                                              .w400,
-                                                          color: Color.fromARGB(
-                                                              255, 246, 244,
-                                                              244)
-                                                      ),),
-                                                  ],)))),
-                                    SizedBox(height: 4,),
-                                    AnimatedOpacity(opacity: opacity,
-                                        duration: Duration(milliseconds: 400),
-                                        child: AnimatedContainer(
-                                            duration: Duration(
-                                                milliseconds: 400),
-                                            transform: Matrix4.translation(
-                                                vector.Vector3(
-                                                    0, squareScaleA, 0)),
-                                            child: SizedBox(
-                                                height: 8, child: SliderTheme(
-                                              data: SliderTheme.of(context)
-                                                  .copyWith(
-                                                trackHeight: 8.0,
-                                                tickMarkShape: RoundSliderTickMarkShape(
-                                                    tickMarkRadius: 24),
-                                                thumbShape: SliderComponentShape
-                                                    .noThumb,
-                                                overlayShape: RoundSliderOverlayShape(
-                                                    overlayRadius: 24.0),
-                                                activeTrackColor: Colors.blue,
-                                                inactiveTrackColor: Colors.blue
-                                                    .withOpacity(0.3),
-                                                overlayColor: Colors.blue
-                                                    .withOpacity(0.0),
-                                                trackShape: RoundedRectSliderTrackShape(),
-                                              ),
-                                              child: StreamBuilder(
-                                                stream: AudioService
-                                                    .positionStream,
-                                                builder: (context, snapshot) {
-                                                  if (snapshot.hasData &&
-                                                      !snapshot.hasError &&
-                                                      _totalDuration > 0) {
-                                                    final position = snapshot
-                                                        .data as Duration;
-                                                    return Slider(
-                                                      value: _currentPosition,
-                                                      max: _totalDuration,
-                                                      onChanged: (value) {
-                      if(devicecon) {
-                        Duration jda = Duration(milliseconds: value.toInt());
-                        List<dynamic> sdc = [
-                          {
-                            "type": "media",
-                            "what": "seekto",
-                            "timecurrent": jda.inSeconds,
-                            "iddevice": "2"
-                          }
-                        ];
-                        String jsonString = jsonEncode(sdc[0]);
-                        channeldev.sink.add(jsonString);
-                      }else {
-                        AudioService.seekTo(
-                            Duration(
-                                milliseconds: value
-                                    .toInt()));
-                      }
-                                                      },
-                                                    );
-                                                  } else {
-                                                    return Slider(
-                                                      value: 0,
-                                                      max: _totalDuration,
-                                                      onChanged: (value) {
-                                                        AudioService.seekTo(
-                                                            Duration(
-                                                                milliseconds: value
-                                                                    .toInt()));
-                                                      },
-                                                    );
-                                                  }
-                                                },
-                                              ),)))),
-                                    SizedBox(height: 22,),
-                                    AnimatedContainer(
-                                        duration: Duration(milliseconds: 400),
-                                        transform: Matrix4.translation(
-                                            vector.Vector3(0, squareScaleA, 0)),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment
-                                              .spaceAround,
-                                          crossAxisAlignment: CrossAxisAlignment
-                                              .center,
-                                          children: [
-                                            SizedBox(width: 50,
-                                                height: 50,
-                                                child: IconButton(
-                                                    onPressed: () {
+                                                                decoration: BoxDecoration(
+                                                                  shape: BoxShape
+                                                                      .rectangle,
+                                                                  borderRadius: BorderRadius
+                                                                      .circular(
+                                                                      dsds),
+                                                                ),
 
-                                                    }, icon: Image(
-                                                    color: Color.fromARGB(
-                                                        255, 255, 255, 255),
-                                                    image: AssetImage(
-                                                        'assets/images/unloveno.png'),
-                                                    width: 100
-                                                ))),
-                                            SizedBox(width: 50,
-                                                height: 50,
-                                                child: IconButton(
-                                                    onPressed: () {},
-                                                    icon: Image(
+                                                                clipBehavior: Clip
+                                                                    .hardEdge,
+                                                                duration: Duration(
+                                                                    milliseconds: 400),
+                                                                child: AspectRatio(
+                                                                    aspectRatio: 1,
+                                                                    // Сохранение пропорций 1:1
+                                                                    child: Image
+                                                                        .network(
+                                                                      imgmus,
+                                                                      height: imgwh,
+                                                                      width: imgwh,
+                                                                      fit: BoxFit
+                                                                          .cover, // Изображ
+                                                                    ))));
+                                                      }))),
+                                          AnimatedOpacity(opacity: opacity,
+                                              duration: Duration(
+                                                  milliseconds: 400),
+                                              onEnd: () {
+                                                setState(() {
+                                                  if (videoope) {
+                                                    opacityi1 = 0;
+                                                    opacityi2 = 1;
+                                                  }
+                                                });
+                                              },
+                                              child: AnimatedContainer(
+                                                  duration: Duration(
+                                                      milliseconds: 400),
+                                                  transform: Matrix4
+                                                      .translation(
+                                                      vector.Vector3(
+                                                          0, squareScaleA, 0)),
+                                                  child: Text(namemus,
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.fade,
+                                                    maxLines: 1,
+                                                    style: TextStyle(
+                                                        fontSize: 30,
+                                                        fontFamily: 'Montserrat',
+                                                        fontWeight: FontWeight
+                                                            .w500,
                                                         color: Color.fromARGB(
-                                                            255, 255, 255, 255),
-                                                        image: AssetImage(
-                                                            'assets/images/reveuws.png'),
-                                                        width: 100
-                                                    ))),
-                                            SizedBox(height: 50,
-                                                width: 50,
-                                                child: IconButton(
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        playpause();
-                                                      });
-                                                    },
-                                                    padding: EdgeInsets.zero,
-                                                    icon: Icon(
-                                                      iconpla.icon, size: 50,
-                                                      color: Colors.white,))),
-                                            SizedBox(width: 50,
-                                                height: 50,
-                                                child: IconButton(
-                                                    onPressed: () {},
-                                                    icon: Image(
-                                                      color: Color.fromARGB(
-                                                          255, 255, 255, 255),
-                                                      image: AssetImage(
-                                                          'assets/images/nexts.png'),
-                                                      width: 120,
-                                                      height: 120,
-                                                    ))),
-                                            SizedBox(width: 50,
-                                                height: 50,
-                                                child: IconButton(
-                                                    onPressed: () {installmusic(_langData[0]);},
-                                                    icon: Image(
+                                                            255, 246, 244, 244)
+                                                    ),))),
+                                          AnimatedOpacity(opacity: opacity,
+                                              duration: Duration(
+                                                  milliseconds: 400),
+                                              child: AnimatedContainer(
+                                                  duration: Duration(
+                                                      milliseconds: 400),
+                                                  transform: Matrix4
+                                                      .translation(
+                                                      vector.Vector3(
+                                                          0, squareScaleA, 0)),
+                                                  child: Text(ispolmus,
+                                                    overflow: TextOverflow.fade,
+                                                    maxLines: 1,
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontSize: 24,
+                                                        fontFamily: 'Montserrat',
+                                                        fontWeight: FontWeight
+                                                            .w300,
                                                         color: Color.fromARGB(
-                                                            255, 255, 255, 255),
-                                                        image: AssetImage(
-                                                            'assets/images/loveno.png'),
-                                                        width: 100
-                                                    ))),
-                                          ],)),
-                                    SizedBox(height: 22,),
-                                    AnimatedContainer(
-                                        duration: Duration(milliseconds: 400),
-                                        transform: Matrix4.translation(
-                                            vector.Vector3(0, squareScaleA, 0)),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment
-                                              .spaceAround,
-                                          crossAxisAlignment: CrossAxisAlignment
-                                              .center,
-                                          children: [
-                                            SizedBox(width: 50,
-                                                height: 50,
-                                                child: IconButton(
-                                                    onPressed: () {
-                                                      connectToWebSocket();
-                                                    },
-                                                    padding: EdgeInsets.zero,
-                                                    icon: Icon(
-                                                      Icons.devices_rounded,
-                                                      size: 50,
-                                                      color: Colors.white,))),
-                                            SizedBox(width: 50,
-                                                height: 50,
-                                                child: IconButton(
-                                                    onPressed: () {},
-                                                    padding: EdgeInsets.zero,
-                                                    icon: Icon(
-                                                      Icons.queue_music_rounded,
-                                                      size: 50,
-                                                      color: Colors.white,))),
-                                            SizedBox(height: 50,
-                                                width: 50,
-                                                child: IconButton(
-                                                    onPressed: () {},
-                                                    padding: EdgeInsets.zero,
-                                                    icon: Icon(Icons
-                                                        .playlist_add_rounded,
-                                                      size: 50,
-                                                      color: Colors.white,))),
-                                            SizedBox(width: 50,
-                                                height: 50,
-                                                child: IconButton(
-                                                    onPressed: () {setState(() {
-                                                      _setvi(shazid, true, false);
-                                                    });},
-                                                    padding: EdgeInsets.zero,
-                                                    icon: Image(
-                                                      color: Color.fromARGB(
-                                                          255, 255, 255, 255),
-                                                      image: AssetImage(
-                                                          'assets/images/video.png'),
-                                                      width: 120,
-                                                      height: 120,
-                                                    ))),
-                                          ],))
-                                  ],)
-                                ],))
-                          ]);
-                    });
-              });
-        }
-    );
+                                                            255, 246, 244, 244)
+                                                    ),))),
+                                          AnimatedOpacity(opacity: opacity,
+                                              duration: Duration(
+                                                  milliseconds: 400),
+                                              child: AnimatedContainer(
+                                                  duration: Duration(
+                                                      milliseconds: 400),
+                                                  transform: Matrix4
+                                                      .translation(
+                                                      vector.Vector3(
+                                                          0, squareScaleA, 0)),
+                                                  child: Padding(
+                                                      padding: EdgeInsets.only(
+                                                          top: 16,
+                                                          left: 22,
+                                                          right: 22),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment
+                                                            .spaceBetween,
+                                                        children: [
+                                                          Text(_formatDuration(
+                                                              Duration(
+                                                                  milliseconds: _currentPosition
+                                                                      .toInt())),
+                                                            style: TextStyle(
+                                                                fontSize: 16,
+                                                                fontFamily: 'Montserrat',
+                                                                fontWeight: FontWeight
+                                                                    .w400,
+                                                                color: Color
+                                                                    .fromARGB(
+                                                                    255, 246,
+                                                                    244,
+                                                                    244)
+                                                            ),),
+                                                          Text(_formatDuration(
+                                                              Duration(
+                                                                  milliseconds: _totalDuration
+                                                                      .toInt())),
+                                                            style: TextStyle(
+                                                                fontSize: 16,
+                                                                fontFamily: 'Montserrat',
+                                                                fontWeight: FontWeight
+                                                                    .w400,
+                                                                color: Color
+                                                                    .fromARGB(
+                                                                    255, 246,
+                                                                    244,
+                                                                    244)
+                                                            ),),
+                                                        ],)))),
+                                          SizedBox(height: 4,),
+                                          AnimatedOpacity(opacity: opacity,
+                                              duration: Duration(
+                                                  milliseconds: 400),
+                                              child: AnimatedContainer(
+                                                  duration: Duration(
+                                                      milliseconds: 400),
+                                                  transform: Matrix4
+                                                      .translation(
+                                                      vector.Vector3(
+                                                          0, squareScaleA, 0)),
+                                                  child: SizedBox(
+                                                      height: 8,
+                                                      child: SliderTheme(
+                                                        data: SliderTheme.of(
+                                                            context)
+                                                            .copyWith(
+                                                          trackHeight: 8.0,
+                                                          tickMarkShape: RoundSliderTickMarkShape(
+                                                              tickMarkRadius: 24),
+                                                          thumbShape: SliderComponentShape
+                                                              .noThumb,
+                                                          overlayShape: RoundSliderOverlayShape(
+                                                              overlayRadius: 24.0),
+                                                          activeTrackColor: Colors
+                                                              .blue,
+                                                          inactiveTrackColor: Colors
+                                                              .blue
+                                                              .withOpacity(0.3),
+                                                          overlayColor: Colors
+                                                              .blue
+                                                              .withOpacity(0.0),
+                                                          trackShape: RoundedRectSliderTrackShape(),
+                                                        ),
+                                                        child: StreamBuilder(
+                                                          stream: AudioService
+                                                              .positionStream,
+                                                          builder: (context,
+                                                              snapshot) {
+                                                            if (snapshot
+                                                                .hasData &&
+                                                                !snapshot
+                                                                    .hasError &&
+                                                                _totalDuration >
+                                                                    0) {
+                                                              final position = snapshot
+                                                                  .data as Duration;
+                                                              return Slider(
+                                                                value: _currentPosition,
+                                                                max: _totalDuration,
+                                                                onChanged: (
+                                                                    value) {
+                                                                  if (devicecon) {
+                                                                    Duration jda = Duration(
+                                                                        milliseconds: value
+                                                                            .toInt());
+                                                                    List<
+                                                                        dynamic> sdc = [
+                                                                      {
+                                                                        "type": "media",
+                                                                        "what": "seekto",
+                                                                        "timecurrent": jda
+                                                                            .inSeconds,
+                                                                        "iddevice": "2"
+                                                                      }
+                                                                    ];
+                                                                    String jsonString = jsonEncode(
+                                                                        sdc[0]);
+                                                                    channeldev
+                                                                        .sink
+                                                                        .add(
+                                                                        jsonString);
+                                                                  } else {
+                                                                    AudioService
+                                                                        .seekTo(
+                                                                        Duration(
+                                                                            milliseconds: value
+                                                                                .toInt()));
+                                                                  }
+                                                                },
+                                                              );
+                                                            } else {
+                                                              return Slider(
+                                                                value: 0,
+                                                                max: _totalDuration,
+                                                                onChanged: (
+                                                                    value) {
+                                                                  AudioService
+                                                                      .seekTo(
+                                                                      Duration(
+                                                                          milliseconds: value
+                                                                              .toInt()));
+                                                                },
+                                                              );
+                                                            }
+                                                          },
+                                                        ),)))),
+                                          SizedBox(height: 22,),
+                                          AnimatedContainer(
+                                              duration: Duration(
+                                                  milliseconds: 400),
+                                              transform: Matrix4.translation(
+                                                  vector.Vector3(
+                                                      0, squareScaleA, 0)),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment
+                                                    .spaceAround,
+                                                crossAxisAlignment: CrossAxisAlignment
+                                                    .center,
+                                                children: [
+                                                  SizedBox(width: 50,
+                                                      height: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {
+
+                                                          }, icon: Image(
+                                                          color: Color.fromARGB(
+                                                              255, 255, 255,
+                                                              255),
+                                                          image: AssetImage(
+                                                              'assets/images/unloveno.png'),
+                                                          width: 100
+                                                      ))),
+                                                  SizedBox(width: 50,
+                                                      height: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {},
+                                                          icon: Image(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                  255, 255, 255,
+                                                                  255),
+                                                              image: AssetImage(
+                                                                  'assets/images/reveuws.png'),
+                                                              width: 100
+                                                          ))),
+                                                  SizedBox(height: 50,
+                                                      width: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              playpause();
+                                                            });
+                                                          },
+                                                          padding: EdgeInsets
+                                                              .zero,
+                                                          icon: Icon(
+                                                            iconpla.icon,
+                                                            size: 50,
+                                                            color: Colors
+                                                                .white,))),
+                                                  SizedBox(width: 50,
+                                                      height: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {},
+                                                          icon: Image(
+                                                            color: Color
+                                                                .fromARGB(
+                                                                255, 255, 255,
+                                                                255),
+                                                            image: AssetImage(
+                                                                'assets/images/nexts.png'),
+                                                            width: 120,
+                                                            height: 120,
+                                                          ))),
+                                                  SizedBox(width: 50,
+                                                      height: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {
+                                                            installmusic(
+                                                                _langData[0]);
+                                                          },
+                                                          icon: Image(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                  255, 255, 255,
+                                                                  255),
+                                                              image: AssetImage(
+                                                                  'assets/images/loveno.png'),
+                                                              width: 100
+                                                          ))),
+                                                ],)),
+                                          SizedBox(height: 22,),
+                                          AnimatedContainer(
+                                              duration: Duration(
+                                                  milliseconds: 400),
+                                              transform: Matrix4.translation(
+                                                  vector.Vector3(
+                                                      0, squareScaleA, 0)),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment
+                                                    .spaceAround,
+                                                crossAxisAlignment: CrossAxisAlignment
+                                                    .center,
+                                                children: [
+                                                  SizedBox(width: 50,
+                                                      height: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {
+                                                            connectToWebSocket();
+                                                          },
+                                                          padding: EdgeInsets
+                                                              .zero,
+                                                          icon: Icon(
+                                                            Icons
+                                                                .devices_rounded,
+                                                            size: 50,
+                                                            color: Colors
+                                                                .white,))),
+                                                  SizedBox(width: 50,
+                                                      height: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {},
+                                                          padding: EdgeInsets
+                                                              .zero,
+                                                          icon: Icon(
+                                                            Icons
+                                                                .queue_music_rounded,
+                                                            size: 50,
+                                                            color: Colors
+                                                                .white,))),
+                                                  SizedBox(height: 50,
+                                                      width: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {},
+                                                          padding: EdgeInsets
+                                                              .zero,
+                                                          icon: Icon(Icons
+                                                              .playlist_add_rounded,
+                                                            size: 50,
+                                                            color: Colors
+                                                                .white,))),
+                                                  SizedBox(width: 50,
+                                                      height: 50,
+                                                      child: IconButton(
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              _setvi(
+                                                                  shazid, true,
+                                                                  false);
+                                                            });
+                                                          },
+                                                          padding: EdgeInsets
+                                                              .zero,
+                                                          icon: Image(
+                                                            color: Color
+                                                                .fromARGB(
+                                                                255, 255, 255,
+                                                                255),
+                                                            image: AssetImage(
+                                                                'assets/images/video.png'),
+                                                            width: 120,
+                                                            height: 120,
+                                                          ))),
+                                                ],))
+                                        ],)
+                                      ],))
+                                ]));
+                      });
+                });
+          }
+      ).whenComplete(() {
+        _isBottomSheetOpen = false; // Когда BottomSheet закрывается, сбрасываем флаг
+      });
+    }
   }
 
   var iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
@@ -1752,6 +1861,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     http.Response response = await http.get(Uri.parse("https://kompot.site/getdeviceblast?createip="+_localIp!+"&tokeni="+tr!+"&name="+_deviceName+"&os="+_os));
 
   }
+
+  void showtext(){
+    if(!videoope){
+
+    }
+  }
+  void _onDoubleTap(TapDownDetails details, BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final tapPosition = details.globalPosition.dx;
+
+    // Если двойное нажатие произошло на левом краю экрана (первые 10% экрана)
+    if (tapPosition < screenWidth * 0.2) {
+      _skipBackward();
+    }
+    // Если двойное нажатие произошло на правом краю экрана (последние 10% экрана)
+    else if (tapPosition > screenWidth * 0.8) {
+      _skipForward();
+    }
+  }
+
+  void _skipForward() async {
+    final newPosition =  Duration(milliseconds: _currentPosition.toInt()) + Duration(seconds: 5);
+    AudioService.seekTo(newPosition);
+  }
+
+  void _skipBackward() async {
+    final newPosition = Duration(milliseconds: _currentPosition.toInt()) - Duration(seconds: 5);
+    if (newPosition < Duration.zero) {
+      AudioService.seekTo(Duration.zero); // Предотвращение отрицательной позиции
+    } else {
+      AudioService.seekTo(newPosition);
+    }
+  }
+
+
 
 
   Future<void> installmusic(dynamic mus) async {

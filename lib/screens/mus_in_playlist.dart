@@ -1,17 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 
 import 'package:blast/screens/login.dart';
-import 'package:blast/screens/search_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -22,10 +19,13 @@ const kBgColor = Color(0xFF1604E2);
 class MusInPlaylistScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
   final String onCallbacki;
+  final String name;
+  final String img;
+  final bool imgnd;
   final VoidCallback hie;
-  MusInPlaylistScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie}) : super(key: key);
+  MusInPlaylistScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.name, required this.img, required this.imgnd}) : super(key: key);
   @override
-  State<MusInPlaylistScreen> createState() => MusInPlaylistScreenState((dynamic input) {onCallback(input);},onCallbacki, hie);
+  State<MusInPlaylistScreen> createState() => MusInPlaylistScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, name, img, imgnd);
 
 
 
@@ -43,7 +43,11 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   }
   late  Function(dynamic) onCallback;
   late String palylsitid;
+  late String palylsitname;
+  late String palylsitimg;
+  late bool palylsitimgnd;
   late VoidCallback showsearch;
+
   List _langData = [
     {
       'id': '1',
@@ -60,10 +64,13 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   ];
   var player;
 
-  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg){
+  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad){
     onCallback = onk;
     palylsitid = onki;
     showsearch = fg;
+    palylsitname = erfw;
+    palylsitimg = fdcdsc;
+    palylsitimgnd = fdsfad;
   }
 
   @override
@@ -319,6 +326,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
 
 
   Widget _loadListView() {
+    Size size = MediaQuery.of(context).size;
     return ListView.builder(
       itemCount: _searchedLangData.length+1,
       itemBuilder: (BuildContext context, int idx)
@@ -329,6 +337,37 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
             children: [
               Stack(
                 children: [
+                  AnimatedContainer(
+                      margin: EdgeInsets
+                          .only(
+                          left: 0,
+                          right: 0,
+                          top: 0),
+                      height: size.width,
+                      width: size.width,
+                      decoration: BoxDecoration(
+                        shape: BoxShape
+                            .rectangle,
+                        borderRadius: BorderRadius
+                            .only(
+                            bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20) ),
+                      ),
+
+                      clipBehavior: Clip
+                          .hardEdge,
+                      duration: Duration(
+                          milliseconds: 0),
+                      child: AspectRatio(
+                          aspectRatio: 1,
+                          // Сохранение пропорций 1:1
+                          child: palylsitimgnd ? Image
+                              .network(
+                            palylsitimg,
+                            height: size.width,
+                            width: size.width,
+                            fit: BoxFit
+                                .cover, // Изображ
+                          ) : Image(image: AssetImage(palylsitimg), width: size.width,))),
                   SizedBox(
                     height: 80,width: 220,
                     child: OverflowBox(
@@ -370,10 +409,10 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                       errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
                     )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
                   ],),
-
                 ],),
               Container(margin: EdgeInsets.only(left: 10), child:
-              Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),), Text("Плейлисты",
+              Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),
+                Text(palylsitname,
                 style: TextStyle(
                   fontSize: 30,
                   fontFamily: 'Montserrat',
@@ -478,12 +517,13 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
 
   Future<void> loadmusinplilsr(String id) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     String? ds = prefs.getString("token");
     print("https://kompot.site/getmusfromplaylist?token="+ds!+"&playlst="+id);
     var urli = Uri.parse("https://kompot.site/getmusfromplaylist?token="+ds!+"&playlst="+id);
     var response = await http.get(urli);
     String dff = response.body.toString();
-    print("hjk"+dff);
+    print("hjk"+id);
     setState(() {
       _langData = jsonDecode(dff)[0];
       _searchedLangData = jsonDecode(dff)[0];

@@ -194,16 +194,16 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     super.dispose();
   }
 
-  void _openSearchPage(BuildContext context, String fds) {
-    Navigator.of(context).push(_createSearchRoute(fds));
+  void _openSearchPage(BuildContext context, String fds, String name, String img, bool imgnd) {
+    Navigator.of(context).push(_createSearchRoute(fds, name, img, imgnd));
   }
 
   // Анимация открытия страницы поиска
-  Route _createSearchRoute(String fds) {
+  Route _createSearchRoute(String fds, String name, String img, bool imgnd) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => MusInPlaylistScreen(onCallback: (dynamic input) {
         onCallback(input);
-      }, onCallbacki: fds, hie: showsearch),
+      }, onCallbacki: fds, hie: showsearch, name: name, img: img, imgnd:imgnd),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset(0.0, 0.0);
@@ -256,7 +256,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-                _openSearchPage(context, _searchedLangData[idx-2]['id']);
+                _openSearchPage(context, "-1","История",'assets/images/history.png', false);
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
@@ -304,7 +304,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-                _openSearchPage(context, _searchedLangData[idx-2]['id']);
+                _openSearchPage(context, "0","Мне нравится", 'assets/images/loveplaylist.gif', false);
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
@@ -352,7 +352,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-                _openSearchPage(context, "install");
+                _openSearchPage(context, "install","Скаченное", 'assets/images/installmus.png', false);
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
@@ -400,7 +400,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5)),
               onTap: () async {
-                _openSearchPage(context, _searchedLangData[idx-2]['id']);
+                _openSearchPage(context, _searchedLangData[idx-2]['id'],_searchedLangData[idx-2]['name'], _searchedLangData[idx-2]['img'], true);
               },
               leadingAndTrailingTextStyle: TextStyle(),
               leading: SizedBox(width: 90,
