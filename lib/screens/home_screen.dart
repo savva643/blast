@@ -27,6 +27,7 @@ import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'AudioManager.dart';
 import 'background_task.dart';
+import 'login.dart';
 import 'music_screen.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:web_socket_channel/status.dart' as status;
@@ -55,6 +56,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // Create a [VideoController] to handle video output from [Player].
   late final controller = VideoController(videob);
 
+  late final videoshort = Player();
+
+  // Create a [VideoController] to handle video output from [Player].
+  late final controllershort = VideoController(videoshort);
 
   //videoblock
   bool isplad = false;
@@ -104,6 +109,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   get listok => null;
 
+  double opac = 0;
+
   @override
   void initState() {
     super.initState();
@@ -150,6 +157,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
         }
       });
+    });
+    controllershort.player.stream.playing.listen((bool state) {
+      if(_isBottomSheetOpen){
+        setnewState(() {
+          if (videoope) {
+            opac = 0;
+          }else {
+            if (!state) {
+              opac = 0;
+            } else {
+              opac = 1;
+            }
+          }
+        });
+      }
     });
     controller.player.stream.playing.listen((bool state) {
       setState(() {
@@ -298,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   late Animation<Alignment> _animation;
 
   //block for anim
-  double imgwh = 360;
+  double imgwh = 500;
   double dsds = 20;
   double dsds2 = 60;
   double videoopacity = 0;
@@ -313,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         .of(context)
         .size;
     setState(() {
-      imgwh = videoope ? 80 : 360;
+      imgwh = videoope ? 80 : 500;
       dsds = videoope ? 8 : 20;
       if (size.width <= 640) {
         dsds2 = videoope ? ((size.width / 16) * 9) + 80 : 60;
@@ -498,7 +520,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               });
               return showsearch ? SearchScreen(onCallback: (dynamic input) {
                 getaboutmus(input, false);
-              }, onCallbacki: postRequesty, hie: closeserch) : Container(
+              }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,) : Container(
                   height: size.height, child: IndexedStack(
                 index: pageIndex, // Отображение выбранного экрана
                 children: pages,
@@ -536,7 +558,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(onCallback: (dynamic input) {
         getaboutmus(input, false);
-      }, onCallbacki: postRequesty, hie: closeserch),
+      }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset(0.0, 0.0);
@@ -583,6 +605,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return '$minutes:$seconds';
   }
 
+
+  late BorderRadius borderRadius =  MediaQuery.of(context).size.width >= 800 ? BorderRadius.circular(20) : BorderRadius.circular(0);
   void _showModalSheet() {
     if (!_isBottomSheetOpen) { // Проверяем, открыт ли BottomSheet
       _isBottomSheetOpen = true;
@@ -590,20 +614,29 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           .of(context)
           .size;
       showModalBottomSheet(
+          constraints: BoxConstraints(
+            maxWidth:  100000000,
+          ),
           context: context,
           isScrollControlled: true,
           builder: (builder) {
-            return StatefulBuilder(
+            return Container(width: double.infinity,
+            child: StatefulBuilder(
                 builder: (BuildContext context, StateSetter setState) {
                   setnewState = setState;
+                  double screenWidth = MediaQuery.of(context).size.width;
 
+                  // Determine the border radius based on screen width
+                  BorderRadius borderRadius = screenWidth >= 800
+                      ? BorderRadius.circular(20)
+                      : BorderRadius.circular(0);
                   return StreamBuilder(
                       stream: AudioService.positionStream,
                       builder: (context, snapshot) {
                         return GestureDetector(
                             onDoubleTapDown: (details) =>
-                                _onDoubleTap(details, context),
-                            child: Stack(
+                                _onDoubleTap(details, context), child:
+                        Stack(
                                 fit: StackFit.expand,
                                 children: [
                                   Container(
@@ -626,7 +659,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     ),
                                     blendMode: BlendMode.srcATop,
                                   ),
-
+                                  AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+                                  child: Video(
+                                    fit: BoxFit.cover,
+                                    controls: null,
+                                    controller: controllershort,
+                                  )),),
                                   Container(
                                       height: size.height,
                                       child: Stack(children: [
@@ -635,13 +673,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                               duration: Duration(
                                                   milliseconds: 400),
                                               child: Container(
+
+                                                constraints: BoxConstraints(maxWidth: 800, maxHeight: 450),
                                                 margin: EdgeInsets.only(
                                                     top: 60),
                                                 child: AspectRatio(
                                                   aspectRatio: 16 / 9,
-                                                  child: MaterialDesktopVideoControlsTheme(
+                                                  child: Container(child: MaterialDesktopVideoControlsTheme(
                                                     normal: MaterialDesktopVideoControlsThemeData(
-
                                                       // Modify theme options:
                                                       seekBarThumbColor: Colors
                                                           .blue,
@@ -667,11 +706,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                       ],
                                                       seekBarPositionColor: Colors
                                                           .blue,),
-                                                    child: Video(
+                                                    child:ClipRRect(
+                                                      borderRadius: borderRadius, // Make the border round
+                                                      child: Video(
                                                       controller: controller,
                                                     ),
                                                   ),
-                                                ),)),
+                                                ),)))),
                                           Row(children: [
                                             AnimatedOpacity(opacity: opacityi2,
                                                 duration: Duration(seconds: 0),
@@ -724,7 +765,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                       textAlign: TextAlign
                                                           .start,
                                                       overflow: TextOverflow
-                                                          .fade,
+                                                          .ellipsis,
                                                       maxLines: 1,
                                                       style: TextStyle(
                                                           fontSize: 30,
@@ -737,7 +778,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                       ),),
                                                       Text(ispolmus,
                                                         overflow: TextOverflow
-                                                            .fade,
+                                                            .ellipsis,
                                                         maxLines: 1,
                                                         textAlign: TextAlign
                                                             .start,
@@ -755,7 +796,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                                           ],),
                                         ]), Column(children: [
-                                          AspectRatio(
+                                          Container(
+                                              constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
                                               aspectRatio: 1,
                                               // Сохранение пропорций 1:1
                                               child: AnimatedOpacity(
@@ -771,6 +813,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                                 .value,
                                                             child:
                                                             AnimatedContainer(
+                                                              constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
                                                                 margin: EdgeInsets
                                                                     .only(
                                                                     left: 30,
@@ -801,7 +844,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                                       fit: BoxFit
                                                                           .cover, // Изображ
                                                                     ))));
-                                                      }))),
+                                                      })))),
                                           AnimatedOpacity(opacity: opacity,
                                               duration: Duration(
                                                   milliseconds: 400),
@@ -814,6 +857,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 });
                                               },
                                               child: AnimatedContainer(
+                                                  width: size.width,
                                                   duration: Duration(
                                                       milliseconds: 400),
                                                   transform: Matrix4
@@ -845,6 +889,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                   child: Text(ispolmus,
                                                     overflow: TextOverflow.fade,
                                                     maxLines: 1,
+
                                                     textAlign: TextAlign.center,
                                                     style: TextStyle(
                                                         fontSize: 24,
@@ -1017,12 +1062,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                   SizedBox(width: 50,
                                                       height: 50,
                                                       child: IconButton(
-                                                          onPressed: () {
-
-                                                          }, icon: Image(
-                                                          color: Color.fromARGB(
-                                                              255, 255, 255,
-                                                              255),
+                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                                          onPressed: null,
+                                                          icon: Image(
+                                                          color: Color.fromARGB(255, 123, 123, 124),
                                                           image: AssetImage(
                                                               'assets/images/unloveno.png'),
                                                           width: 100
@@ -1030,12 +1073,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                   SizedBox(width: 50,
                                                       height: 50,
                                                       child: IconButton(
-                                                          onPressed: () {},
+                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                                          onPressed: null,
                                                           icon: Image(
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                  255, 255, 255,
-                                                                  255),
+                                                              color: Color.fromARGB(255, 123, 123, 124),
                                                               image: AssetImage(
                                                                   'assets/images/reveuws.png'),
                                                               width: 100
@@ -1058,12 +1099,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                   SizedBox(width: 50,
                                                       height: 50,
                                                       child: IconButton(
-                                                          onPressed: () {},
+                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                                          onPressed: null,
                                                           icon: Image(
-                                                            color: Color
-                                                                .fromARGB(
-                                                                255, 255, 255,
-                                                                255),
+                                                            color: Color.fromARGB(255, 123, 123, 124),
                                                             image: AssetImage(
                                                                 'assets/images/nexts.png'),
                                                             width: 120,
@@ -1073,8 +1112,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                       height: 50,
                                                       child: IconButton(
                                                           onPressed: () {
-                                                            installmusic(
-                                                                _langData[0]);
+                                                            installmusic(_langData[0]);
                                                           },
                                                           icon: Image(
                                                               color: Color
@@ -1116,45 +1154,40 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                   SizedBox(width: 50,
                                                       height: 50,
                                                       child: IconButton(
-                                                          onPressed: () {},
+                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                                          onPressed: null,
                                                           padding: EdgeInsets
                                                               .zero,
                                                           icon: Icon(
                                                             Icons
                                                                 .queue_music_rounded,
                                                             size: 50,
-                                                            color: Colors
-                                                                .white,))),
+                                                            color: Color.fromARGB(255, 123, 123, 124),))),
                                                   SizedBox(height: 50,
                                                       width: 50,
                                                       child: IconButton(
-                                                          onPressed: () {},
+                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                                          onPressed: null,
                                                           padding: EdgeInsets
                                                               .zero,
                                                           icon: Icon(Icons
                                                               .playlist_add_rounded,
                                                             size: 50,
-                                                            color: Colors
-                                                                .white,))),
+                                                            color: Color.fromARGB(255, 123, 123, 124),))),
                                                   SizedBox(width: 50,
                                                       height: 50,
                                                       child: IconButton(
-                                                          onPressed: () {
+                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                                          onPressed: _langData[0]['vidos'] != "0" ? () {
                                                             setState(() {
-                                                              _setvi(
-                                                                  shazid, true,
-                                                                  false);
+                                                                _setvi(shazid,true, false);
                                                             });
-                                                          },
+                                                          }: null,
                                                           padding: EdgeInsets
                                                               .zero,
                                                           icon: Image(
-                                                            color: Color
-                                                                .fromARGB(
-                                                                255, 255, 255,
-                                                                255),
-                                                            image: AssetImage(
-                                                                'assets/images/video.png'),
+                                                            color: _langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                                            image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
                                                             width: 120,
                                                             height: 120,
                                                           ))),
@@ -1163,7 +1196,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       ],))
                                 ]));
                       });
-                });
+                }));
           }
       ).whenComplete(() {
         _isBottomSheetOpen = false; // Когда BottomSheet закрывается, сбрасываем флаг
@@ -1256,7 +1289,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 _showModalSheet();
                               },
 
-                              leading: Padding(padding: Platform.isWindows || kIsWeb ?  EdgeInsets.only(left: 10, top: 8) :  EdgeInsets.only(left: 10, top: 4),
+                              leading: Padding(padding: kIsWeb ? EdgeInsets.only(left: 10, top: 8) : Platform.isWindows ?  EdgeInsets.only(left: 10, top: 8) :  EdgeInsets.only(left: 10, top: 4),
                                   child: SizedBox(
                                     width: 60,
                                     height: 60,
@@ -1402,13 +1435,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   late List<Widget> pages = [
     _buildNavigator(_playlistNavigatorKey, PlaylistScreen(onCallback: (dynamic input) {
       getaboutmus(input, false);
-    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp,)),
     _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey,onCallback: (dynamic input) {
       getaboutmus(input, false);
-    }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
+    }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp,)),
     _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
       _setvi(input, false, true);
-    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);})),
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, dsad: resetapp,)),
   ];
 
   bool isjemnow = false;
@@ -1486,12 +1519,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
+  void resetapp(){
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreen()),
+          (Route<dynamic> route) => false, // Удаление всех предыдущих маршрутов
+    );
+  }
+
+  void showlogin(){
+    Navigator.push(context, MaterialPageRoute(builder: (context) =>  LoginScreen(resetap: resetapp)));
+  }
 
   @override
   void dispose() {
     _stopServer();
     super.dispose();
     videob.dispose();
+    videoshort.dispose();
   }
   String _jemData = "132";
   Future<void> postRequesty () async {

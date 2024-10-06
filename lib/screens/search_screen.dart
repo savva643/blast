@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 
+import 'package:blast/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import 'login.dart';
+
 
 
 const kBgColor = Color(0xFF1604E2);
@@ -21,9 +24,11 @@ class SearchScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
   final VoidCallback onCallbacki;
   final VoidCallback hie;
-  SearchScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie}) : super(key: key);
+  final VoidCallback showlog;
+  final VoidCallback dasd;
+  SearchScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.dasd}) : super(key: key);
   @override
-  State<SearchScreen> createState() => SearchScreenState((dynamic input) {onCallback(input);},onCallbacki, hie);
+  State<SearchScreen> createState() => SearchScreenState((dynamic input) {onCallback(input);},onCallbacki, hie,showlog,dasd);
 
 
 
@@ -42,6 +47,8 @@ class SearchScreenState extends State<SearchScreen> {
   late  Function(dynamic) onCallback;
   late VoidCallback onCallbacki;
   late VoidCallback closesearch;
+  late VoidCallback showlog;
+  late VoidCallback reseti;
   List _langData = [
     {
       'id': '1',
@@ -58,10 +65,12 @@ class SearchScreenState extends State<SearchScreen> {
   ];
   var player;
 
-  SearchScreenState(Function(dynamic) onk,VoidCallback onki,VoidCallback gf){
+  SearchScreenState(Function(dynamic) onk,VoidCallback onki,VoidCallback gf,VoidCallback sda, VoidCallback gbdfgb){
     onCallback = onk;
     onCallbacki = onki;
     closesearch = gf;
+    showlog = sda;
+    reseti = gbdfgb;
   }
 
   @override
@@ -133,7 +142,7 @@ class SearchScreenState extends State<SearchScreen> {
                             color: Colors.white,
                           ),)), Expanded(child: Container()),
 
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                       imageUrl: imgprofile, // Replace with your image URL
                       imageBuilder: (context, imageProvider) => Container(
                         margin: EdgeInsets.only(right: 3, top: 3),
@@ -229,7 +238,8 @@ bool showls = false;
 
 
   String imgprofile = "";
-
+  String tokenbf = "";
+  bool useri = false;
   Future<void> getpr () async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
@@ -242,7 +252,8 @@ bool showls = false;
 
       setState(() {
         var _langData = jsonDecode(dff);
-
+        tokenbf = ds;
+        useri = true;
         imgprofile = _langData["img_kompot"];
         print("object"+imgprofile);
       });

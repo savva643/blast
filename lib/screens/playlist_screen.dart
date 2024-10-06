@@ -4,6 +4,7 @@ import 'dart:io';
 
 
 import 'package:blast/screens/mus_in_playlist.dart';
+import 'package:blast/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import 'login.dart';
+
 
 
 const kBgColor = Color(0xFF1604E2);
@@ -21,9 +24,11 @@ const kBgColor = Color(0xFF1604E2);
 class PlaylistScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
   final VoidCallback hie;
-  const PlaylistScreen({Key? key, required this.onCallback, required this.hie}) : super(key: key);
+  final VoidCallback showlog;
+  final VoidCallback resdf;
+  const PlaylistScreen({Key? key, required this.onCallback, required this.hie, required this.showlog, required this.resdf}) : super(key: key);
   @override
-  State<PlaylistScreen> createState() => _PlaylistScreenState((dynamic input) {onCallback(input);}, hie);
+  State<PlaylistScreen> createState() => _PlaylistScreenState((dynamic input) {onCallback(input);}, hie,showlog,resdf);
 
 
 
@@ -34,9 +39,13 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late VoidCallback showsearch;
   late Function(dynamic) onCallback;
-  _PlaylistScreenState(Function(dynamic) onk, VoidCallback fg) {
+  late VoidCallback showlog;
+  late VoidCallback reseti;
+  _PlaylistScreenState(Function(dynamic) onk, VoidCallback fg, VoidCallback dawsd, VoidCallback gbdfgb) {
     onCallback = onk;
     showsearch = fg;
+    showlog = dawsd;
+    reseti = gbdfgb;
   }
   List _langData = [
     {
@@ -132,7 +141,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     color: Colors.white,
                   ),)), Expanded(child: Container()),
             Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-            Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+            Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
               imageUrl: imgprofile, // Replace with your image URL
               imageBuilder: (context, imageProvider) => Container(
                 margin: EdgeInsets.only(right: 3, top: 3),
@@ -168,19 +177,22 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   final _searchLanguageController = TextEditingController();
 
   String imgprofile = "";
-
-  Future<void> getpr() async {
+  String tokenbf = "";
+  bool useri = false;
+  Future<void> getpr () async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
     if(ds != ""){
-      var urli = Uri.parse("https://kompot.site/getabout?token="+ds!);
+      print("object"+ds!);
+      var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
 
       var response = await http.get(urli);
       String dff = response.body.toString();
 
       setState(() {
         var _langData = jsonDecode(dff);
-
+        tokenbf = ds;
+        useri = true;
         imgprofile = _langData["img_kompot"];
         print("object"+imgprofile);
       });
@@ -203,7 +215,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => MusInPlaylistScreen(onCallback: (dynamic input) {
         onCallback(input);
-      }, onCallbacki: fds, hie: showsearch, name: name, img: img, imgnd:imgnd),
+      }, onCallbacki: fds, hie: showsearch, name: name, img: img, imgnd:imgnd, showlog: showlog, resre: reseti,),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset(0.0, 0.0);
@@ -498,7 +510,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         mainAxisSpacing: 10,
       ),
       children: List.generate(_searchedLangData.length+1, (idx) {
-        return idx == 0 ?  CustomTile(title: "История", imageUrl: 'assets/images/history.png', wih: size.width, fd: true,) : idx == 1 ?  CustomTile(title: "Мне нравится", imageUrl: "assets/images/loveplaylist.gif", wih: size.width,fd: true,) : idx == 2 ?  CustomTile(title: "Скаченное", imageUrl: "assets/images/installmus.png", wih: size.width,fd: true,) : CustomTile(title: _searchedLangData[idx-1]['name'], imageUrl: _searchedLangData[idx-1]['img'], wih: size.width,fd: false,);
+        return idx == 0 ?  CustomTile(title: "История", imageUrl: 'assets/images/history.png', wih: size.width, fd: true, hie: (){_openSearchPage(context, "-1","История",'assets/images/history.png', false);},) : idx == 1 ?  CustomTile(title: "Мне нравится", imageUrl: "assets/images/loveplaylist.gif", wih: size.width,fd: true, hie: (){_openSearchPage(context, "0","Мне нравится", 'assets/images/loveplaylist.gif', false);}) : idx == 2 ?  CustomTile(title: "Скаченное", imageUrl: "assets/images/installmus.png", wih: size.width,fd: true,hie: (){_openSearchPage(context, "install","Скаченное", 'assets/images/installmus.png', false);}) : CustomTile(title: _searchedLangData[idx-1]['name'], imageUrl: _searchedLangData[idx-1]['img'], wih: size.width,fd: false, hie: (){_openSearchPage(context, _searchedLangData[idx-2]['id'],_searchedLangData[idx-2]['name'], _searchedLangData[idx-2]['img'], true);});
       }),))]
     );
   }
@@ -533,11 +545,13 @@ class CustomTile extends StatelessWidget {
   final String imageUrl;
   final double wih;
   final bool fd;
+  final VoidCallback hie;
   CustomTile({
     required this.title,
     required this.imageUrl,
     required this.wih,
     required this.fd,
+    required this.hie,
   });
 
   @override
@@ -585,7 +599,7 @@ class CustomTile extends StatelessWidget {
           ],
         )),SizedBox(height: wih/4, width: wih/4,  child: ElevatedButton(
           onPressed: () {
-
+            hie();
           },
 
           style: ElevatedButton.styleFrom(

@@ -4,6 +4,7 @@ import 'dart:io';
 
 
 import 'package:blast/screens/login.dart';
+import 'package:blast/screens/profile_screen.dart';
 import 'package:blast/screens/search_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -23,9 +24,11 @@ class MusicScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
   final VoidCallback onCallbacki;
   final VoidCallback hie;
-  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie}) : super(key: key);
+  final VoidCallback showlog;
+  final VoidCallback resre;
+  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.resre}) : super(key: key);
   @override
-  State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki, hie);
+  State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, showlog, resre);
 
 
 
@@ -44,6 +47,8 @@ class MusicScreenState extends State<MusicScreen> {
   late  Function(dynamic) onCallback;
   late VoidCallback onCallbacki;
   late VoidCallback showsearch;
+  late VoidCallback showlog;
+  late VoidCallback reseti;
   List _langData = [
     {
       'id': '1',
@@ -60,10 +65,12 @@ class MusicScreenState extends State<MusicScreen> {
   ];
   var player;
 
-  MusicScreenState(Function(dynamic) onk,VoidCallback onki, VoidCallback fg){
+  MusicScreenState(Function(dynamic) onk,VoidCallback onki, VoidCallback fg, VoidCallback dawsd, VoidCallback dsacf){
     onCallback = onk;
     onCallbacki = onki;
     showsearch = fg;
+    showlog = dawsd;
+    reseti = dsacf;
   }
 
   @override
@@ -128,7 +135,7 @@ bottom: false,
                     }, iconSize: 74,
                         icon: iconpla))],)
                 )), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed:  useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                   imageUrl: imgprofile, // Replace with your image URL
                   imageBuilder: (context, imageProvider) => Container(
                     margin: EdgeInsets.only(right: 3, top: 3),
@@ -258,7 +265,6 @@ bottom: false,
             ],
           )
         :
-
            Container(
             margin: const EdgeInsets.only(bottom: 10),
             child: Material(
@@ -412,7 +418,7 @@ bottom: false,
     color: Colors.white,
     )))), Expanded(child: Container()),
                   Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) =>  LoginScreen()));}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                     imageUrl: imgprofile, // Replace with your image URL
                     imageBuilder: (context, imageProvider) => Container(
                       margin: EdgeInsets.only(right: 3, top: 3),
@@ -591,7 +597,8 @@ bottom: false,
   }
 
   String imgprofile = "";
-
+  String tokenbf = "";
+  bool useri = false;
   Future<void> getpr () async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
@@ -604,7 +611,8 @@ bottom: false,
 
     setState(() {
       var _langData = jsonDecode(dff);
-
+      tokenbf = ds;
+      useri = true;
       imgprofile = _langData["img_kompot"];
       print("object"+imgprofile);
     });

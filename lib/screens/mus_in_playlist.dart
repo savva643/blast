@@ -3,6 +3,7 @@ import 'dart:convert';
 
 
 import 'package:blast/screens/login.dart';
+import 'package:blast/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -23,9 +24,11 @@ class MusInPlaylistScreen extends StatefulWidget {
   final String img;
   final bool imgnd;
   final VoidCallback hie;
-  MusInPlaylistScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.name, required this.img, required this.imgnd}) : super(key: key);
+  final VoidCallback showlog;
+  final VoidCallback resre;
+  MusInPlaylistScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.name, required this.img, required this.imgnd, required this.showlog, required this.resre}) : super(key: key);
   @override
-  State<MusInPlaylistScreen> createState() => MusInPlaylistScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, name, img, imgnd);
+  State<MusInPlaylistScreen> createState() => MusInPlaylistScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, name, img, imgnd,showlog,resre);
 
 
 
@@ -47,7 +50,8 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   late String palylsitimg;
   late bool palylsitimgnd;
   late VoidCallback showsearch;
-
+  late VoidCallback showlog;
+  late VoidCallback reset;
   List _langData = [
     {
       'id': '1',
@@ -64,13 +68,15 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   ];
   var player;
 
-  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad){
+  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad, VoidCallback dawsd, VoidCallback fgdfxg){
     onCallback = onk;
     palylsitid = onki;
     showsearch = fg;
     palylsitname = erfw;
     palylsitimg = fdcdsc;
     palylsitimgnd = fdsfad;
+    showlog = dawsd;
+    reset = fgdfxg;
   }
 
   @override
@@ -119,7 +125,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                   Color.fromARGB(255, 15, 15, 16),
                 ],
               )),
-          child: _loadListView(),
+          child: size.width > 600 ? _loadListViewmore() : _loadListView(),
         ),
 
       ),
@@ -167,104 +173,125 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     setState(() => _searchedLangData = _langData);
   }
 
-  Widget _loadListViewMore() {
+  Widget _loadListViewmore() {
     Size size = MediaQuery.of(context).size;
     return ListView.builder(
       itemCount: _searchedLangData.length+1,
       itemBuilder: (BuildContext context, int idx)
       {
-        return SizedBox(child: idx == 0 ?  Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                SizedBox(
-                  height: 80,width: 220,
-                  child: OverflowBox(
-                    maxWidth: double.infinity,
-                    maxHeight: double.infinity,
-                    child:
-                    Container(
-                      padding: EdgeInsets.only(top: 140),
-                      child:
-                      Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-                  ),),
-                Row(children: [
-                  Container(padding: EdgeInsets.only(left: 12,top: 12),
-                      child:
-                      Text("blast!",
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),)),
-                  Container(padding: EdgeInsets.only(left: 6,top: 13),child:  TextButton(onPressed: () {}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                        (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.pressed)) {
-                        return Colors.grey[900]; // Darker grey when pressed
-                      } else if (states.contains(MaterialState.hovered)) {
-                        return Colors.grey[700]; // Lighter grey when hovered
-                      }
-                      return Colors.grey[800]; // Default grey color
-                    },
-                  ), ),child: Text("alpha",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      )))), Expanded(child: Container()),
+        if (idx == 0) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  AnimatedContainer(
+                      margin: EdgeInsets
+                          .only(
+                          left: 0,
+                          right: 0,
+                          top: 0),
+                      height: size.width/3,
+                      width: size.width/3,
+                      decoration: BoxDecoration(
+                        shape: BoxShape
+                            .rectangle,
+                        borderRadius: BorderRadius
+                            .only(bottomRight: Radius.circular(20) ),
+                      ),
 
+                      clipBehavior: Clip
+                          .hardEdge,
+                      duration: Duration(
+                          milliseconds: 0),
+                      child: AspectRatio(
+                          aspectRatio: 1,
+                          // Сохранение пропорций 1:1
+                          child: palylsitimgnd ? Image
+                              .network(
+                            palylsitimg,
+                            height: size.width,
+                            width: size.width,
+                            fit: BoxFit
+                                .cover, // Изображ
+                          ) : Image(image: AssetImage(palylsitimg), width: size.width,))),
+                  SizedBox(
+                    height: 80,width: 220,
+                    child: OverflowBox(
+                      maxWidth: double.infinity,
+                      maxHeight: double.infinity,
+                      child:
+                      Container(
+                        padding: EdgeInsets.only(top: 140),
+                        child:
+                        Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
+                    ),),
+                  Row(children: [
+                    Container(padding: EdgeInsets.only(left: 12,top: 0),
+                        child:
+                        Text("blast!",
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),)),
+                    Expanded(child: Container()),
+                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reset,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                      imageUrl: imgprofile, // Replace with your image URL
+                      imageBuilder: (context, imageProvider) => Container(
+                        margin: EdgeInsets.only(right: 3, top: 3),
+                        width: 100.0, // Set the width of the circular image
+                        height: 100.0, // Set the height of the circular image
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover, // Adjusts the image inside the circle
+                          ),
+                        ),
+                      ),
+                      placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
+                      errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
+                    )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                  ],),
+                  Container(margin: EdgeInsets.only(left: size.width/3 + 10, top: 20), child:
+                  Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),
+                    Text(palylsitname,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),)],)),
                 ],),
 
-              ],),
-            SizedBox(height: 10,),
-            Center(child: Text("Чарт",
-              style: TextStyle(
-                fontSize: 30,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),),),
-            SizedBox(height: 10,),
+            ],
+          );
+        }else{
+          print("idx");
+          print(_searchedLangData[idx-1]['img']);
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            child: Material(
 
-          ],
-        )
-            :
-
-        Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          child: Material(
-
-            color: Color.fromARGB(255, 15, 15, 16),
-            borderRadius: BorderRadius.circular(5),
-            child: ListTile(
-              contentPadding: EdgeInsets.only(
-                  left: 0, right: 0, bottom: 4, top: 4),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5)),
-              onTap: () async {
-                onCallback(_searchedLangData[idx-1]['idshaz']);
-              },
-              leadingAndTrailingTextStyle: TextStyle(),
-              leading: SizedBox(width: 90,
-                height: 60,
-                child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 30, child: Text(
-                      (idx).toString(),
-                      textAlign: TextAlign.center,
-
-                      style: TextStyle(
-
-                          fontSize: 18,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
-                          color: Color.fromARGB(255, 246, 244, 244)
-                      ),
-                    ),), SizedBox(
+              color: Color.fromARGB(0, 15, 15, 16),
+              borderRadius: BorderRadius.circular(5),
+              child: ListTile(
+                contentPadding: EdgeInsets.only(
+                    left: 0, right: 0, bottom: 4, top: 4),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)),
+                onTap: () async {
+                  onCallback(_searchedLangData[idx-1]['idshaz']);
+                },
+                leadingAndTrailingTextStyle: TextStyle(),
+                leading: SizedBox(width: 90,
+                  height: 60,
+                  child: Row(mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [ SizedBox(
                       width: 60,
                       height: 60,
                       child: OverflowBox(
@@ -290,36 +317,36 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                           errorWidget: (context, url, error) => Icon(Icons.error),
                         ),
                       ),),
-                  ],),),
-              title: Text(
-                _searchedLangData[idx-1]['name'],
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w500,
-                    color: Color.fromARGB(255, 246, 244, 244)
+                    ],),),
+                title: Text(
+                  _searchedLangData[idx-1]['name'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w500,
+                      color: Color.fromARGB(255, 246, 244, 244)
+                  ),
                 ),
-              ),
-              subtitle: Text(
-                _searchedLangData[idx-1]['message'],
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w300,
-                    color: Color.fromARGB(255, 246, 244, 244)
+                subtitle: Text(
+                  _searchedLangData[idx-1]['message'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w300,
+                      color: Color.fromARGB(255, 246, 244, 244)
+                  ),
                 ),
+                trailing: IconButton(icon: Icon(Icons.more_vert),
+                  color: Colors.white,
+                  onPressed: () {},),
               ),
-              trailing: IconButton(icon: Icon(Icons.more_vert),
-                color: Colors.white,
-                onPressed: () {},),
             ),
-          ),
-        )
-        );
+          );
+        }
       },
     );
   }
@@ -391,7 +418,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                           ),)),
                    Expanded(child: Container()),
                     Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) =>  LoginScreen()));}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reset,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                       imageUrl: imgprofile, // Replace with your image URL
                       imageBuilder: (context, imageProvider) => Container(
                         margin: EdgeInsets.only(right: 3, top: 3),
@@ -531,7 +558,8 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   }
 
   String imgprofile = "";
-
+  String tokenbf = "";
+  bool useri = false;
   Future<void> getpr () async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
@@ -544,7 +572,8 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
 
       setState(() {
         var _langData = jsonDecode(dff);
-
+        tokenbf = ds;
+        useri = true;
         imgprofile = _langData["img_kompot"];
         print("object"+imgprofile);
       });

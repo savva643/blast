@@ -20,9 +20,10 @@ import 'package:http/http.dart' as http;
 const kBgColor = Color(0xFF1604E2);
 
 class LoginScreen extends StatefulWidget {
-  LoginScreen({Key? key}) : super(key: key);
+  final VoidCallback resetap;
+  LoginScreen({Key? key, required this.resetap}) : super(key: key);
   @override
-  State<LoginScreen> createState() => LoginScreenState();
+  State<LoginScreen> createState() => LoginScreenState(resetap);
 
 
 
@@ -31,7 +32,7 @@ class LoginScreen extends StatefulWidget {
 
 class LoginScreenState extends State<LoginScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
+  late VoidCallback resetapp;
   var iconpla = Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white,);
   void updateIcon(Icon newIcon) {
     setState(() {
@@ -48,7 +49,8 @@ class LoginScreenState extends State<LoginScreen> {
   ];
 
 
-  LoginScreenState(){
+  LoginScreenState(VoidCallback awds){
+    resetapp = awds;
   }
 
   @override
@@ -58,7 +60,8 @@ class LoginScreenState extends State<LoginScreen> {
   }
   TextEditingController _login = TextEditingController();
   TextEditingController _pass = TextEditingController();
-  
+  bool passwvisible = true;
+
   String musicUrl = ""; // Insert your music URL
   String thumbnailImgUrl = "";
   @override
@@ -163,7 +166,7 @@ class LoginScreenState extends State<LoginScreen> {
                       controller: _pass,
                       onChanged: (text) {},
                       cursorColor: const Color.fromARGB(255, 141, 141, 141),
-
+                        obscureText: passwvisible,
                       style: const TextStyle(
                           fontSize: 14,
                           fontFamily: 'Montserrat',
@@ -175,6 +178,7 @@ class LoginScreenState extends State<LoginScreen> {
                           borderSide: const BorderSide(width: 2, color: Color.fromARGB(255, 246, 244, 244)),
                           borderRadius: BorderRadius.circular(15),
                         ),
+
                         label: Text("Пароль", style: TextStyle(
                             fontSize: 14,
                             fontFamily: 'Montserrat',
@@ -188,7 +192,9 @@ class LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(15)),
                         contentPadding: const EdgeInsets.only(top: 2,bottom: 2, right: 0,left: 12),
 
-                        suffixIcon:  SizedBox( width: 36, height: 36, child: OverflowBox(alignment: Alignment.centerRight,minHeight:36, maxHeight:36, child: IconButton(icon:  Icon(Icons.visibility, color: Colors.white,), onPressed: () {  },),)),
+                        suffixIcon:  Container(margin: EdgeInsets.only(right: 8), width: 36, height: 36, child: OverflowBox(alignment: Alignment.centerRight,minHeight:36, maxHeight:36, child: IconButton(icon:  Icon(passwvisible ? Icons.visibility : Icons.visibility_off, color: Colors.white,), onPressed: () { setState(() {
+                          passwvisible = !passwvisible;
+                        }); },),)),
 
                         suffixIconConstraints: const BoxConstraints(maxHeight: 23),
 
@@ -240,11 +246,7 @@ class LoginScreenState extends State<LoginScreen> {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString("token", _langData[0]['token']);
           print("gkjhjk"+_langData[0]['token']);
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => MusicScreen(onCallback: (dynamic sd){}, onCallbacki: (){}, hie: (){})),
-                (Route<dynamic> route) => false, // Удаление всех предыдущих маршрутов
-          );
+          resetapp();
         }
       });
     }else{
