@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 
+import 'package:audio_service/audio_service.dart';
 import 'package:blast/screens/login.dart';
 import 'package:blast/screens/profile_screen.dart';
 import 'package:blast/screens/search_screen.dart';
@@ -35,10 +36,11 @@ class MusicScreen extends StatefulWidget {
 
 }
 
-class MusicScreenState extends State<MusicScreen> {
+class MusicScreenState extends State<MusicScreen> with SingleTickerProviderStateMixin{
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late AnimationController controllermuscircle;
 
-  var iconpla = Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white,);
+  var iconpla = Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing));
   void updateIcon(Icon newIcon) {
     setState(() {
       iconpla = newIcon;
@@ -65,6 +67,33 @@ class MusicScreenState extends State<MusicScreen> {
   ];
   var player;
 
+  void _showSmallDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(child: Container(margin: EdgeInsets.only(right: 100, left: 100, bottom: 80, top: 80), padding: EdgeInsets.only(right: 60, left: 60, bottom: 60, top: 60), decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(40)), color: Color.fromARGB(255, 15, 15, 16)),child:
+        Column(children: [
+          Text("blast! находится в alpha",
+          style: TextStyle(
+            fontSize: 30,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+          ),),
+          Text("История обновления",
+            textAlign: TextAlign.start,
+            style: TextStyle(
+              fontSize: 20,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),)
+        ],),));
+      },
+    );
+  }
+
+
   MusicScreenState(Function(dynamic) onk,VoidCallback onki, VoidCallback fg, VoidCallback dawsd, VoidCallback dsacf){
     onCallback = onk;
     onCallbacki = onki;
@@ -72,12 +101,32 @@ class MusicScreenState extends State<MusicScreen> {
     showlog = dawsd;
     reseti = dsacf;
   }
+  late Animation<double> _animation;
+  bool isAnimating = false;
+  void toggleAnimation(bool ds) {
+    setState(() {
+      if (ds) {
+        controllermuscircle.repeat();
+      } else {
+        controllermuscircle.animateTo(controllermuscircle.value+0.01, duration: const Duration(seconds: 1));
+      }
+      isAnimating = ds;
+    });
+  }
 
   @override
   void initState()
   {
     postRequest();
     getpr();
+    controllermuscircle = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 50),
+    )..repeat();
+    _animation = CurvedAnimation(
+      parent: controllermuscircle,
+      curve: Curves.easeInOut,  // Плавное ускорение и замедление
+    );
     super.initState();
   }
 
@@ -120,7 +169,9 @@ bottom: false,
             child: Stack(alignment: Alignment.topRight, children: [ Center(child:
             Stack(alignment: Alignment.center,
               children: [
-                Image.asset('assets/images/circleblast.png', width: 600,),
+                RotationTransition(
+                turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
+            child:Image.asset('assets/images/circleblast.png', width: 600,)),
               Center(child:Container(padding: EdgeInsets.only(left: 12,top: 12),
                     child:
                     Column(mainAxisAlignment: MainAxisAlignment.center,children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
@@ -133,7 +184,15 @@ bottom: false,
                     IconButton(onPressed: ()  {
                       onCallbacki();
                     }, iconSize: 74,
-                        icon: iconpla))],)
+                        icon: AnimatedSwitcher(
+                            duration: Duration(milliseconds: 300),
+                            transitionBuilder: (Widget child, Animation<double> animation) {
+                              return RotationTransition(
+                                turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                child: ScaleTransition(scale: animation, child: child),
+                              );
+                            },
+                            child:iconpla)))],)
                 )), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
                 Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed:  useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                   imageUrl: imgprofile, // Replace with your image URL
@@ -179,6 +238,7 @@ bottom: false,
 
   @override
   void dispose() {
+    controllermuscircle.dispose();
     super.dispose();
   }
 
@@ -232,7 +292,7 @@ bottom: false,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
                           ),)),
-                    Container(padding: EdgeInsets.only(left: 6,top: 13),child:  TextButton(onPressed: () {}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                    Container(padding: EdgeInsets.only(left: 6,top: 13),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
                           (Set<MaterialState> states) {
                         if (states.contains(MaterialState.pressed)) {
                           return Colors.grey[900]; // Darker grey when pressed
@@ -401,7 +461,7 @@ bottom: false,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
                       ),)),
-                  Container(padding: EdgeInsets.only(left: 6,top: 2),child:  TextButton(onPressed: () {}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                  Container(padding: EdgeInsets.only(left: 6,top: 2),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
                         (Set<MaterialState> states) {
                       if (states.contains(MaterialState.pressed)) {
                         return Colors.grey[900]; // Darker grey when pressed
@@ -442,8 +502,10 @@ bottom: false,
               child:
               Stack(alignment: Alignment.center,
                 children: [
-                  Image.asset('assets/images/circleblast.png', width: 800,),
-                  Container(padding: EdgeInsets.only(left: 12,top: 12),
+                     RotationTransition(
+                         turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
+                         child:Image.asset('assets/images/circleblast.png', width: 800,)),
+                      Container(padding: EdgeInsets.only(left: 12,top: 12),
                       child:
                       Column(children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
                         style: TextStyle(
@@ -455,7 +517,15 @@ bottom: false,
                         IconButton(onPressed: ()  {
                           onCallbacki();
                         }, iconSize: 64,
-                            icon: iconpla))],)
+                            icon: AnimatedSwitcher(
+                                duration: Duration(milliseconds: 300),
+                                transitionBuilder: (Widget child, Animation<double> animation) {
+                                  return RotationTransition(
+                                    turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                    child: ScaleTransition(scale: animation, child: child),
+                                  );
+                                },
+                                child:iconpla)))],)
                   ),
                 ],),),
             SizedBox(height: 10,),

@@ -104,38 +104,45 @@ class ProfileScreenState extends State<ProfileScreen> {
               child: Stack(alignment: Alignment.topRight, children: [ Center(child:
               Stack(alignment: Alignment.center,
                 children: [
-                  Image.asset('assets/images/circleblast.png', width: 600,),
                   Center(child:Container(padding: EdgeInsets.only(left: 12,top: 12),
                       child:
-                      Column(mainAxisAlignment: MainAxisAlignment.center,children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
-                        style: TextStyle(
-                          fontSize: 50,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),)),Container(margin: EdgeInsets.only(right: 8), child:
-                      IconButton(onPressed: ()  {
-
-                      }, iconSize: 74,
-                          icon: iconpla))],)
-                  )), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed:  () {}, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
-                      imageUrl: imgprofile, // Replace with your image URL
-                      imageBuilder: (context, imageProvider) => Container(
-                        margin: EdgeInsets.only(right: 3, top: 3),
-                        width: 100.0, // Set the width of the circular image
-                        height: 100.0, // Set the height of the circular image
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover, // Adjusts the image inside the circle
+                      Column(mainAxisAlignment: MainAxisAlignment.center,children: [ Container(alignment: Alignment.center,
+                        child:
+                        Container(margin: EdgeInsets.only(top: 0), child: imgprofile!="" ? SizedBox(height: 180, width: 180, child: CachedNetworkImage(
+                          imageUrl: imgprofile, // Replace with your image URL
+                          imageBuilder: (context, imageProvider) => Container(
+                            width: 180.0, // Set the width of the circular image
+                            height: 180.0, // Set the height of the circular image
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover, // Adjusts the image inside the circle
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
-                      errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                    )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)],),)
+                          placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
+                          errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
+                        )) : Icon(Icons.circle, size: 192, color: Colors.white,),),),
+                        SizedBox(height: 6,),
+                        Container(alignment: Alignment.center,child: Text(nameprofile,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 36,
+                            height: 1,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),),),
+                        Container(alignment: Alignment.center,child: Text(emailprofile,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey,
+                          ),),),],)
+                  )),
                 ],),)],)),],),))  : _loadListView(),
         ),
 
@@ -184,173 +191,116 @@ class ProfileScreenState extends State<ProfileScreen> {
     setState(() => _searchedLangData = _langData);
   }
 
+
+
   Widget _loadListViewMore() {
     Size size = MediaQuery.of(context).size;
-    return ListView.builder(
-      itemCount: _searchedLangData.length+1,
-      itemBuilder: (BuildContext context, int idx)
-      {
-        return SizedBox(child: idx == 0 ?  Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Stack(
           children: [
-            Stack(
-              children: [
-                SizedBox(
-                  height: 80,width: 220,
-                  child: OverflowBox(
-                    maxWidth: double.infinity,
-                    maxHeight: double.infinity,
-                    child:
-                    Container(
-                      padding: EdgeInsets.only(top: 140),
-                      child:
-                      Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-                  ),),
-                Row(children: [
-                  Container(padding: EdgeInsets.only(left: 12,top: 12),
-                      child:
-                      Text("blast!",
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),)),
-                  Container(padding: EdgeInsets.only(left: 6,top: 13),child:  TextButton(onPressed: () {}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                        (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.pressed)) {
-                        return Colors.grey[900]; // Darker grey when pressed
-                      } else if (states.contains(MaterialState.hovered)) {
-                        return Colors.grey[700]; // Lighter grey when hovered
-                      }
-                      return Colors.grey[800]; // Default grey color
-                    },
-                  ), ),child: Text("alpha",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      )))), Expanded(child: Container()),
+            SizedBox(
+              height: 80,width: 220,
+              child: OverflowBox(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                child:
+                Container(
+                  padding: EdgeInsets.only(top: 140),
+                  child:
+                  Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
+              ),),
+            Row(children: [
+              Container(padding: EdgeInsets.only(left: 12,top: 12),
+                  child:
+                  Text("blast!",
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),)),
+              Expanded(child: Container()),
+            ],),
+            Container(margin: EdgeInsets.only(left: 0), padding: EdgeInsets.only(top: 56), child:
+            Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),
+              Text("Аккаунт",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),)],)),
+          ],),
 
-                ],),
-
-              ],),
-            SizedBox(height: 10,),
-            Center(child: Text("Чарт",
-              style: TextStyle(
-                fontSize: 30,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),),),
-            SizedBox(height: 10,),
-
-          ],
-        )
-            :
+        SizedBox(height: 16,),
         Container(
-          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.only(left: 14, right: 14),
           child: Material(
 
-            color: Color.fromARGB(255, 15, 15, 16),
-            borderRadius: BorderRadius.circular(5),
+            color: Color(0xff333333),
+            borderRadius: BorderRadius.circular(10),
             child: ListTile(
               contentPadding: EdgeInsets.only(
-                  left: 0, right: 0, bottom: 4, top: 4),
+                  left: 8, right: 8, bottom: 4, top: 4),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5)),
+                  borderRadius: BorderRadius.circular(10)),
               onTap: () async {
 
               },
               leadingAndTrailingTextStyle: TextStyle(),
-              leading: SizedBox(width: 90,
-                height: 60,
-                child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 30, child: Text(
-                      (idx).toString(),
-                      textAlign: TextAlign.center,
-
-                      style: TextStyle(
-
-                          fontSize: 18,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
-                          color: Color.fromARGB(255, 246, 244, 244)
-                      ),
-                    ),), SizedBox(
-                      width: 60,
-                      height: 60,
-                      child: OverflowBox(
-                        maxWidth: double.infinity,
-                        maxHeight: double.infinity,
-                        child: CachedNetworkImage(
-                          imageUrl: _searchedLangData[idx-1]['img'],
-                          imageBuilder: (context, imageProvider) =>
-                              Container(
-                                padding: EdgeInsets.only(
-                                    left: 0, right: 0, bottom: 0, top: 0),
-                                width: 64.0,
-                                height: 64.0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.circular(5),
-                                  image: DecorationImage(
-                                      image: imageProvider),
-                                ),
-                              ),
-                          placeholder: (context, url) =>
-                              CircularProgressIndicator(),
-                          errorWidget: (context, url, error) => Icon(Icons.error),
-                        ),
-                      ),),
-                  ],),),
               title: Text(
-                _searchedLangData[idx-1]['name'],
+                "Настройки",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 20,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w500,
                     color: Color.fromARGB(255, 246, 244, 244)
                 ),
               ),
-              subtitle: Text(
-                _searchedLangData[idx-1]['message'],
+            ),
+          ),
+        ),
+        Expanded(child: Container()),
+        Container(
+          padding: const EdgeInsets.only(left: 14, right: 14, bottom: 140),
+          child: Material(
+
+            color: Color(0xff333333),
+            borderRadius: BorderRadius.circular(10),
+            child: ListTile(
+              contentPadding: EdgeInsets.only(
+                  left: 8, right: 8, bottom: 4, top: 4),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              onTap: () async {
+                final SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.remove("token");
+                resetapp();
+              },
+              leadingAndTrailingTextStyle: TextStyle(),
+              title: Text(
+                textAlign: TextAlign.center,
+                "Выйти",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 22,
                     fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w300,
-                    color: Color.fromARGB(255, 246, 244, 244)
-                ),
-              ),
-              trailing:  Padding(
-                padding: EdgeInsets.only(right: 20.0), // Set padding as needed
-                child: Row(
-                  mainAxisSize: MainAxisSize.min, // This ensures Row takes minimal width
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.more_vert),
-                      color: Colors.white,
-                      onPressed: () {},
-                    ),
-                  ],
+                    fontWeight: FontWeight.w500,
+                    color: Color.fromARGB(255, 255, 0, 0)
                 ),
               ),
             ),
           ),
         )
-        );
-      },
+      ],
     );
-  }
 
+  }
 
   Widget _loadListView() {
     Size size = MediaQuery.of(context).size;

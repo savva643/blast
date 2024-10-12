@@ -21,6 +21,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
     // When a new media item is requested, load and play it
     await player.setUrl(mediaItem.id); // Assuming mediaItem.id contains the URL
 
+    bool firstsartn = false;
 
     player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
       notifier.setPlaying(true);
@@ -39,7 +40,10 @@ class AudioPlayerTask extends BackgroundAudioTask {
           'duration': player.duration?.inMilliseconds ?? 0,
         });
         _broadcastState();
-
+        if(!firstsartn) {
+          player.play();
+          firstsartn = true;
+        }
 
       });
 

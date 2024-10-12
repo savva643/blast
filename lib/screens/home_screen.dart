@@ -75,23 +75,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         videoope = true;
         vidaftermus = _langData[0]['id'];
         videob.open(Media(_langData[0]['vidos']));
-        _toogleAnimky();
         if (!frommus) {
           _showModalSheet();
           opacityi1 = 0;
           opacityi2 = 1;
         }
 
-        iconpla = Icon(Icons.pause_rounded, size: 40,);
+        iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
         if (isjemnow) {
+          _childKey.currentState?.toggleAnimation(true);
           _childKey.currentState?.updateIcon(
-              Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+              Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
         }
         namemus = _langData[0]["name"];
         ispolmus = _langData[0]["message"];
         imgmus = _langData[0]['img'];
         idmus = _langData[0]['id'];
         shazid = _langData[0]['idshaz'];
+        _toogleAnimky();
       });
     } else {
       playpause();
@@ -99,8 +100,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
 
-  double squareScaleA = 0;
-  double squareScaleB = 0;
+  late double squareScaleA = videoope ? MediaQuery.of(context).size.width > 800 ? -320 : -80 * (MediaQuery.of(context).size.width / 280) : 0;
+  late double squareScaleB = videoope ? 0 : MediaQuery.of(context).size.width > 800 ? -320 : 80 * (MediaQuery.of(context).size.width / 280);
   String shazid = "0";
   String idmus = "0";
   String namemus = "Название";
@@ -138,18 +139,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         if (!videoope) {
           if (!state.playing) {
             setState(() {
-              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+              iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
               if (isjemnow) {
+                _childKey.currentState?.toggleAnimation(false);
                 _childKey.currentState?.updateIcon(Icon(
-                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
             });
           } else {
             setState(() {
-              iconpla = Icon(Icons.pause_rounded, size: 40,);
+              iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
               if (isjemnow) {
+                _childKey.currentState?.toggleAnimation(true);
                 _childKey.currentState?.updateIcon(
-                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+                    Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
             });
           }
@@ -171,6 +174,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
           }
         });
+        setnewState(() {
+          if (videoope) {
+            if (!state) {
+              setState(() {
+                iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(state));
+                if (isjemnow) {
+                  _childKey.currentState?.toggleAnimation(false);
+                  _childKey.currentState?.updateIcon(Icon(
+                      Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(state)));
+                }
+                AudioService.seekTo(Duration(milliseconds: 1));
+              });
+            } else {
+              setState(() {
+                iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(state));
+                if (isjemnow) {
+                  _childKey.currentState?.toggleAnimation(true);
+                  _childKey.currentState?.updateIcon(
+                      Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(state)));
+                }
+                AudioService.seekTo(Duration(milliseconds: 1));
+              });
+            }
+          }
+        });
       }
     });
     controller.player.stream.playing.listen((bool state) {
@@ -178,19 +206,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         if (videoope) {
           if (!state) {
             setState(() {
-              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+              iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(controller.player.state.playing));
               if (isjemnow) {
+                _childKey.currentState?.toggleAnimation(false);
                 _childKey.currentState?.updateIcon(Icon(
-                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
               }
               AudioService.seekTo(Duration(milliseconds: 1));
             });
           } else {
             setState(() {
-              iconpla = Icon(Icons.pause_rounded, size: 40,);
+              iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(controller.player.state.playing));
               if (isjemnow) {
+                _childKey.currentState?.toggleAnimation(true);
                 _childKey.currentState?.updateIcon(
-                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+                    Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
               }
               AudioService.seekTo(Duration(milliseconds: 1));
             });
@@ -225,10 +255,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Future<void> getaboutmus(String shazid, bool jem) async {
+    setState(() {
+    loadingmus = false;
+    if(_isBottomSheetOpen){
+      setnewState(() {
+        loadingmus = false;
+      });
+    }
+    });
     print(shazid+"jkljl"+this.shazid);
     if (shazid != this.shazid) {
         if (!jem) {
           isjemnow = false;
+          _childKey.currentState?.toggleAnimation(false);
           _childKey.currentState?.updateIcon(
               Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white));
         }
@@ -252,7 +291,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
           }
         });
-
     } else {
       playpause();
     }
@@ -275,19 +313,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         if (controller.player.state.playing) {
           controller.player.pause();
           setState(() {
-            iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+            iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(controller.player.state.playing));
             if (isjemnow) {
+              _childKey.currentState?.toggleAnimation(false);
               _childKey.currentState?.updateIcon(Icon(
-                  Icons.play_arrow_rounded, size: 64, color: Colors.white));
+                  Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
             }
           });
         } else {
           controller.player.play();
           setState(() {
-            iconpla = Icon(Icons.pause_rounded, size: 40,);
+            iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(controller.player.state.playing));
             if (isjemnow) {
+              _childKey.currentState?.toggleAnimation(true);
               _childKey.currentState?.updateIcon(
-                  Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+                  Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
             }
           });
         }
@@ -295,19 +335,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         if (AudioService.playbackState.playing) {
           AudioService.pause();
           setState(() {
-            iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+            iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
             if (isjemnow) {
+              _childKey.currentState?.toggleAnimation(false);
               _childKey.currentState?.updateIcon(Icon(
-                  Icons.play_arrow_rounded, size: 64, color: Colors.white));
+                  Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
             }
           });
         } else {
           AudioService.play();
           setState(() {
-            iconpla = Icon(Icons.pause_rounded, size: 40,);
+            iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
             if (isjemnow) {
+              _childKey.currentState?.toggleAnimation(true);
               _childKey.currentState?.updateIcon(
-                  Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+                  Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
             }
           });
         }
@@ -342,8 +384,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       } else {
         dsds2 = videoope ? ((640 / 16) * 9) + 80 : 60;
       }
-      squareScaleA = videoope ? -80 : 0;
-      squareScaleB = videoope ? 0 : 80;
+
       opacity = videoope ? 0 : 1;
       videoopacity = videoope ? 1 : 0;
       ali = videoope ? Alignment.centerLeft : Alignment.center;
@@ -352,12 +393,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         opacityi1 = 1;
         opacityi2 = 0;
       }
+      setnewState(() {
+        imgwh = videoope ? 80 : 500;
+        dsds = videoope ? 8 : 20;
+        if (size.width <= 640) {
+          dsds2 = videoope ? ((size.width / 16) * 9) + 80 : 60;
+        } else {
+          dsds2 = videoope ? ((640 / 16) * 9) + 80 : 60;
+        }
+
+        opacity = videoope ? 0 : 1;
+        videoopacity = videoope ? 1 : 0;
+        ali = videoope ? Alignment.centerLeft : Alignment.center;
+        videoope ? _controller.forward() : _controller.reverse();
+        if (videoope == false) {
+          opacityi1 = 1;
+          opacityi2 = 0;
+        }
+      });
     });
   }
 
   void _setvi(String dfg, bool ds, bool vid) {
     print(vidaftermus);
     setState(() {
+
       videoope = !videoope;
       if (vid){
         AudioService.pause();
@@ -387,6 +447,52 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       }
     });
   }
+
+  bool loadingmus = false;
+
+  Future<void> installmus(dynamic sdcv) async {
+    if(videoope){
+      videoope = false;
+      _toogleAnimky();
+      controller.player.pause();
+    }else{
+      AudioService.pause();
+    }
+    setState(() {
+      namemus = sdcv["name"];
+      ispolmus = sdcv["message"];
+      imgmus = sdcv['img'];
+      idmus = "0";
+      shazid = sdcv['idshaz'];
+    });
+    setState(() {
+      loadingmus = true;
+      if(_isBottomSheetOpen){
+        setnewState(() {
+          loadingmus = true;
+        });
+      }
+    });
+    var urli = Uri.parse("https://kompot.site/installmusandr?shazik=" + sdcv['idshaz']);
+    var response = await http.get(urli);
+    String dff = response.body.toString();
+    print("jhghjg");
+    print(dff);
+    getaboutmus(dff, false);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? sac = prefs.getStringList("historymusid");
+    List<String> fsaf = [];
+    if (sac != null) {
+      fsaf = sac;
+    }
+    if(fsaf.length >= 20){
+      fsaf.removeLast();
+    }
+    fsaf.add(dff);
+    await prefs.setStringList("historymusid", fsaf);
+
+  }
+
 
   String vidaftermus = "false";
   String musaftervid = "false";
@@ -436,10 +542,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _playNewTrack(listok['url']);
           AudioService.play();
           setState(() {
-            iconpla = Icon(Icons.pause_rounded, size: 40,);
+            iconpla = Icon(Icons.pause_rounded, size: 40, key: ValueKey<bool>(AudioService.playbackState.playing),);
             if (isjemnow) {
+              _childKey.currentState?.toggleAnimation(true);
               _childKey.currentState?.updateIcon(
-                  Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+                  Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing),), );
             }
             namemus = listok["name"];
             ispolmus = listok["message"];
@@ -520,7 +627,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               });
               return showsearch ? SearchScreen(onCallback: (dynamic input) {
                 getaboutmus(input, false);
-              }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,) : Container(
+              }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
+                installmus(input);
+              } ) : Container(
                   height: size.height, child: IndexedStack(
                 index: pageIndex, // Отображение выбранного экрана
                 children: pages,
@@ -558,7 +667,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(onCallback: (dynamic input) {
         getaboutmus(input, false);
-      }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,),
+      }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
+        installmus(input);
+      }),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset(0.0, 0.0);
@@ -605,6 +716,1163 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return '$minutes:$seconds';
   }
 
+  Widget smallscreenbottomshet(){
+    Size size = MediaQuery
+        .of(context)
+        .size;
+    return StreamBuilder(
+        stream: AudioService.positionStream,
+        builder: (context, snapshot) {
+          return GestureDetector(
+              onDoubleTapDown: (details) =>
+                  _onDoubleTap(details, context), child:
+     Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            color: const Color.fromARGB(
+                255, 15, 15, 16),),
+          Image.network(
+            imgmus, // URL вашей фоновой картинки
+            fit: BoxFit.cover,
+          ),
+          Container(
+            color: Colors.black.withOpacity(
+                0.5), // Контейнер для применения размытия
+          ),
+          BackdropFilter(
+            filter: ImageFilter.blur(
+                sigmaX: 10, sigmaY: 10),
+            child: Container(
+              color: Colors.black.withOpacity(
+                  0), // Контейнер для применения размытия
+            ),
+            blendMode: BlendMode.srcATop,
+          ),
+          AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+              child: Video(
+                fit: BoxFit.cover,
+                controls: null,
+                controller: controllershort,
+              )),),
+          Container(
+              constraints: BoxConstraints(maxWidth: 800),
+              height: size.height,
+              child: Stack(children: [
+                Column(children: [
+                  AnimatedOpacity(opacity: videoopacity,
+                      duration: Duration(
+                          milliseconds: 400),
+                      child: Container(
+
+                          constraints: BoxConstraints(maxWidth: 800, maxHeight: 450),
+                          margin: EdgeInsets.only(
+                              top: 60),
+                          child: AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: Container(child: MaterialDesktopVideoControlsTheme(
+                                normal: MaterialDesktopVideoControlsThemeData(
+                                  // Modify theme options:
+                                  seekBarThumbColor: Colors
+                                      .blue,
+                                  seekBarPositionColor: Colors
+                                      .blue,
+                                  toggleFullscreenOnDoublePress: false,
+                                ),
+                                fullscreen: const MaterialDesktopVideoControlsThemeData(
+                                  seekBarThumbColor: Colors
+                                      .blue,
+                                  topButtonBarMargin: EdgeInsets
+                                      .only(
+                                      top: 20, left: 30),
+                                  topButtonBar: [
+                                    Text("blast!",
+                                      style: TextStyle(
+                                        fontSize: 40,
+                                        fontFamily: 'Montserrat',
+                                        fontWeight: FontWeight
+                                            .w900,
+                                        color: Colors.white,
+                                      ),)
+                                  ],
+                                  seekBarPositionColor: Colors
+                                      .blue,),
+                                child:ClipRRect(
+                                  borderRadius: borderRadius, // Make the border round
+                                  child: Video(
+                                    controller: controller,
+                                  ),
+                                ),
+                              ),)))),
+                  Row(children: [
+                    AnimatedOpacity(opacity: opacityi2,
+                        duration: Duration(seconds: 0),
+                        child: AnimatedContainer(
+                            alignment: Alignment
+                                .centerLeft,
+                            margin: EdgeInsets.only(
+                                left: 20,
+                                right: 20,
+                                top: 20),
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius
+                                  .circular(8),
+                            ),
+                            clipBehavior: Clip
+                                .antiAliasWithSaveLayer,
+                            duration: Duration(
+                                milliseconds: 0),
+                            child: AspectRatio(
+                                aspectRatio: 1,
+                                // Сохранение пропорций 1:1
+                                child: Image.network(
+                                  imgmus,
+                                  height: imgwh,
+                                  width: imgwh,
+                                  fit: BoxFit
+                                      .contain, // Изображ
+                                )))),
+                    AnimatedOpacity(
+                        opacity: videoopacity,
+                        duration: Duration(
+                            milliseconds: 400),
+                        child: AnimatedContainer(
+                          margin: EdgeInsets.only(
+                              top: 20),
+                          transform: Matrix4
+                              .translation(
+                              vector.Vector3(
+                                  0, squareScaleB, 0)),
+                          duration: Duration(
+                              milliseconds: 400),
+                          child:
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment
+                                .start,
+                            children: [Text(namemus,
+                              textAlign: TextAlign
+                                  .start,
+                              overflow: TextOverflow
+                                  .ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight
+                                      .w500,
+                                  color: Color.fromARGB(
+                                      255, 246, 244,
+                                      244)
+                              ),),
+                              Text(ispolmus,
+                                overflow: TextOverflow
+                                    .ellipsis,
+                                maxLines: 1,
+                                textAlign: TextAlign
+                                    .start,
+                                style: TextStyle(
+                                    fontSize: 24,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight
+                                        .w300,
+                                    color: Color
+                                        .fromARGB(
+                                        255, 246, 244,
+                                        244)
+                                ),)
+                            ],),))
+
+                  ],),
+                ]), Column(children: [
+                  Container(
+                      constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
+                      aspectRatio: 1,
+                      // Сохранение пропорций 1:1
+                      child: AnimatedOpacity(
+                          opacity: opacityi1,
+                          duration: Duration(
+                              seconds: 0),
+                          child: AnimatedBuilder(
+                              animation: _animation,
+                              builder: (context,
+                                  child) {
+                                return Align(
+                                    alignment: _animation
+                                        .value,
+                                    child:
+                                    AnimatedContainer(
+                                        constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
+                                        margin: EdgeInsets
+                                            .only(
+                                            left: 30,
+                                            right: 30,
+                                            top: dsds2,),
+                                        height: imgwh,
+                                        width: imgwh,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape
+                                              .rectangle,
+                                          borderRadius: BorderRadius
+                                              .circular(
+                                              dsds),
+                                        ),
+
+                                        clipBehavior: Clip
+                                            .hardEdge,
+                                        duration: Duration(
+                                            milliseconds: 400),
+                                        child: AspectRatio(
+                                            aspectRatio: 1,
+                                            // Сохранение пропорций 1:1
+                                            child: Image
+                                                .network(
+                                              imgmus,
+                                              height: imgwh,
+                                              width: imgwh,
+                                              fit: BoxFit
+                                                  .cover, // Изображ
+                                            ))));
+                              })))),
+                  AnimatedOpacity(opacity: opacity,
+                      duration: Duration(
+                          milliseconds: 400),
+                      onEnd: () {
+                        setnewState(() {
+                          if (videoope) {
+                            opacityi1 = 0;
+                            opacityi2 = 1;
+                          }
+                        });
+                      },
+                      child: AnimatedContainer(
+                          width: size.width,
+                          duration: Duration(
+                              milliseconds: 400),
+                          transform: Matrix4
+                              .translation(
+                              vector.Vector3(
+                                  0, squareScaleA, 0)),
+                          child: Text(namemus,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.fade,
+                            maxLines: 1,
+                            style: TextStyle(
+                                fontSize: 30,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight
+                                    .w500,
+                                color: Color.fromARGB(
+                                    255, 246, 244, 244)
+                            ),))),
+                  AnimatedOpacity(opacity: opacity,
+                      duration: Duration(
+                          milliseconds: 400),
+                      child: AnimatedContainer(
+                          duration: Duration(
+                              milliseconds: 400),
+                          transform: Matrix4
+                              .translation(
+                              vector.Vector3(
+                                  0, squareScaleA, 0)),
+                          child: Text(ispolmus,
+                            overflow: TextOverflow.fade,
+                            maxLines: 1,
+
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight
+                                    .w300,
+                                color: Color.fromARGB(
+                                    255, 246, 244, 244)
+                            ),))),
+                  AnimatedOpacity(opacity: opacity,
+                      duration: Duration(
+                          milliseconds: 400),
+                      child: AnimatedContainer(
+                          duration: Duration(
+                              milliseconds: 400),
+                          transform: Matrix4
+                              .translation(
+                              vector.Vector3(
+                                  0, squareScaleA, 0)),
+                          child: Padding(
+                              padding: EdgeInsets.only(
+                                  top: 16,
+                                  left: 22,
+                                  right: 22),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceBetween,
+                                children: [
+                                  Text(_formatDuration(
+                                      Duration(
+                                          milliseconds: _currentPosition
+                                              .toInt())),
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Montserrat',
+                                        fontWeight: FontWeight
+                                            .w400,
+                                        color: Color
+                                            .fromARGB(
+                                            255, 246,
+                                            244,
+                                            244)
+                                    ),),
+                                  Text(_formatDuration(
+                                      Duration(
+                                          milliseconds: _totalDuration
+                                              .toInt())),
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Montserrat',
+                                        fontWeight: FontWeight
+                                            .w400,
+                                        color: Color
+                                            .fromARGB(
+                                            255, 246,
+                                            244,
+                                            244)
+                                    ),),
+                                ],)))),
+                  SizedBox(height: 4,),
+                  AnimatedOpacity(opacity: opacity,
+                      duration: Duration(
+                          milliseconds: 400),
+                      child: AnimatedContainer(
+                          duration: Duration(
+                              milliseconds: 400),
+                          transform: Matrix4
+                              .translation(
+                              vector.Vector3(
+                                  0, squareScaleA, 0)),
+                          child: SizedBox(
+                              height: 8,
+                              child: SliderTheme(
+                                data: SliderTheme.of(
+                                    context)
+                                    .copyWith(
+                                  trackHeight: 8.0,
+                                  tickMarkShape: RoundSliderTickMarkShape(
+                                      tickMarkRadius: 24),
+                                  thumbShape: SliderComponentShape
+                                      .noThumb,
+                                  overlayShape: RoundSliderOverlayShape(
+                                      overlayRadius: 24.0),
+                                  activeTrackColor: Colors
+                                      .blue,
+                                  inactiveTrackColor: Colors
+                                      .blue
+                                      .withOpacity(0.3),
+                                  overlayColor: Colors
+                                      .blue
+                                      .withOpacity(0.0),
+                                  trackShape: RoundedRectSliderTrackShape(),
+                                ),
+                                child: StreamBuilder(
+                                  stream: AudioService
+                                      .positionStream,
+                                  builder: (context,
+                                      snapshot) {
+                                    if (snapshot
+                                        .hasData &&
+                                        !snapshot
+                                            .hasError &&
+                                        _totalDuration >
+                                            0) {
+                                      final position = snapshot
+                                          .data as Duration;
+                                      return Slider(
+                                        value: _currentPosition,
+                                        max: _totalDuration,
+                                        onChanged: (
+                                            value) {
+                                          if (devicecon) {
+                                            Duration jda = Duration(
+                                                milliseconds: value
+                                                    .toInt());
+                                            List<
+                                                dynamic> sdc = [
+                                              {
+                                                "type": "media",
+                                                "what": "seekto",
+                                                "timecurrent": jda
+                                                    .inSeconds,
+                                                "iddevice": "2"
+                                              }
+                                            ];
+                                            String jsonString = jsonEncode(
+                                                sdc[0]);
+                                            channeldev
+                                                .sink
+                                                .add(
+                                                jsonString);
+                                          } else {
+                                            AudioService
+                                                .seekTo(
+                                                Duration(
+                                                    milliseconds: value
+                                                        .toInt()));
+                                          }
+                                        },
+                                      );
+                                    } else {
+                                      return Slider(
+                                        value: 0,
+                                        max: _totalDuration,
+                                        onChanged: (
+                                            value) {
+                                          AudioService
+                                              .seekTo(
+                                              Duration(
+                                                  milliseconds: value
+                                                      .toInt()));
+                                        },
+                                      );
+                                    }
+                                  },
+                                ),)))),
+                  SizedBox(height: 22,),
+                  AnimatedContainer(
+                      duration: Duration(
+                          milliseconds: 400),
+                      transform: Matrix4.translation(
+                          vector.Vector3(
+                              0, squareScaleA, 0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment
+                            .center,
+                        children: [
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                  onPressed: null,
+                                  icon: Image(
+                                      color: Color.fromARGB(255, 123, 123, 124),
+                                      image: AssetImage(
+                                          'assets/images/unloveno.png'),
+                                      width: 100
+                                  ))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                  onPressed: null,
+                                  icon: Image(
+                                      color: Color.fromARGB(255, 123, 123, 124),
+                                      image: AssetImage(
+                                          'assets/images/reveuws.png'),
+                                      width: 100
+                                  ))),
+                          SizedBox(height: 50,
+                              width: 50,
+                              child: loadingmus ? CircularProgressIndicator() : IconButton(
+                                  onPressed: () {
+                                    setnewState(() {
+                                      playpause();
+                                    });
+                                  },
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: AnimatedSwitcher(
+                                      duration: Duration(milliseconds: 300),
+                                      transitionBuilder: (Widget child, Animation<double> animation) {
+                                        return RotationTransition(
+                                          turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                          child: ScaleTransition(scale: animation, child: child),
+                                        );
+                                      }, child:  Icon(
+                                    iconpla.icon,
+                                    key: videoope ? ValueKey<bool>(controller.player.state.playing) : ValueKey<bool>(AudioService.playbackState.playing),
+                                    size: 50,
+                                    color: Colors
+                                        .white,)))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                  onPressed: null,
+                                  icon: Image(
+                                    color: Color.fromARGB(255, 123, 123, 124),
+                                    image: AssetImage(
+                                        'assets/images/nexts.png'),
+                                    width: 120,
+                                    height: 120,
+                                  ))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  onPressed: null, // () {installmusic(_langData[0]);},
+                                  icon: Image(
+                                      color: Color.fromARGB(255, 123, 123, 124),
+                                      image: AssetImage(
+                                          'assets/images/loveno.png'),
+                                      width: 100
+                                  ))),
+                        ],)),
+                  SizedBox(height: 22,),
+                  AnimatedContainer(
+                      duration: Duration(
+                          milliseconds: 400),
+                      transform: Matrix4.translation(
+                          vector.Vector3(
+                              0, squareScaleA, 0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment
+                            .center,
+                        children: [
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  onPressed: () {
+                                    connectToWebSocket();
+                                  },
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(
+                                    Icons
+                                        .devices_rounded,
+                                    size: 50,
+                                    color: Colors
+                                        .white,))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                  onPressed: null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(
+                                    Icons
+                                        .queue_music_rounded,
+                                    size: 50,
+                                    color: Color.fromARGB(255, 123, 123, 124),))),
+                          SizedBox(height: 50,
+                              width: 50,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                  onPressed: null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(Icons
+                                      .settings_rounded,
+                                    size: 50,
+                                    color: Color.fromARGB(255, 123, 123, 124),))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                  onPressed: _langData[0]['vidos'] != "0" ? () {
+                                    setnewState(() {
+                                      _setvi(shazid,true, false);
+                                    });
+                                  }: null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Image(
+                                    color: _langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                    image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
+                                    width: 120,
+                                    height: 120,
+                                  ))),
+                        ],))
+                ],)
+              ],))
+        ])
+          );
+          });
+  }
+
+  Widget bigscreenbottomshet(){
+    Size size = MediaQuery
+        .of(context)
+        .size;
+    return StreamBuilder(
+        stream: AudioService.positionStream,
+        builder: (context, snapshot) {
+          return GestureDetector(
+              onDoubleTapDown: (details) =>
+                  _onDoubleTap(details, context), child:
+     Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            color: const Color.fromARGB(
+                255, 15, 15, 16),),
+          Image.network(
+            imgmus, // URL вашей фоновой картинки
+            fit: BoxFit.cover,
+          ),
+          Container(
+            color: Colors.black.withOpacity(
+                0.5), // Контейнер для применения размытия
+          ),
+          BackdropFilter(
+            filter: ImageFilter.blur(
+                sigmaX: 10, sigmaY: 10),
+            child: Container(
+              color: Colors.black.withOpacity(
+                  0), // Контейнер для применения размытия
+            ),
+            blendMode: BlendMode.srcATop,
+          ),
+          AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+              child: Video(
+                fit: BoxFit.cover,
+                controls: null,
+                controller: controllershort,
+              )),),
+
+          Container(
+
+              height: size.height,
+              child: Stack(children: [
+                  Row(children: [
+                    Container(width: size.width / 2, child:
+                    AnimatedOpacity(opacity: videoopacity,
+          duration: Duration(
+          milliseconds: 400),
+          child: Container(
+
+          margin: EdgeInsets.only(
+          top: 30,bottom: 30, left: 20, right: 20),
+          child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Container(child: MaterialDesktopVideoControlsTheme(
+          normal: MaterialDesktopVideoControlsThemeData(
+          // Modify theme options:
+          seekBarThumbColor: Colors
+              .blue,
+          seekBarPositionColor: Colors
+              .blue,
+          toggleFullscreenOnDoublePress: false,
+          ),
+          fullscreen: const MaterialDesktopVideoControlsThemeData(
+          seekBarThumbColor: Colors
+              .blue,
+          topButtonBarMargin: EdgeInsets
+              .only(
+          top: 20, left: 30),
+          topButtonBar: [
+          Text("blast!",
+          style: TextStyle(
+          fontSize: 40,
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight
+              .w900,
+          color: Colors.white,
+          ),)
+          ],
+          seekBarPositionColor: Colors
+              .blue,),
+          child:ClipRRect(
+          borderRadius: borderRadius, // Make the border round
+          child: Video(
+          controller: controller,
+          ),
+          ),
+          ),))))), Container(width: size.width / 2.5, child: Center(child: AnimatedContainer(duration: Duration(milliseconds: 400),
+          transform: Matrix4
+              .translation(
+          vector.Vector3(
+          0, -60, 0)), alignment: Alignment.center,
+                        constraints: BoxConstraints(maxWidth: size.width/2.5),
+                        child:  Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
+                  AnimatedOpacity(opacity: opacityi2,
+                      duration: Duration(seconds: 0),
+                      child: AnimatedContainer(
+                          alignment: Alignment
+                              .centerLeft,
+                          margin: EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              top: 20),
+                          height: 80,
+                          width: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius
+                                .circular(8),
+                          ),
+                          clipBehavior: Clip
+                              .antiAliasWithSaveLayer,
+                          duration: Duration(
+                              milliseconds: 0),
+                          child: AspectRatio(
+                              aspectRatio: 1,
+                              // Сохранение пропорций 1:1
+                              child: Image.network(
+                                imgmus,
+                                height: imgwh,
+                                width: imgwh,
+                                fit: BoxFit
+                                    .contain, // Изображ
+                              )))),
+                  AnimatedOpacity(
+                      opacity: videoopacity,
+                      duration: Duration(
+                          milliseconds: 400),
+                      child: AnimatedContainer(
+                        margin: EdgeInsets.only(
+                            top: 20),
+                        duration: Duration(
+                            milliseconds: 400),
+                        child:
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(namemus,
+                              textAlign: TextAlign
+                                  .start,
+                              overflow: TextOverflow
+                                  .ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight
+                                      .w500,
+                                  color: Color.fromARGB(
+                                      255, 246, 244,
+                                      244)
+                              ),),
+                            Text(ispolmus,
+                              overflow: TextOverflow
+                                  .ellipsis,
+                              maxLines: 1,
+                              textAlign: TextAlign
+                                  .start,
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight
+                                      .w300,
+                                  color: Color
+                                      .fromARGB(
+                                      255, 246, 244,
+                                      244)
+                              ),)
+                          ],),))
+
+                ],))))],),
+                  Row( mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [Container(
+          width: size.width/2, child: Container(
+                      constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
+                      aspectRatio: 1,
+                      // Сохранение пропорций 1:1
+                      child: AnimatedOpacity(
+                          opacity: opacityi1,
+                          duration: Duration(
+                              seconds: 0),
+                          child: AnimatedBuilder(
+                              animation: _animation,
+                              builder: (context,
+                                  child) {
+                                return Align(
+                                    alignment: _animation
+                                        .value,
+                                    child:
+                                    AnimatedContainer(
+                                        constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
+                                        margin: EdgeInsets
+                                            .only(
+                                            left: 30,
+                                            right: 30,
+                                            top: 30, bottom: 30),
+                                        height: imgwh,
+                                        width: imgwh,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape
+                                              .rectangle,
+                                          borderRadius: BorderRadius
+                                              .circular(
+                                              dsds),
+                                        ),
+
+                                        clipBehavior: Clip
+                                            .hardEdge,
+                                        duration: Duration(
+                                            milliseconds: 400),
+                                        child: AspectRatio(
+                                            aspectRatio: 1,
+                                            // Сохранение пропорций 1:1
+                                            child: Image
+                                                .network(
+                                              imgmus,
+                                              height: imgwh,
+                                              width: imgwh,
+                                              fit: BoxFit
+                                                  .cover, // Изображ
+                                            ))));
+                              }))))), Container(
+          width: size.width/3, child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [AnimatedOpacity(opacity: opacity,
+                      duration: Duration(
+                          milliseconds: 400),
+                      onEnd: () {
+                        setnewState(() {
+                          if (videoope) {
+                            opacityi1 = 0;
+                            opacityi2 = 1;
+                          }
+                        });
+                      },
+                      child: AnimatedContainer(
+                          width: size.width,
+                          duration: Duration(
+                              milliseconds: 400),
+                          transform: Matrix4
+                              .translation(
+                              vector.Vector3(
+                                  0, 0, 0)),
+                          child: Text(namemus,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.fade,
+                            maxLines: 1,
+                            style: TextStyle(
+                                fontSize: 30,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight
+                                    .w500,
+                                color: Color.fromARGB(
+                                    255, 246, 244, 244)
+                            ),))),
+                    AnimatedOpacity(opacity: opacity,
+                        duration: Duration(
+                            milliseconds: 400),
+                        child: AnimatedContainer(
+                            duration: Duration(
+                                milliseconds: 400),
+                            transform: Matrix4
+                                .translation(
+                                vector.Vector3(
+                                    0, 0, 0)),
+                            child: Text(ispolmus,
+                              overflow: TextOverflow.fade,
+                              maxLines: 1,
+
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight
+                                      .w300,
+                                  color: Color.fromARGB(
+                                      255, 246, 244, 244)
+                              ),))),
+                    AnimatedOpacity(opacity: opacity,
+                        duration: Duration(
+                            milliseconds: 400),
+                        child: AnimatedContainer(
+                            duration: Duration(
+                                milliseconds: 400),
+                            transform: Matrix4
+                                .translation(
+                                vector.Vector3(
+                                    0, 0, 0)),
+                            child: Padding(
+                                padding: EdgeInsets.only(
+                                    top: 16,
+                                    left: 22,
+                                    right: 22),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment
+                                      .spaceBetween,
+                                  children: [
+                                    Text(_formatDuration(
+                                        Duration(
+                                            milliseconds: _currentPosition
+                                                .toInt())),
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontFamily: 'Montserrat',
+                                          fontWeight: FontWeight
+                                              .w400,
+                                          color: Color
+                                              .fromARGB(
+                                              255, 246,
+                                              244,
+                                              244)
+                                      ),),
+                                    Text(_formatDuration(
+                                        Duration(
+                                            milliseconds: _totalDuration
+                                                .toInt())),
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontFamily: 'Montserrat',
+                                          fontWeight: FontWeight
+                                              .w400,
+                                          color: Color
+                                              .fromARGB(
+                                              255, 246,
+                                              244,
+                                              244)
+                                      ),),
+                                  ],)))),
+                    SizedBox(height: 4,),
+                    AnimatedOpacity(opacity: opacity,
+                        duration: Duration(
+                            milliseconds: 400),
+                        child: AnimatedContainer(
+                            duration: Duration(
+                                milliseconds: 400),
+                            transform: Matrix4
+                                .translation(
+                                vector.Vector3(
+                                    0, 0, 0)),
+                            child: SizedBox(
+                                height: 8,
+                                child: SliderTheme(
+                                  data: SliderTheme.of(
+                                      context)
+                                      .copyWith(
+                                    trackHeight: 8.0,
+                                    tickMarkShape: RoundSliderTickMarkShape(
+                                        tickMarkRadius: 24),
+                                    thumbShape: SliderComponentShape
+                                        .noThumb,
+                                    overlayShape: RoundSliderOverlayShape(
+                                        overlayRadius: 24.0),
+                                    activeTrackColor: Colors
+                                        .blue,
+                                    inactiveTrackColor: Colors
+                                        .blue
+                                        .withOpacity(0.3),
+                                    overlayColor: Colors
+                                        .blue
+                                        .withOpacity(0.0),
+                                    trackShape: RoundedRectSliderTrackShape(),
+                                  ),
+                                  child: StreamBuilder(
+                                    stream: AudioService
+                                        .positionStream,
+                                    builder: (context,
+                                        snapshot) {
+                                      if (snapshot
+                                          .hasData &&
+                                          !snapshot
+                                              .hasError &&
+                                          _totalDuration >
+                                              0) {
+                                        final position = snapshot
+                                            .data as Duration;
+                                        return Slider(
+                                          value: _currentPosition,
+                                          max: _totalDuration,
+                                          onChanged: (
+                                              value) {
+                                            if (devicecon) {
+                                              Duration jda = Duration(
+                                                  milliseconds: value
+                                                      .toInt());
+                                              List<
+                                                  dynamic> sdc = [
+                                                {
+                                                  "type": "media",
+                                                  "what": "seekto",
+                                                  "timecurrent": jda
+                                                      .inSeconds,
+                                                  "iddevice": "2"
+                                                }
+                                              ];
+                                              String jsonString = jsonEncode(
+                                                  sdc[0]);
+                                              channeldev
+                                                  .sink
+                                                  .add(
+                                                  jsonString);
+                                            } else {
+                                              AudioService
+                                                  .seekTo(
+                                                  Duration(
+                                                      milliseconds: value
+                                                          .toInt()));
+                                            }
+                                          },
+                                        );
+                                      } else {
+                                        return Slider(
+                                          value: 0,
+                                          max: _totalDuration,
+                                          onChanged: (
+                                              value) {
+                                            AudioService
+                                                .seekTo(
+                                                Duration(
+                                                    milliseconds: value
+                                                        .toInt()));
+                                          },
+                                        );
+                                      }
+                                    },
+                                  ),)))),
+                    SizedBox(height: 22,),
+                    AnimatedContainer(
+                        duration: Duration(
+                            milliseconds: 400),
+                        transform: Matrix4.translation(
+                            vector.Vector3(
+                                0, 0, 0)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment
+                              .center,
+                          children: [
+                            SizedBox(width: 50,
+                                height: 50,
+                                child: IconButton(
+                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                    onPressed: null,
+                                    icon: Image(
+                                        color: Color.fromARGB(255, 123, 123, 124),
+                                        image: AssetImage(
+                                            'assets/images/unloveno.png'),
+                                        width: 100
+                                    ))),
+                            SizedBox(width: 50,
+                                height: 50,
+                                child: IconButton(
+                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                    onPressed: null,
+                                    icon: Image(
+                                        color: Color.fromARGB(255, 123, 123, 124),
+                                        image: AssetImage(
+                                            'assets/images/reveuws.png'),
+                                        width: 100
+                                    ))),
+                            SizedBox(height: 50,
+                                width: 50,
+                                child: loadingmus ? CircularProgressIndicator() : IconButton(
+                                    onPressed: () {
+                                      setnewState(() {
+                                        playpause();
+                                      });
+                                    },
+                                    padding: EdgeInsets
+                                        .zero,
+                                    icon: AnimatedSwitcher(
+                                        duration: Duration(milliseconds: 300),
+                                        transitionBuilder: (Widget child, Animation<double> animation) {
+                                          return RotationTransition(
+                                            turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                            child: ScaleTransition(scale: animation, child: child),
+                                          );
+                                        }, child:  Icon(
+                                      key: videoope ? ValueKey<bool>(controller.player.state.playing) : ValueKey<bool>(AudioService.playbackState.playing),
+                                      iconpla.icon,
+                                      size: 50,
+                                      color: Colors
+                                          .white,)))),
+                            SizedBox(width: 50,
+                                height: 50,
+                                child: IconButton(
+                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                    onPressed: null,
+                                    icon: Image(
+                                      color: Color.fromARGB(255, 123, 123, 124),
+                                      image: AssetImage(
+                                          'assets/images/nexts.png'),
+                                      width: 120,
+                                      height: 120,
+                                    ))),
+                            SizedBox(width: 50,
+                                height: 50,
+                                child: IconButton(
+                                    onPressed: null, // () {installmusic(_langData[0]);},
+                                    icon: Image(
+                                        color: Color.fromARGB(255, 123, 123, 124),
+                                        image: AssetImage(
+                                            'assets/images/loveno.png'),
+                                        width: 100
+                                    ))),
+                          ],)),
+                    SizedBox(height: 22,),
+                    AnimatedContainer(
+                        duration: Duration(
+                            milliseconds: 400),
+                        transform: Matrix4.translation(
+                            vector.Vector3(
+                                0, 0, 0)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment
+                              .center,
+                          children: [
+                            SizedBox(width: 50,
+                                height: 50,
+                                child: IconButton(
+                                    onPressed: () {
+                                      connectToWebSocket();
+                                    },
+                                    padding: EdgeInsets
+                                        .zero,
+                                    icon: Icon(
+                                      Icons
+                                          .devices_rounded,
+                                      size: 50,
+                                      color: Colors
+                                          .white,))),
+                            SizedBox(width: 50,
+                                height: 50,
+                                child: IconButton(
+                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                    onPressed: null,
+                                    padding: EdgeInsets
+                                        .zero,
+                                    icon: Icon(
+                                      Icons
+                                          .queue_music_rounded,
+                                      size: 50,
+                                      color: Color.fromARGB(255, 123, 123, 124),))),
+                            SizedBox(height: 50,
+                                width: 50,
+                                child: IconButton(
+                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                    onPressed: null,
+                                    padding: EdgeInsets
+                                        .zero,
+                                    icon: Icon(Icons
+                                        .settings_rounded,
+                                      size: 50,
+                                      color: Color.fromARGB(255, 123, 123, 124),))),
+                            SizedBox(width: 50,
+                                height: 50,
+                                child: IconButton(
+                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                    onPressed: _langData[0]['vidos'] != "0" ? () {
+                                      setnewState(() {
+                                        _setvi(shazid,true, false);
+                                      });
+                                    }: null,
+                                    padding: EdgeInsets
+                                        .zero,
+                                    icon: Image(
+                                      color: _langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                      image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
+                                      width: 120,
+                                      height: 120,
+                                    ))),
+                          ],))],)), Container(width: size.width/10,) ],),
+
+              ],))
+        ])
+          );}
+    );
+  }
 
   late BorderRadius borderRadius =  MediaQuery.of(context).size.width >= 800 ? BorderRadius.circular(20) : BorderRadius.circular(0);
   void _showModalSheet() {
@@ -625,578 +1893,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 builder: (BuildContext context, StateSetter setState) {
                   setnewState = setState;
                   double screenWidth = MediaQuery.of(context).size.width;
-
+                  double screenhfg = MediaQuery.of(context).size.height;
+                  setState(() {
                   // Determine the border radius based on screen width
-                  BorderRadius borderRadius = screenWidth >= 800
+                  squareScaleA = videoope ? screenWidth > 800 ? -320 : -80 * (screenWidth / 280) : 0;
+                  squareScaleB = videoope ? 0 : screenWidth > 800 ? -320 : 80 * (screenWidth / 280);
+                  });
+                  borderRadius = screenWidth >= 800
                       ? BorderRadius.circular(20)
                       : BorderRadius.circular(0);
-                  return StreamBuilder(
-                      stream: AudioService.positionStream,
-                      builder: (context, snapshot) {
-                        return GestureDetector(
-                            onDoubleTapDown: (details) =>
-                                _onDoubleTap(details, context), child:
-                        Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  Container(
-                                    color: const Color.fromARGB(
-                                        255, 15, 15, 16),),
-                                  Image.network(
-                                    imgmus, // URL вашей фоновой картинки
-                                    fit: BoxFit.cover,
-                                  ),
-                                  Container(
-                                    color: Colors.black.withOpacity(
-                                        0.5), // Контейнер для применения размытия
-                                  ),
-                                  BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                        sigmaX: 10, sigmaY: 10),
-                                    child: Container(
-                                      color: Colors.black.withOpacity(
-                                          0), // Контейнер для применения размытия
-                                    ),
-                                    blendMode: BlendMode.srcATop,
-                                  ),
-                                  AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
-                                  child: Video(
-                                    fit: BoxFit.cover,
-                                    controls: null,
-                                    controller: controllershort,
-                                  )),),
-                                  Container(
-                                      height: size.height,
-                                      child: Stack(children: [
-                                        Column(children: [
-                                          AnimatedOpacity(opacity: videoopacity,
-                                              duration: Duration(
-                                                  milliseconds: 400),
-                                              child: Container(
+                   return screenWidth >= screenhfg ?
+                        bigscreenbottomshet() : smallscreenbottomshet();
 
-                                                constraints: BoxConstraints(maxWidth: 800, maxHeight: 450),
-                                                margin: EdgeInsets.only(
-                                                    top: 60),
-                                                child: AspectRatio(
-                                                  aspectRatio: 16 / 9,
-                                                  child: Container(child: MaterialDesktopVideoControlsTheme(
-                                                    normal: MaterialDesktopVideoControlsThemeData(
-                                                      // Modify theme options:
-                                                      seekBarThumbColor: Colors
-                                                          .blue,
-                                                      seekBarPositionColor: Colors
-                                                          .blue,
-                                                      toggleFullscreenOnDoublePress: false,
-                                                    ),
-                                                    fullscreen: const MaterialDesktopVideoControlsThemeData(
-                                                      seekBarThumbColor: Colors
-                                                          .blue,
-                                                      topButtonBarMargin: EdgeInsets
-                                                          .only(
-                                                          top: 20, left: 30),
-                                                      topButtonBar: [
-                                                        Text("blast!",
-                                                          style: TextStyle(
-                                                            fontSize: 40,
-                                                            fontFamily: 'Montserrat',
-                                                            fontWeight: FontWeight
-                                                                .w900,
-                                                            color: Colors.white,
-                                                          ),)
-                                                      ],
-                                                      seekBarPositionColor: Colors
-                                                          .blue,),
-                                                    child:ClipRRect(
-                                                      borderRadius: borderRadius, // Make the border round
-                                                      child: Video(
-                                                      controller: controller,
-                                                    ),
-                                                  ),
-                                                ),)))),
-                                          Row(children: [
-                                            AnimatedOpacity(opacity: opacityi2,
-                                                duration: Duration(seconds: 0),
-                                                child: AnimatedContainer(
-                                                    alignment: Alignment
-                                                        .centerLeft,
-                                                    margin: EdgeInsets.only(
-                                                        left: 20,
-                                                        right: 20,
-                                                        top: 20),
-                                                    height: 80,
-                                                    width: 80,
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.rectangle,
-                                                      borderRadius: BorderRadius
-                                                          .circular(8),
-                                                    ),
-                                                    clipBehavior: Clip
-                                                        .antiAliasWithSaveLayer,
-                                                    duration: Duration(
-                                                        milliseconds: 0),
-                                                    child: AspectRatio(
-                                                        aspectRatio: 1,
-                                                        // Сохранение пропорций 1:1
-                                                        child: Image.network(
-                                                          imgmus,
-                                                          height: imgwh,
-                                                          width: imgwh,
-                                                          fit: BoxFit
-                                                              .contain, // Изображ
-                                                        )))),
-                                            AnimatedOpacity(
-                                                opacity: videoopacity,
-                                                duration: Duration(
-                                                    milliseconds: 400),
-                                                child: AnimatedContainer(
-                                                  margin: EdgeInsets.only(
-                                                      top: 20),
-                                                  transform: Matrix4
-                                                      .translation(
-                                                      vector.Vector3(
-                                                          0, squareScaleB, 0)),
-                                                  duration: Duration(
-                                                      milliseconds: 400),
-                                                  child:
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment
-                                                        .start,
-                                                    children: [Text(namemus,
-                                                      textAlign: TextAlign
-                                                          .start,
-                                                      overflow: TextOverflow
-                                                          .ellipsis,
-                                                      maxLines: 1,
-                                                      style: TextStyle(
-                                                          fontSize: 30,
-                                                          fontFamily: 'Montserrat',
-                                                          fontWeight: FontWeight
-                                                              .w500,
-                                                          color: Color.fromARGB(
-                                                              255, 246, 244,
-                                                              244)
-                                                      ),),
-                                                      Text(ispolmus,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        maxLines: 1,
-                                                        textAlign: TextAlign
-                                                            .start,
-                                                        style: TextStyle(
-                                                            fontSize: 24,
-                                                            fontFamily: 'Montserrat',
-                                                            fontWeight: FontWeight
-                                                                .w300,
-                                                            color: Color
-                                                                .fromARGB(
-                                                                255, 246, 244,
-                                                                244)
-                                                        ),)
-                                                    ],),))
-
-                                          ],),
-                                        ]), Column(children: [
-                                          Container(
-                                              constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
-                                              aspectRatio: 1,
-                                              // Сохранение пропорций 1:1
-                                              child: AnimatedOpacity(
-                                                  opacity: opacityi1,
-                                                  duration: Duration(
-                                                      seconds: 0),
-                                                  child: AnimatedBuilder(
-                                                      animation: _animation,
-                                                      builder: (context,
-                                                          child) {
-                                                        return Align(
-                                                            alignment: _animation
-                                                                .value,
-                                                            child:
-                                                            AnimatedContainer(
-                                                              constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
-                                                                margin: EdgeInsets
-                                                                    .only(
-                                                                    left: 30,
-                                                                    right: 30,
-                                                                    top: dsds2),
-                                                                height: imgwh,
-                                                                width: imgwh,
-                                                                decoration: BoxDecoration(
-                                                                  shape: BoxShape
-                                                                      .rectangle,
-                                                                  borderRadius: BorderRadius
-                                                                      .circular(
-                                                                      dsds),
-                                                                ),
-
-                                                                clipBehavior: Clip
-                                                                    .hardEdge,
-                                                                duration: Duration(
-                                                                    milliseconds: 400),
-                                                                child: AspectRatio(
-                                                                    aspectRatio: 1,
-                                                                    // Сохранение пропорций 1:1
-                                                                    child: Image
-                                                                        .network(
-                                                                      imgmus,
-                                                                      height: imgwh,
-                                                                      width: imgwh,
-                                                                      fit: BoxFit
-                                                                          .cover, // Изображ
-                                                                    ))));
-                                                      })))),
-                                          AnimatedOpacity(opacity: opacity,
-                                              duration: Duration(
-                                                  milliseconds: 400),
-                                              onEnd: () {
-                                                setState(() {
-                                                  if (videoope) {
-                                                    opacityi1 = 0;
-                                                    opacityi2 = 1;
-                                                  }
-                                                });
-                                              },
-                                              child: AnimatedContainer(
-                                                  width: size.width,
-                                                  duration: Duration(
-                                                      milliseconds: 400),
-                                                  transform: Matrix4
-                                                      .translation(
-                                                      vector.Vector3(
-                                                          0, squareScaleA, 0)),
-                                                  child: Text(namemus,
-                                                    textAlign: TextAlign.center,
-                                                    overflow: TextOverflow.fade,
-                                                    maxLines: 1,
-                                                    style: TextStyle(
-                                                        fontSize: 30,
-                                                        fontFamily: 'Montserrat',
-                                                        fontWeight: FontWeight
-                                                            .w500,
-                                                        color: Color.fromARGB(
-                                                            255, 246, 244, 244)
-                                                    ),))),
-                                          AnimatedOpacity(opacity: opacity,
-                                              duration: Duration(
-                                                  milliseconds: 400),
-                                              child: AnimatedContainer(
-                                                  duration: Duration(
-                                                      milliseconds: 400),
-                                                  transform: Matrix4
-                                                      .translation(
-                                                      vector.Vector3(
-                                                          0, squareScaleA, 0)),
-                                                  child: Text(ispolmus,
-                                                    overflow: TextOverflow.fade,
-                                                    maxLines: 1,
-
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        fontSize: 24,
-                                                        fontFamily: 'Montserrat',
-                                                        fontWeight: FontWeight
-                                                            .w300,
-                                                        color: Color.fromARGB(
-                                                            255, 246, 244, 244)
-                                                    ),))),
-                                          AnimatedOpacity(opacity: opacity,
-                                              duration: Duration(
-                                                  milliseconds: 400),
-                                              child: AnimatedContainer(
-                                                  duration: Duration(
-                                                      milliseconds: 400),
-                                                  transform: Matrix4
-                                                      .translation(
-                                                      vector.Vector3(
-                                                          0, squareScaleA, 0)),
-                                                  child: Padding(
-                                                      padding: EdgeInsets.only(
-                                                          top: 16,
-                                                          left: 22,
-                                                          right: 22),
-                                                      child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment
-                                                            .spaceBetween,
-                                                        children: [
-                                                          Text(_formatDuration(
-                                                              Duration(
-                                                                  milliseconds: _currentPosition
-                                                                      .toInt())),
-                                                            style: TextStyle(
-                                                                fontSize: 16,
-                                                                fontFamily: 'Montserrat',
-                                                                fontWeight: FontWeight
-                                                                    .w400,
-                                                                color: Color
-                                                                    .fromARGB(
-                                                                    255, 246,
-                                                                    244,
-                                                                    244)
-                                                            ),),
-                                                          Text(_formatDuration(
-                                                              Duration(
-                                                                  milliseconds: _totalDuration
-                                                                      .toInt())),
-                                                            style: TextStyle(
-                                                                fontSize: 16,
-                                                                fontFamily: 'Montserrat',
-                                                                fontWeight: FontWeight
-                                                                    .w400,
-                                                                color: Color
-                                                                    .fromARGB(
-                                                                    255, 246,
-                                                                    244,
-                                                                    244)
-                                                            ),),
-                                                        ],)))),
-                                          SizedBox(height: 4,),
-                                          AnimatedOpacity(opacity: opacity,
-                                              duration: Duration(
-                                                  milliseconds: 400),
-                                              child: AnimatedContainer(
-                                                  duration: Duration(
-                                                      milliseconds: 400),
-                                                  transform: Matrix4
-                                                      .translation(
-                                                      vector.Vector3(
-                                                          0, squareScaleA, 0)),
-                                                  child: SizedBox(
-                                                      height: 8,
-                                                      child: SliderTheme(
-                                                        data: SliderTheme.of(
-                                                            context)
-                                                            .copyWith(
-                                                          trackHeight: 8.0,
-                                                          tickMarkShape: RoundSliderTickMarkShape(
-                                                              tickMarkRadius: 24),
-                                                          thumbShape: SliderComponentShape
-                                                              .noThumb,
-                                                          overlayShape: RoundSliderOverlayShape(
-                                                              overlayRadius: 24.0),
-                                                          activeTrackColor: Colors
-                                                              .blue,
-                                                          inactiveTrackColor: Colors
-                                                              .blue
-                                                              .withOpacity(0.3),
-                                                          overlayColor: Colors
-                                                              .blue
-                                                              .withOpacity(0.0),
-                                                          trackShape: RoundedRectSliderTrackShape(),
-                                                        ),
-                                                        child: StreamBuilder(
-                                                          stream: AudioService
-                                                              .positionStream,
-                                                          builder: (context,
-                                                              snapshot) {
-                                                            if (snapshot
-                                                                .hasData &&
-                                                                !snapshot
-                                                                    .hasError &&
-                                                                _totalDuration >
-                                                                    0) {
-                                                              final position = snapshot
-                                                                  .data as Duration;
-                                                              return Slider(
-                                                                value: _currentPosition,
-                                                                max: _totalDuration,
-                                                                onChanged: (
-                                                                    value) {
-                                                                  if (devicecon) {
-                                                                    Duration jda = Duration(
-                                                                        milliseconds: value
-                                                                            .toInt());
-                                                                    List<
-                                                                        dynamic> sdc = [
-                                                                      {
-                                                                        "type": "media",
-                                                                        "what": "seekto",
-                                                                        "timecurrent": jda
-                                                                            .inSeconds,
-                                                                        "iddevice": "2"
-                                                                      }
-                                                                    ];
-                                                                    String jsonString = jsonEncode(
-                                                                        sdc[0]);
-                                                                    channeldev
-                                                                        .sink
-                                                                        .add(
-                                                                        jsonString);
-                                                                  } else {
-                                                                    AudioService
-                                                                        .seekTo(
-                                                                        Duration(
-                                                                            milliseconds: value
-                                                                                .toInt()));
-                                                                  }
-                                                                },
-                                                              );
-                                                            } else {
-                                                              return Slider(
-                                                                value: 0,
-                                                                max: _totalDuration,
-                                                                onChanged: (
-                                                                    value) {
-                                                                  AudioService
-                                                                      .seekTo(
-                                                                      Duration(
-                                                                          milliseconds: value
-                                                                              .toInt()));
-                                                                },
-                                                              );
-                                                            }
-                                                          },
-                                                        ),)))),
-                                          SizedBox(height: 22,),
-                                          AnimatedContainer(
-                                              duration: Duration(
-                                                  milliseconds: 400),
-                                              transform: Matrix4.translation(
-                                                  vector.Vector3(
-                                                      0, squareScaleA, 0)),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment
-                                                    .spaceAround,
-                                                crossAxisAlignment: CrossAxisAlignment
-                                                    .center,
-                                                children: [
-                                                  SizedBox(width: 50,
-                                                      height: 50,
-                                                      child: IconButton(
-                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                                          onPressed: null,
-                                                          icon: Image(
-                                                          color: Color.fromARGB(255, 123, 123, 124),
-                                                          image: AssetImage(
-                                                              'assets/images/unloveno.png'),
-                                                          width: 100
-                                                      ))),
-                                                  SizedBox(width: 50,
-                                                      height: 50,
-                                                      child: IconButton(
-                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                                          onPressed: null,
-                                                          icon: Image(
-                                                              color: Color.fromARGB(255, 123, 123, 124),
-                                                              image: AssetImage(
-                                                                  'assets/images/reveuws.png'),
-                                                              width: 100
-                                                          ))),
-                                                  SizedBox(height: 50,
-                                                      width: 50,
-                                                      child: IconButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              playpause();
-                                                            });
-                                                          },
-                                                          padding: EdgeInsets
-                                                              .zero,
-                                                          icon: Icon(
-                                                            iconpla.icon,
-                                                            size: 50,
-                                                            color: Colors
-                                                                .white,))),
-                                                  SizedBox(width: 50,
-                                                      height: 50,
-                                                      child: IconButton(
-                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                                          onPressed: null,
-                                                          icon: Image(
-                                                            color: Color.fromARGB(255, 123, 123, 124),
-                                                            image: AssetImage(
-                                                                'assets/images/nexts.png'),
-                                                            width: 120,
-                                                            height: 120,
-                                                          ))),
-                                                  SizedBox(width: 50,
-                                                      height: 50,
-                                                      child: IconButton(
-                                                          onPressed: () {
-                                                            installmusic(_langData[0]);
-                                                          },
-                                                          icon: Image(
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                  255, 255, 255,
-                                                                  255),
-                                                              image: AssetImage(
-                                                                  'assets/images/loveno.png'),
-                                                              width: 100
-                                                          ))),
-                                                ],)),
-                                          SizedBox(height: 22,),
-                                          AnimatedContainer(
-                                              duration: Duration(
-                                                  milliseconds: 400),
-                                              transform: Matrix4.translation(
-                                                  vector.Vector3(
-                                                      0, squareScaleA, 0)),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment
-                                                    .spaceAround,
-                                                crossAxisAlignment: CrossAxisAlignment
-                                                    .center,
-                                                children: [
-                                                  SizedBox(width: 50,
-                                                      height: 50,
-                                                      child: IconButton(
-                                                          onPressed: () {
-                                                            connectToWebSocket();
-                                                          },
-                                                          padding: EdgeInsets
-                                                              .zero,
-                                                          icon: Icon(
-                                                            Icons
-                                                                .devices_rounded,
-                                                            size: 50,
-                                                            color: Colors
-                                                                .white,))),
-                                                  SizedBox(width: 50,
-                                                      height: 50,
-                                                      child: IconButton(
-                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                                          onPressed: null,
-                                                          padding: EdgeInsets
-                                                              .zero,
-                                                          icon: Icon(
-                                                            Icons
-                                                                .queue_music_rounded,
-                                                            size: 50,
-                                                            color: Color.fromARGB(255, 123, 123, 124),))),
-                                                  SizedBox(height: 50,
-                                                      width: 50,
-                                                      child: IconButton(
-                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                                          onPressed: null,
-                                                          padding: EdgeInsets
-                                                              .zero,
-                                                          icon: Icon(Icons
-                                                              .playlist_add_rounded,
-                                                            size: 50,
-                                                            color: Color.fromARGB(255, 123, 123, 124),))),
-                                                  SizedBox(width: 50,
-                                                      height: 50,
-                                                      child: IconButton(
-                                                          disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                                          onPressed: _langData[0]['vidos'] != "0" ? () {
-                                                            setState(() {
-                                                                _setvi(shazid,true, false);
-                                                            });
-                                                          }: null,
-                                                          padding: EdgeInsets
-                                                              .zero,
-                                                          icon: Image(
-                                                            color: _langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                                            image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
-                                                            width: 120,
-                                                            height: 120,
-                                                          ))),
-                                                ],))
-                                        ],)
-                                      ],))
-                                ]));
-                      });
-                }));
+          }));
           }
       ).whenComplete(() {
         _isBottomSheetOpen = false; // Когда BottomSheet закрывается, сбрасываем флаг
@@ -1204,7 +1913,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
-  var iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+  var iconpla = Icon(Icons.play_arrow_rounded, size: 40, key:  ValueKey<bool>(AudioService.playbackState.playing),);
 
   void _updateIcon(Icon newIcon) {
     setState(() {
@@ -1341,8 +2050,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               ),
 
                               trailing: Container(              padding: EdgeInsets.only(right: 10, top: 8),
-                                child: IconButton(
-                                  icon: iconpla,
+                                child: loadingmus ? CircularProgressIndicator() : IconButton(
+                                  icon: AnimatedSwitcher(
+                                    duration: Duration(milliseconds: 300),
+                                    transitionBuilder: (Widget child, Animation<double> animation) {
+                                      return RotationTransition(
+                                        turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                        child: ScaleTransition(scale: animation, child: child),
+                                      );
+                                    },
+                                    child:iconpla),
                                   color: Colors.white,
                                   padding: EdgeInsets.only(right: 2,bottom: 2),
                                   onPressed: () {
@@ -1703,20 +2420,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               if(sdbf[0]["playing"].toString() == "false"){
                 setState(() {
                   setnewState(() {
-                  iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+                  iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
                   if (isjemnow) {
+                    _childKey.currentState?.toggleAnimation(false);
                     _childKey.currentState?.updateIcon(Icon(
-                        Icons.play_arrow_rounded, size: 64, color: Colors.white));
+                        Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
                   }
                   });
                 });
               }else{
                 setState(() {
                   setnewState(() {
-                  iconpla = Icon(Icons.pause_rounded, size: 40,);
+                  iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
                   if (isjemnow) {
+                    _childKey.currentState?.toggleAnimation(true);
                     _childKey.currentState?.updateIcon(
-                        Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+                        Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
                   }
                   });});
               }
@@ -1728,19 +2447,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           if(sdbf[0]["playing"].toString() == "false"){
             setState(() {
               setnewState(() {
-              iconpla = Icon(Icons.play_arrow_rounded, size: 40,);
+              iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
               if (isjemnow) {
+                _childKey.currentState?.toggleAnimation(false);
                 _childKey.currentState?.updateIcon(Icon(
-                    Icons.play_arrow_rounded, size: 64, color: Colors.white));
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
               });});
           }else{
             setState(() {
               setnewState(() {
-              iconpla = Icon(Icons.pause_rounded, size: 40,);
+              iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
               if (isjemnow) {
+                _childKey.currentState?.toggleAnimation(true);
                 _childKey.currentState?.updateIcon(
-                    Icon(Icons.pause_rounded, size: 64, color: Colors.white));
+                    Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
               });});
           }
