@@ -64,6 +64,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   //videoblock
   bool isplad = false;
 
+
+  bool instalumusa = false;
+
   Future<void> playVideo(String shazidi, bool frommus) async {
     if (shazid != shazidi || frommus) {
       var urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazidi);
@@ -122,14 +125,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if(!devicecon) {
         if (event != null) {
           setState(() {
-            _currentPosition = event['position'].toDouble();
-            _totalDuration = event['duration'].toDouble();
-            print(event['duration'].toString());
+            if(instalumusa) {
+              _currentPosition = event['position'].toDouble()~/ 2;
+              _totalDuration = event['duration'].toDouble()~/ 2;
+              print(event['duration'].toString());
+            }else{
+              _currentPosition = event['position'].toDouble();
+              _totalDuration = event['duration'].toDouble();
+              print(event['duration'].toString());
+            }
           });
         }
       }else{
         setnewState(() {
-          _totalDuration = event['duration'].toDouble();
+          if(instalumusa) {
+            _totalDuration = event['duration'].toDouble()~/ 2;
+          }else{
+            _totalDuration = event['duration'].toDouble();
+          }
         });
       }
     });
@@ -276,19 +289,35 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         var response = await http.get(urli);
         String dff = response.body.toString();
         print(dff);
+        if(install){
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          List<String>? sac = prefs.getStringList("historymusid");
+          List<String> fsaf = [];
+          if (sac != null) {
+            fsaf = sac;
+          }
+          if(fsaf.length >= 20){
+            fsaf.removeLast();
+          }
+          fsaf.add(jsonDecode(dff)["id"]);
+          await prefs.setStringList("historymusid", fsaf);
+        }
+        
         setState(() {
           print("hyhg");
           _langData[0] = jsonDecode(dff);
           if(install){
+            instalumusa = true;
             print("vfdvvfdv");
             print(_langData[0]['timeurl']);
             _langData[0]['url'] = _langData[0]['timeurl'];
+
           }
           if (_langData[0]['vidos'] != '0' && videoope) {
             playVideo(_langData[0]['idshaz'], false);
           } else {
             print("thytfyjyju");
-            playmusa(_langData[0], false);
+            playmusa(_langData[0], false,install);
             if (videoope) {
               videoope = false;
               _toogleAnimky();
@@ -434,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           if (musaftervid == vidaftermus) {
             playpause();
           } else {
-            playmusa(_langData[0], true);
+            playmusa(_langData[0], true, false);
           }
           AudioService.seekTo(controller.player.state.position);
           _toogleAnimky();
@@ -481,20 +510,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     var urli = Uri.parse("https://kompot.site/installmusapple?nice=" + sdcv['idshaz']);
     var response = await http.get(urli);
     String dff = response.body.toString();
-    print("jhghjg");
+    print("jhghjgz");
     print(dff);
     getaboutmus(dff, false, true);
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? sac = prefs.getStringList("historymusid");
-    List<String> fsaf = [];
-    if (sac != null) {
-      fsaf = sac;
-    }
-    if(fsaf.length >= 20){
-      fsaf.removeLast();
-    }
-    fsaf.add(dff);
-    await prefs.setStringList("historymusid", fsaf);
+
 
   }
 
@@ -513,7 +532,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   ];
   bool frstsd = false;
 
-  Future<void> playmusa(dynamic listok, bool frmvid) async {
+  Future<void> playmusa(dynamic listok, bool frmvid, bool install) async {
     print("object");
     print(idmus);
     musaftervid = listok["id"];
@@ -536,7 +555,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       setState(() {
         namemus = listok["name"];
         ispolmus = listok["message"];
-        imgmus = listok['img'];
+        if(!install) {
+          imgmus = listok['img'];
+        }
         idmus = listok['id'];
         shazid = listok['idshaz'];
       });
@@ -555,7 +576,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
             namemus = listok["name"];
             ispolmus = listok["message"];
-            imgmus = listok['img'];
+            if(!install) {
+              imgmus = listok['img'];
+            }
             idmus = listok['id'];
             shazid = listok['idshaz'];
           });
@@ -576,7 +599,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           setState(() {
             namemus = listok["name"];
             ispolmus = listok["message"];
-            imgmus = listok['img'];
+            if(!install) {
+              imgmus = listok['img'];
+            }
             idmus = listok['id'];
             shazid = listok['idshaz'];
           });
@@ -1118,11 +1143,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 .add(
                                                 jsonString);
                                           } else {
-                                            AudioService
-                                                .seekTo(
-                                                Duration(
-                                                    milliseconds: value
-                                                        .toInt()));
+                                            if(instalumusa) {
+                                              AudioService
+                                                  .seekTo(
+                                                  Duration(
+                                                      milliseconds: (value
+                                                          .toInt()*2)));
+                                            }else{
+                                              AudioService
+                                                  .seekTo(
+                                                  Duration(
+                                                      milliseconds: value
+                                                          .toInt()));
+                                            }
                                           }
                                         },
                                       );
@@ -1132,11 +1165,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         max: _totalDuration,
                                         onChanged: (
                                             value) {
-                                          AudioService
-                                              .seekTo(
-                                              Duration(
-                                                  milliseconds: value
-                                                      .toInt()));
+                                          if(instalumusa) {
+                                            AudioService
+                                                .seekTo(
+                                                Duration(
+                                                    milliseconds: (value
+                                                        .toInt()*2)));
+                                          }else{
+                                            AudioService
+                                                .seekTo(
+                                                Duration(
+                                                    milliseconds: value
+                                                        .toInt()));
+                                          }
                                         },
                                       );
                                     }
@@ -1699,11 +1740,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                   .add(
                                                   jsonString);
                                             } else {
-                                              AudioService
-                                                  .seekTo(
-                                                  Duration(
-                                                      milliseconds: value
-                                                          .toInt()));
+                                              if(instalumusa) {
+                                                AudioService
+                                                    .seekTo(
+                                                    Duration(
+                                                        milliseconds: (value
+                                                            .toInt()*2)));
+                                              }else{
+                                                AudioService
+                                                    .seekTo(
+                                                    Duration(
+                                                        milliseconds: value
+                                                            .toInt()));
+                                              }
                                             }
                                           },
                                         );
@@ -1713,11 +1762,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           max: _totalDuration,
                                           onChanged: (
                                               value) {
-                                            AudioService
-                                                .seekTo(
-                                                Duration(
-                                                    milliseconds: value
-                                                        .toInt()));
+                                            if(instalumusa) {
+                                              AudioService
+                                                  .seekTo(
+                                                  Duration(
+                                                      milliseconds: (value
+                                                          .toInt()*2)));
+                                            }else{
+                                              AudioService
+                                                  .seekTo(
+                                                  Duration(
+                                                      milliseconds: value
+                                                          .toInt()));
+                                            }
                                           },
                                         );
                                       }

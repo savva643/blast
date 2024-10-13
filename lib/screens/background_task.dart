@@ -32,6 +32,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
           artist: mediaItem.artist,
           title: mediaItem.title,
           duration: player.duration
+
       ));
       await player.positionStream.listen((position) {
         notifier.setPosition(position);

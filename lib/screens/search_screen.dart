@@ -521,6 +521,7 @@ class SearchScreenState extends State<SearchScreen> {
     List<String>? sac = prefs.getStringList("historymusid");
 
     print("dfrd");
+    print(sac);
     if(sac != null) {
       _historysearch.clear();
       for (var num in sac) {
