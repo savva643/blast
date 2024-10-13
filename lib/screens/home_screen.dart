@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Future<void> getaboutmus(String shazid, bool jem) async {
+  Future<void> getaboutmus(String shazid, bool jem, bool install) async {
     setState(() {
     loadingmus = false;
     if(_isBottomSheetOpen){
@@ -279,6 +279,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         setState(() {
           print("hyhg");
           _langData[0] = jsonDecode(dff);
+          if(install){
+            print("vfdvvfdv");
+            print(_langData[0]['timeurl']);
+            _langData[0]['url'] = _langData[0]['timeurl'];
+          }
           if (_langData[0]['vidos'] != '0' && videoope) {
             playVideo(_langData[0]['idshaz'], false);
           } else {
@@ -473,12 +478,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         });
       }
     });
-    var urli = Uri.parse("https://kompot.site/installmusandr?shazik=" + sdcv['idshaz']);
+    var urli = Uri.parse("https://kompot.site/installmusapple?nice=" + sdcv['idshaz']);
     var response = await http.get(urli);
     String dff = response.body.toString();
     print("jhghjg");
     print(dff);
-    getaboutmus(dff, false);
+    getaboutmus(dff, false, true);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? sac = prefs.getStringList("historymusid");
     List<String> fsaf = [];
@@ -626,7 +631,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 });
               });
               return showsearch ? SearchScreen(onCallback: (dynamic input) {
-                getaboutmus(input, false);
+                getaboutmus(input, false, false);
               }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
                 installmus(input);
               } ) : Container(
@@ -666,7 +671,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Route _createSearchRoute() {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(onCallback: (dynamic input) {
-        getaboutmus(input, false);
+        getaboutmus(input, false, false);
       }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
         installmus(input);
       }),
@@ -2151,10 +2156,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   late List<Widget> pages = [
     _buildNavigator(_playlistNavigatorKey, PlaylistScreen(onCallback: (dynamic input) {
-      getaboutmus(input, false);
+      getaboutmus(input, false, false);
     }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp,)),
     _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey,onCallback: (dynamic input) {
-      getaboutmus(input, false);
+      getaboutmus(input, false, false);
     }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp,)),
     _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
       _setvi(input, false, true);
@@ -2265,7 +2270,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       print(dff);
       setState(() {
         _jemData = dff;
-        getaboutmus(_jemData, true);
+        getaboutmus(_jemData, true, false);
         isjemnow = true;
       });
     }else{

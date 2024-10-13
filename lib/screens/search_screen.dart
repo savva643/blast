@@ -539,21 +539,24 @@ class SearchScreenState extends State<SearchScreen> {
     }
   }
 
-
+  bool cscs = false;
 
   Future<void> postRequest (String text) async {
     if(text != '') {
       var urli = Uri.parse("https://kompot.site/getmusshazandr?token=1&nice=" + text);
       var response = await http.get(urli);
       String dff = response.body.toString();
-
+      print(dff);
       setState(() {
         _langData = jsonDecode(dff);
         _searchedLangData = _langData;
         showls = true;
+        cscs = showno;
+        showno = false;
       });
     }else{
       _searchLanguageController.clear();
+      showno = cscs;
     }
 
   }
