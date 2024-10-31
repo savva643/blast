@@ -31,6 +31,7 @@ import 'login.dart';
 import 'music_screen.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:web_socket_channel/status.dart' as status;
+import 'package:dio/dio.dart';
 
 const kBgColor = Color(0xFF1604E2);
 
@@ -63,6 +64,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   //videoblock
   bool isplad = false;
+
+
+  double _volume = 1.0; // начальная громкость
+  Timer? _fadeTimer;
+
 
 
   bool instalumusa = false;
@@ -152,6 +158,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         if (!videoope) {
           if (!state.playing) {
             setState(() {
+              if(_langData[0]['bgvideo'] != "0"){
+                videoshort.pause();
+              }
               iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
               if (isjemnow) {
                 _childKey.currentState?.toggleAnimation(false);
@@ -161,6 +170,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             });
           } else {
             setState(() {
+              if(_langData[0]['bgvideo'] != "0"){
+                videoshort.play();
+              }
               iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
               if (isjemnow) {
                 _childKey.currentState?.toggleAnimation(true);
@@ -174,16 +186,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         }
       });
     });
+    bool fj = false;
+    controllershort.player.stream.completed.listen((_) {
+      videoshort.setPlaylistMode(PlaylistMode.loop);
+      videoshort.play(); // Запускаем воспроизведение заново
+      fj = true;
+    });
     controllershort.player.stream.playing.listen((bool state) {
       if(_isBottomSheetOpen){
         setnewState(() {
           if (videoope) {
             opac = 0;
+            opacityi3 = 1;
           }else {
             if (!state) {
-              opac = 0;
+              if(fj){
+                fj = false;
+                if(!AudioService.playbackState.playing){
+                  opac = 0;
+                  opacityi3 = 1;
+                }
+              }else {
+                opac = 0;
+                opacityi3 = 1;
+              }
             } else {
               opac = 1;
+              opacityi3 = 0;
             }
           }
         });
@@ -215,8 +244,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       }
     });
     controller.player.stream.playing.listen((bool state) {
+      setnewState(() {
       setState(() {
         if (videoope) {
+          if(_langData[0]['bgvideo'] != "0"){
+            videoshort.pause();
+          }
           if (!state) {
             setState(() {
               iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(controller.player.state.playing));
@@ -240,6 +273,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           }
         }
       });
+    });
     });
     _controller = AnimationController(
       duration: const Duration(milliseconds: 400),
@@ -366,6 +400,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           });
         }
       } else {
+        _fadeTimer?.cancel();
         if (AudioService.playbackState.playing) {
           AudioService.pause();
           setState(() {
@@ -401,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   double dsds2 = 60;
   double videoopacity = 0;
   double opacity = 1;
-
+  double opacityi3 = 1;
   double opacityi1 = 1;
   double opacityi2 = 0;
   Alignment ali = Alignment.center;
@@ -514,7 +549,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     print(dff);
     getaboutmus(dff, false, true);
 
-
   }
 
 
@@ -561,12 +595,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         idmus = listok['id'];
         shazid = listok['idshaz'];
       });
+      if(_langData[0]['bgvideo'] != "0") {
+        print("https://kompot.site/"+_langData[0]['bgvideo']);
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath = '${directory.path}/cached_video.mp4';
+        try {
+          // Загружаем видео и сохраняем его
+          await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
+          print("Видео загружено и сохранено в локальном хранилище.");
+          videoshort.open(Media(filePath));
+        } catch (e) {
+          print("Ошибка при загрузке видео: $e");
+          return;
+        }
+      }
       _playNewTrack(listok['url']);
     }else {
       if (idmus != listok["id"] || frmvid) {
         if (frstsd) {
           _playNewTrack(listok['url']);
           AudioService.play();
+          if(_langData[0]['bgvideo'] != "0") {
+            print("https://kompot.site/"+_langData[0]['bgvideo']);
+            final directory = await getApplicationDocumentsDirectory();
+            final filePath = '${directory.path}/cached_video.mp4';
+            try {
+              // Загружаем видео и сохраняем его
+              await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
+              print("Видео загружено и сохранено в локальном хранилище.");
+              videoshort.open(Media(filePath));
+
+            } catch (e) {
+              print("Ошибка при загрузке видео: $e");
+              return;
+            }
+          }
           setState(() {
             iconpla = Icon(Icons.pause_rounded, size: 40, key: ValueKey<bool>(AudioService.playbackState.playing),);
             if (isjemnow) {
@@ -581,6 +644,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
             idmus = listok['id'];
             shazid = listok['idshaz'];
+
           });
         } else {
           frstsd = true;
@@ -605,6 +669,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             idmus = listok['id'];
             shazid = listok['idshaz'];
           });
+          if(_langData[0]['bgvideo'] != "0") {
+            print("https://kompot.site/"+_langData[0]['bgvideo']);
+            final directory = await getApplicationDocumentsDirectory();
+            final filePath = '${directory.path}/cached_video.mp4';
+            try {
+              // Загружаем видео и сохраняем его
+              await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
+              print("Видео загружено и сохранено в локальном хранилище.");
+              videoshort.open(Media(filePath));
+            } catch (e) {
+              print("Ошибка при загрузке видео: $e");
+              return;
+            }
+          }
         }
       } else {
         playpause();
@@ -785,6 +863,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 controls: null,
                 controller: controllershort,
               )),),
+          AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+          child: Container(
+            color: Colors.black.withOpacity(
+                0.5), // Контейнер для применения размытия
+          )),
           Container(
               constraints: BoxConstraints(maxWidth: 800),
               height: size.height,
@@ -917,14 +1000,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                   ],),
                 ]), Column(children: [
-                  Container(
+          AnimatedOpacity(
+          opacity: opacityi3,
+          duration: Duration(
+          milliseconds: 400),
+          child: Container(
                       constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
                       aspectRatio: 1,
                       // Сохранение пропорций 1:1
                       child: AnimatedOpacity(
                           opacity: opacityi1,
                           duration: Duration(
-                              seconds: 0),
+                              milliseconds: 0),
                           child: AnimatedBuilder(
                               animation: _animation,
                               builder: (context,
@@ -965,7 +1052,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                               fit: BoxFit
                                                   .cover, // Изображ
                                             ))));
-                              })))),
+                              }))))),
                   AnimatedOpacity(opacity: opacity,
                       duration: Duration(
                           milliseconds: 400),
@@ -1378,7 +1465,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 controls: null,
                 controller: controllershort,
               )),),
-
+          AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+              child: Container(
+                color: Colors.black.withOpacity(
+                    0.5), // Контейнер для применения размытия
+              )),
           Container(
 
               height: size.height,
@@ -1514,14 +1605,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                 ],))))],),
                   Row( mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [Container(
-          width: size.width/2, child: Container(
+          width: size.width/2, child: AnimatedOpacity(
+          opacity: opacityi3,
+          duration: Duration(
+          milliseconds: 400),
+          child:  Container(
                       constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
                       aspectRatio: 1,
                       // Сохранение пропорций 1:1
                       child: AnimatedOpacity(
                           opacity: opacityi1,
                           duration: Duration(
-                              seconds: 0),
+                              milliseconds: 0),
                           child: AnimatedBuilder(
                               animation: _animation,
                               builder: (context,
@@ -1562,7 +1657,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                               fit: BoxFit
                                                   .cover, // Изображ
                                             ))));
-                              }))))), Container(
+                              })))))), Container(
           width: size.width/3, child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [AnimatedOpacity(opacity: opacity,
                       duration: Duration(
                           milliseconds: 400),

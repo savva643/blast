@@ -95,6 +95,8 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
 
   }
+  double _volume = 1.0; // начальная громкость
+  Timer? _fadeTimer;
 
   @override
   Future<void> onStop() async {
@@ -105,16 +107,47 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   Future<void> onPlay() async {
+    _fadeTimer?.cancel();
     await player.play();
     notifier.setPlaying(true);
     _broadcastState();
+    const duration = Duration(milliseconds: 10);
+    _fadeTimer = Timer.periodic(duration, (timer) {
+      if (_volume < 1.0) {
+        _volume += 0.05;
+        player.setVolume(_volume);
+      } else {
+        _volume = 1.0;
+        player.setVolume(_volume);
+        timer.cancel();
+      }
+    });
+
   }
 
   @override
   Future<void> onPause() async {
-    await player.pause();
+    _fadeTimer?.cancel();
+
+    // Плавное уменьшение громкости
+    const duration = Duration(milliseconds: 10);
+    _fadeTimer = Timer.periodic(duration, (timer) async {
+      if (_volume > 0.0) {
+        _volume -= 0.05;
+        player.setVolume(_volume);
+      } else {
+        _volume = 0.0;
+        player.setVolume(_volume);
+        timer.cancel();
+        await player.pause();
+
+      }
+    });
     notifier.setPlaying(false);
     _broadcastState();
+
+    // await player.pause();
+
   }
 
   @override

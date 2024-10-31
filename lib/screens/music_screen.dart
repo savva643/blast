@@ -36,9 +36,14 @@ class MusicScreen extends StatefulWidget {
 
 }
 
-class MusicScreenState extends State<MusicScreen> with SingleTickerProviderStateMixin{
+class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late AnimationController controllermuscircle;
+
+  late AnimationController _controllere;
+  double dragValue = 0.0;
+
+
 
   var iconpla = Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing));
   void updateIcon(Icon newIcon) {
@@ -94,6 +99,9 @@ class MusicScreenState extends State<MusicScreen> with SingleTickerProviderState
   }
 
 
+
+
+
   MusicScreenState(Function(dynamic) onk,VoidCallback onki, VoidCallback fg, VoidCallback dawsd, VoidCallback dsacf){
     onCallback = onk;
     onCallbacki = onki;
@@ -123,6 +131,12 @@ class MusicScreenState extends State<MusicScreen> with SingleTickerProviderState
       vsync: this,
       duration: const Duration(seconds: 50),
     )..repeat();
+
+    _controllere = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 30), // Задаем время полного оборота
+    );
+
     _animation = CurvedAnimation(
       parent: controllermuscircle,
       curve: Curves.easeInOut,  // Плавное ускорение и замедление
@@ -169,31 +183,108 @@ bottom: false,
             child: Stack(alignment: Alignment.topRight, children: [ Center(child:
             Stack(alignment: Alignment.center,
               children: [
-                RotationTransition(
-                turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
-            child:Image.asset('assets/images/circleblast.png', width: 600,)),
-              Center(child:Container(padding: EdgeInsets.only(left: 12,top: 12),
-                    child:
-                    Column(mainAxisAlignment: MainAxisAlignment.center,children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
-                      style: TextStyle(
-                        fontSize: 50,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),)),Container(margin: EdgeInsets.only(right: 8), child:
-                    IconButton(onPressed: ()  {
-                      onCallbacki();
-                    }, iconSize: 74,
-                        icon: AnimatedSwitcher(
-                            duration: Duration(milliseconds: 300),
-                            transitionBuilder: (Widget child, Animation<double> animation) {
-                              return RotationTransition(
-                                turns: Tween(begin: 0.75, end: 1.0).animate(animation),
-                                child: ScaleTransition(scale: animation, child: child),
-                              );
-                            },
-                            child:iconpla)))],)
-                )), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+                PageView(
+                  physics: BouncingScrollPhysics(),
+                  children: [
+                    Container(margin: EdgeInsets.only(left: 32,right: 32), alignment: Alignment.center, child:
+                    Stack(alignment: Alignment.center,
+                      children: [
+                        RotationTransition(
+                            turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
+                            child:Image.asset('assets/images/circleblast.png', width: 800,)),
+                        Container(padding: EdgeInsets.only(left: 12,top: 12),
+                            child:
+                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
+                              style: TextStyle(
+                                fontSize: 40,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),)),Container(margin: EdgeInsets.only(right: 8), child:
+                            IconButton(onPressed: ()  {
+                              onCallbacki();
+                            }, iconSize: 64,
+                                icon: AnimatedSwitcher(
+                                    duration: Duration(milliseconds: 300),
+                                    transitionBuilder: (Widget child, Animation<double> animation) {
+                                      return RotationTransition(
+                                        turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                        child: ScaleTransition(scale: animation, child: child),
+                                      );
+                                    },
+                                    child:iconpla)))],)
+                        ),
+                      ],)),
+                    Container(child:   Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(margin: EdgeInsets.only(left: 40,right: 40), child:
+                        RotationTransition(
+                            turns: Tween(begin: 0.0, end: 1.0).animate(_controllere),
+                            child:Image.asset('assets/images/forclock.png', width: 800,))),
+                        // Часовая стрелка (короче)
+                        Container(height: 360, width: 360, child:
+                        RotationTransition(
+                          turns: Tween(begin: 0.0, end: 1.0).animate(
+                            CurvedAnimation(
+                              parent: _controllere,
+                              curve: Curves.linear,
+                            ),
+                          ),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Container(
+                              height: 200, // Половина длины для часовой стрелки
+                              width: 40,
+                              decoration: BoxDecoration(color: Colors.purpleAccent,borderRadius: BorderRadius.all(Radius.circular(200))),
+                            ),
+                          ),
+                        )),
+                        // Минутная стрелка (длиннее)
+                        Container(height: 280, width: 280, child:
+                        RotationTransition(
+                          turns: Tween(begin: 0.0, end: 12.0).animate(
+                            CurvedAnimation(
+                              parent: _controllere,
+                              curve: Curves.linear,
+                            ),
+                          ),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Container(
+                              height: 160, // Длина минутной стрелки чуть больше
+                              width: 40,
+                              decoration: BoxDecoration(color: Colors.purple,borderRadius: BorderRadius.all(Radius.circular(200))),
+                            ),
+                          ),
+                        )),
+                        Container(padding: EdgeInsets.only(left: 12,top: 12),
+                            child:
+                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Эссенция",
+                              style: TextStyle(
+                                fontSize: 40,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),)),Container(margin: EdgeInsets.only(right: 8), child:
+                            IconButton(onPressed: ()  {
+                              essension();
+                            }, iconSize: 64,
+                                icon: AnimatedSwitcher(
+                                    duration: Duration(milliseconds: 300),
+                                    transitionBuilder: (Widget child, Animation<double> animation) {
+                                      return RotationTransition(
+                                        turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                        child: ScaleTransition(scale: animation, child: child),
+                                      );
+                                    },
+                                    child:iconpla)))],)
+                        ),
+                      ],
+                    ),
+                    )
+
+                  ],), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
                 Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed:  useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                   imageUrl: imgprofile, // Replace with your image URL
                   imageBuilder: (context, imageProvider) => Container(
@@ -235,10 +326,19 @@ bottom: false,
   ];
   final _searchLanguageController = TextEditingController();
 
+  bool essensionbool = false;
+  void essension(){
+    if(!essensionbool){
+      essensionbool = true;
+
+    }
+
+  }
 
   @override
   void dispose() {
     controllermuscircle.dispose();
+    _controllere.dispose();
     super.dispose();
   }
 
@@ -437,6 +537,8 @@ bottom: false,
       if (idx == 0) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Stack(
               children: [
@@ -498,8 +600,12 @@ bottom: false,
                 ],),
 
               ],),
-            Container(margin: EdgeInsets.only(left: 32,right: 32),
+            Container(height: size.width,
               child:
+              PageView(
+                physics: BouncingScrollPhysics(),
+                children: [
+                Container(margin: EdgeInsets.only(left: 32,right: 32), alignment: Alignment.center, child:
               Stack(alignment: Alignment.center,
                 children: [
                      RotationTransition(
@@ -507,7 +613,7 @@ bottom: false,
                          child:Image.asset('assets/images/circleblast.png', width: 800,)),
                       Container(padding: EdgeInsets.only(left: 12,top: 12),
                       child:
-                      Column(children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
+                      Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
                         style: TextStyle(
                           fontSize: 40,
                           fontFamily: 'Montserrat',
@@ -527,6 +633,76 @@ bottom: false,
                                 },
                                 child:iconpla)))],)
                   ),
+                ],)),
+                  Container(child:   Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(margin: EdgeInsets.only(left: 40,right: 40), child:
+                      RotationTransition(
+                          turns: Tween(begin: 0.0, end: 1.0).animate(_controllere),
+                          child:Image.asset('assets/images/forclock.png', width: 800,))),
+                      // Часовая стрелка (короче)
+                      Container(height: 360, width: 360, child:
+                      RotationTransition(
+                        turns: Tween(begin: 0.0, end: 1.0).animate(
+                          CurvedAnimation(
+                            parent: _controllere,
+                            curve: Curves.linear,
+                          ),
+                        ),
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            height: 200, // Половина длины для часовой стрелки
+                            width: 40,
+                            decoration: BoxDecoration(color: Colors.purpleAccent,borderRadius: BorderRadius.all(Radius.circular(200))),
+                          ),
+                        ),
+                      )),
+                      // Минутная стрелка (длиннее)
+                      Container(height: 280, width: 280, child:
+                      RotationTransition(
+                        turns: Tween(begin: 0.0, end: 12.0).animate(
+                          CurvedAnimation(
+                            parent: _controllere,
+                            curve: Curves.linear,
+                          ),
+                        ),
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            height: 160, // Длина минутной стрелки чуть больше
+                            width: 40,
+                            decoration: BoxDecoration(color: Colors.purple,borderRadius: BorderRadius.all(Radius.circular(200))),
+                          ),
+                        ),
+                      )),
+                      Container(padding: EdgeInsets.only(left: 12,top: 12),
+                          child:
+                          Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Эссенция",
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),)),Container(margin: EdgeInsets.only(right: 8), child:
+                          IconButton(onPressed: ()  {
+                            essension();
+                          }, iconSize: 64,
+                              icon: AnimatedSwitcher(
+                                  duration: Duration(milliseconds: 300),
+                                  transitionBuilder: (Widget child, Animation<double> animation) {
+                                    return RotationTransition(
+                                      turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                      child: ScaleTransition(scale: animation, child: child),
+                                    );
+                                  },
+                                  child:iconpla)))],)
+                      ),
+                    ],
+                  ),
+                  )
+
                 ],),),
             SizedBox(height: 10,),
             Center(child: Text("Чарт",
