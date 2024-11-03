@@ -70,6 +70,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Timer? _fadeTimer;
 
 
+  bool essensionbool = false;
+  Future<void> essension() async {
+    if(!essensionbool){
+      essensionbool = true;
+      var urli = Uri.parse("https://kompot.site/getaboutmus?sidi=");
+      var response = await http.get(urli);
+      String dff = response.body.toString();
+      setState(() {
+        nestedArray = jsonDecode(dff);
+        getaboutmus(nestedArray[0]["short"], false, false, true);
+      });
+    }else{
+      playpause();
+    }
+
+  }
+
 
   bool instalumusa = false;
 
@@ -301,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Future<void> getaboutmus(String shazid, bool jem, bool install) async {
+  Future<void> getaboutmus(String shazid, bool jem, bool install, bool ese) async {
     setState(() {
     loadingmus = false;
     if(_isBottomSheetOpen){
@@ -351,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             playVideo(_langData[0]['idshaz'], false);
           } else {
             print("thytfyjyju");
-            playmusa(_langData[0], false,install);
+            playmusa(_langData[0], false,install, ese);
             if (videoope) {
               videoope = false;
               _toogleAnimky();
@@ -498,7 +515,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           if (musaftervid == vidaftermus) {
             playpause();
           } else {
-            playmusa(_langData[0], true, false);
+            playmusa(_langData[0], true, false, false);
           }
           AudioService.seekTo(controller.player.state.position);
           _toogleAnimky();
@@ -547,7 +564,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     String dff = response.body.toString();
     print("jhghjgz");
     print(dff);
-    getaboutmus(dff, false, true);
+    getaboutmus(dff, false, true, false);
 
   }
 
@@ -566,13 +583,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   ];
   bool frstsd = false;
 
-  Future<void> playmusa(dynamic listok, bool frmvid, bool install) async {
+  Future<void> playmusa(dynamic listok, bool frmvid, bool install, bool essensioni) async {
     print("object");
     print(idmus);
     musaftervid = listok["id"];
     _totalDuration = 1;
     _currentPosition = 0;
     print(listok["id"]);
+    if(!essensioni){
+      essensionbool = false;
+    }
     if(devicecon){
       List<dynamic> sdc = [
         {
@@ -609,11 +629,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           return;
         }
       }
-      _playNewTrack(listok['url']);
+      if (essensioni) {
+        _playNewTrack(listok['short']);
+      }else{
+        _playNewTrack(listok['url']);
+      }
     }else {
       if (idmus != listok["id"] || frmvid) {
         if (frstsd) {
-          _playNewTrack(listok['url']);
+          if (essensioni) {
+            _playNewTrack(listok['short']);
+          }else{
+            _playNewTrack(listok['url']);
+          }
           AudioService.play();
           if(_langData[0]['bgvideo'] != "0") {
             print("https://kompot.site/"+_langData[0]['bgvideo']);
@@ -648,18 +676,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           });
         } else {
           frstsd = true;
-          await AudioService.start(
-            backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
-            androidNotificationChannelName: 'blast!',
-            androidNotificationColor: 0xFF2196f3,
-            androidNotificationIcon: 'drawable/mus_logo_foreground',
-            params: {'url': MediaItem(
-              id: _langData[0]['url'],
-              artUri: Uri.parse(_langData[0]['img']),
-              artist: _langData[0]['message'],
-              title: _langData[0]['name'],
-            )},
-          );
+          if(essensioni) {
+            await AudioService.start(
+              backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+              androidNotificationChannelName: 'blast!',
+              androidNotificationColor: 0xFF2196f3,
+              androidNotificationIcon: 'drawable/mus_logo_foreground',
+              params: {'url': MediaItem(
+                id: _langData[0]['short'],
+                artUri: Uri.parse(_langData[0]['img']),
+                artist: _langData[0]['message'],
+                title: _langData[0]['name'],
+              )},
+            );
+          }else{
+            await AudioService.start(
+              backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+              androidNotificationChannelName: 'blast!',
+              androidNotificationColor: 0xFF2196f3,
+              androidNotificationIcon: 'drawable/mus_logo_foreground',
+              params: {'url': MediaItem(
+                id: _langData[0]['url'],
+                artUri: Uri.parse(_langData[0]['img']),
+                artist: _langData[0]['message'],
+                title: _langData[0]['name'],
+              )},
+            );
+          }
           setState(() {
             namemus = listok["name"];
             ispolmus = listok["message"];
@@ -734,7 +777,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 });
               });
               return showsearch ? SearchScreen(onCallback: (dynamic input) {
-                getaboutmus(input, false, false);
+                getaboutmus(input, false, false, false);
               }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
                 installmus(input);
               } ) : Container(
@@ -774,7 +817,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Route _createSearchRoute() {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(onCallback: (dynamic input) {
-        getaboutmus(input, false, false);
+        getaboutmus(input, false, false, false);
       }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
         installmus(input);
       }),
@@ -823,6 +866,658 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final seconds = twoDigits(duration.inSeconds.remainder(60));
     return '$minutes:$seconds';
   }
+
+
+
+  List nestedArray = [
+    {
+      'id': '1',
+      'img': 'https://kompot.site/img/music.jpg',
+      'name': 'Название',
+      'message': 'Имполнитель',
+    },
+    {
+      'id': '2',
+      'img': 'https://kompot.site/img/music.jpg',
+      'name': 'Название',
+      'message': 'Имполнитель',
+    },
+  ];
+
+
+  PageController _pageController = PageController();
+
+
+
+  void _onPageChanged() {
+    int currentPage = _pageController.page?.round() ?? 0;
+    onPageChangedCallback(currentPage);
+  }
+
+  void onPageChangedCallback(int pageIndex) {
+    // Вызывается при смене страницы
+    print('Текущая страница: $pageIndex');
+    // Можно добавить другие действия, которые должны происходить при смене страницы
+
+  }
+
+
+
+
+
+  Widget smallscreenesensionbottomshet() {
+    Size size = MediaQuery
+        .of(context)
+        .size;
+    return StreamBuilder(
+        stream: AudioService.positionStream,
+        builder: (context, snapshot) {
+          return GestureDetector(
+              onDoubleTapDown: (details) =>
+              _onDoubleTap(details, context), child:
+          PageView.builder(
+            controller: _pageController,
+            itemCount: nestedArray.length,
+            itemBuilder: (context, index) {
+              return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      color: const Color.fromARGB(
+                          255, 15, 15, 16),),
+                    Image.network(
+                      imgmus, // URL вашей фоновой картинки
+                      fit: BoxFit.cover,
+                    ),
+                    Container(
+                      color: Colors.black.withOpacity(
+                          0.5), // Контейнер для применения размытия
+                    ),
+                    BackdropFilter(
+                      filter: ImageFilter.blur(
+                          sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        color: Colors.black.withOpacity(
+                            0), // Контейнер для применения размытия
+                      ),
+                      blendMode: BlendMode.srcATop,
+                    ),
+                    AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+                        child: Video(
+                          fit: BoxFit.cover,
+                          controls: null,
+                          controller: controllershort,
+                        )),),
+                    AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+                        child: Container(
+                          color: Colors.black.withOpacity(
+                              0.5), // Контейнер для применения размытия
+                        )),
+                    Container(
+                        constraints: BoxConstraints(maxWidth: 800),
+                        height: size.height,
+                        child: Stack(children: [
+                          Column(children: [
+                            AnimatedOpacity(opacity: videoopacity,
+                                duration: Duration(
+                                    milliseconds: 400),
+                                child: Container(
+
+                                    constraints: BoxConstraints(maxWidth: 800, maxHeight: 450),
+                                    margin: EdgeInsets.only(
+                                        top: 60),
+                                    child: AspectRatio(
+                                        aspectRatio: 16 / 9,
+                                        child: Container(child: MaterialDesktopVideoControlsTheme(
+                                          normal: MaterialDesktopVideoControlsThemeData(
+                                            // Modify theme options:
+                                            seekBarThumbColor: Colors
+                                                .blue,
+                                            seekBarPositionColor: Colors
+                                                .blue,
+                                            toggleFullscreenOnDoublePress: false,
+                                          ),
+                                          fullscreen: const MaterialDesktopVideoControlsThemeData(
+                                            seekBarThumbColor: Colors
+                                                .blue,
+                                            topButtonBarMargin: EdgeInsets
+                                                .only(
+                                                top: 20, left: 30),
+                                            topButtonBar: [
+                                              Text("blast!",
+                                                style: TextStyle(
+                                                  fontSize: 40,
+                                                  fontFamily: 'Montserrat',
+                                                  fontWeight: FontWeight
+                                                      .w900,
+                                                  color: Colors.white,
+                                                ),)
+                                            ],
+                                            seekBarPositionColor: Colors
+                                                .blue,),
+                                          child:ClipRRect(
+                                            borderRadius: borderRadius, // Make the border round
+                                            child: Video(
+                                              controller: controller,
+                                            ),
+                                          ),
+                                        ),)))),
+                            Row(children: [
+                              AnimatedOpacity(opacity: opacityi2,
+                                  duration: Duration(seconds: 0),
+                                  child: AnimatedContainer(
+                                      alignment: Alignment
+                                          .centerLeft,
+                                      margin: EdgeInsets.only(
+                                          left: 20,
+                                          right: 20,
+                                          top: 20),
+                                      height: 80,
+                                      width: 80,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.rectangle,
+                                        borderRadius: BorderRadius
+                                            .circular(8),
+                                      ),
+                                      clipBehavior: Clip
+                                          .antiAliasWithSaveLayer,
+                                      duration: Duration(
+                                          milliseconds: 0),
+                                      child: AspectRatio(
+                                          aspectRatio: 1,
+                                          // Сохранение пропорций 1:1
+                                          child: Image.network(
+                                            imgmus,
+                                            height: imgwh,
+                                            width: imgwh,
+                                            fit: BoxFit
+                                                .contain, // Изображ
+                                          )))),
+                              AnimatedOpacity(
+                                  opacity: videoopacity,
+                                  duration: Duration(
+                                      milliseconds: 400),
+                                  child: AnimatedContainer(
+                                    margin: EdgeInsets.only(
+                                        top: 20),
+                                    transform: Matrix4
+                                        .translation(
+                                        vector.Vector3(
+                                            0, squareScaleB, 0)),
+                                    duration: Duration(
+                                        milliseconds: 400),
+                                    child:
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .start,
+                                      children: [Text(namemus,
+                                        textAlign: TextAlign
+                                            .start,
+                                        overflow: TextOverflow
+                                            .ellipsis,
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                            fontSize: 30,
+                                            fontFamily: 'Montserrat',
+                                            fontWeight: FontWeight
+                                                .w500,
+                                            color: Color.fromARGB(
+                                                255, 246, 244,
+                                                244)
+                                        ),),
+                                        Text(ispolmus,
+                                          overflow: TextOverflow
+                                              .ellipsis,
+                                          maxLines: 1,
+                                          textAlign: TextAlign
+                                              .start,
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              fontFamily: 'Montserrat',
+                                              fontWeight: FontWeight
+                                                  .w300,
+                                              color: Color
+                                                  .fromARGB(
+                                                  255, 246, 244,
+                                                  244)
+                                          ),)
+                                      ],),))
+
+                            ],),
+                          ]), Column(children: [
+                            AnimatedOpacity(
+                                opacity: opacityi3,
+                                duration: Duration(
+                                    milliseconds: 400),
+                                child: Container(
+                                    constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
+                                    aspectRatio: 1,
+                                    // Сохранение пропорций 1:1
+                                    child: AnimatedOpacity(
+                                        opacity: opacityi1,
+                                        duration: Duration(
+                                            milliseconds: 0),
+                                        child: AnimatedBuilder(
+                                            animation: _animation,
+                                            builder: (context,
+                                                child) {
+                                              return Align(
+                                                  alignment: _animation
+                                                      .value,
+                                                  child:
+                                                  AnimatedContainer(
+                                                      constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
+                                                      margin: EdgeInsets
+                                                          .only(
+                                                        left: 30,
+                                                        right: 30,
+                                                        top: dsds2,),
+                                                      height: imgwh,
+                                                      width: imgwh,
+                                                      decoration: BoxDecoration(
+                                                        shape: BoxShape
+                                                            .rectangle,
+                                                        borderRadius: BorderRadius
+                                                            .circular(
+                                                            dsds),
+                                                      ),
+
+                                                      clipBehavior: Clip
+                                                          .hardEdge,
+                                                      duration: Duration(
+                                                          milliseconds: 400),
+                                                      child: AspectRatio(
+                                                          aspectRatio: 1,
+                                                          // Сохранение пропорций 1:1
+                                                          child: Image
+                                                              .network(
+                                                            imgmus,
+                                                            height: imgwh,
+                                                            width: imgwh,
+                                                            fit: BoxFit
+                                                                .cover, // Изображ
+                                                          ))));
+                                            }))))),
+                            AnimatedOpacity(opacity: opacity,
+                                duration: Duration(
+                                    milliseconds: 400),
+                                onEnd: () {
+                                  setnewState(() {
+                                    if (videoope) {
+                                      opacityi1 = 0;
+                                      opacityi2 = 1;
+                                    }
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                    width: size.width,
+                                    duration: Duration(
+                                        milliseconds: 400),
+                                    transform: Matrix4
+                                        .translation(
+                                        vector.Vector3(
+                                            0, squareScaleA, 0)),
+                                    child: Text(namemus,
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.fade,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                          fontSize: 30,
+                                          fontFamily: 'Montserrat',
+                                          fontWeight: FontWeight
+                                              .w500,
+                                          color: Color.fromARGB(
+                                              255, 246, 244, 244)
+                                      ),))),
+                            AnimatedOpacity(opacity: opacity,
+                                duration: Duration(
+                                    milliseconds: 400),
+                                child: AnimatedContainer(
+                                    duration: Duration(
+                                        milliseconds: 400),
+                                    transform: Matrix4
+                                        .translation(
+                                        vector.Vector3(
+                                            0, squareScaleA, 0)),
+                                    child: Text(ispolmus,
+                                      overflow: TextOverflow.fade,
+                                      maxLines: 1,
+
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontSize: 24,
+                                          fontFamily: 'Montserrat',
+                                          fontWeight: FontWeight
+                                              .w300,
+                                          color: Color.fromARGB(
+                                              255, 246, 244, 244)
+                                      ),))),
+                            AnimatedOpacity(opacity: opacity,
+                                duration: Duration(
+                                    milliseconds: 400),
+                                child: AnimatedContainer(
+                                    duration: Duration(
+                                        milliseconds: 400),
+                                    transform: Matrix4
+                                        .translation(
+                                        vector.Vector3(
+                                            0, squareScaleA, 0)),
+                                    child: Padding(
+                                        padding: EdgeInsets.only(
+                                            top: 16,
+                                            left: 22,
+                                            right: 22),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment
+                                              .spaceBetween,
+                                          children: [
+                                            Text(_formatDuration(
+                                                Duration(
+                                                    milliseconds: _currentPosition
+                                                        .toInt())),
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontFamily: 'Montserrat',
+                                                  fontWeight: FontWeight
+                                                      .w400,
+                                                  color: Color
+                                                      .fromARGB(
+                                                      255, 246,
+                                                      244,
+                                                      244)
+                                              ),),
+                                            Text(_formatDuration(
+                                                Duration(
+                                                    milliseconds: _totalDuration
+                                                        .toInt())),
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontFamily: 'Montserrat',
+                                                  fontWeight: FontWeight
+                                                      .w400,
+                                                  color: Color
+                                                      .fromARGB(
+                                                      255, 246,
+                                                      244,
+                                                      244)
+                                              ),),
+                                          ],)))),
+                            SizedBox(height: 4,),
+                            AnimatedOpacity(opacity: opacity,
+                                duration: Duration(
+                                    milliseconds: 400),
+                                child: AnimatedContainer(
+                                    duration: Duration(
+                                        milliseconds: 400),
+                                    transform: Matrix4
+                                        .translation(
+                                        vector.Vector3(
+                                            0, squareScaleA, 0)),
+                                    child: SizedBox(
+                                        height: 8,
+                                        child: SliderTheme(
+                                          data: SliderTheme.of(
+                                              context)
+                                              .copyWith(
+                                            trackHeight: 8.0,
+                                            tickMarkShape: RoundSliderTickMarkShape(
+                                                tickMarkRadius: 24),
+                                            thumbShape: SliderComponentShape
+                                                .noThumb,
+                                            overlayShape: RoundSliderOverlayShape(
+                                                overlayRadius: 24.0),
+                                            activeTrackColor: Colors
+                                                .blue,
+                                            inactiveTrackColor: Colors
+                                                .blue
+                                                .withOpacity(0.3),
+                                            overlayColor: Colors
+                                                .blue
+                                                .withOpacity(0.0),
+                                            trackShape: RoundedRectSliderTrackShape(),
+                                          ),
+                                          child: StreamBuilder(
+                                            stream: AudioService
+                                                .positionStream,
+                                            builder: (context,
+                                                snapshot) {
+                                              if (snapshot
+                                                  .hasData &&
+                                                  !snapshot
+                                                      .hasError &&
+                                                  _totalDuration >
+                                                      0) {
+                                                final position = snapshot
+                                                    .data as Duration;
+                                                return Slider(
+                                                  value: _currentPosition,
+                                                  max: _totalDuration,
+                                                  onChanged: (
+                                                      value) {
+                                                    if (devicecon) {
+                                                      Duration jda = Duration(
+                                                          milliseconds: value
+                                                              .toInt());
+                                                      List<
+                                                          dynamic> sdc = [
+                                                        {
+                                                          "type": "media",
+                                                          "what": "seekto",
+                                                          "timecurrent": jda
+                                                              .inSeconds,
+                                                          "iddevice": "2"
+                                                        }
+                                                      ];
+                                                      String jsonString = jsonEncode(
+                                                          sdc[0]);
+                                                      channeldev
+                                                          .sink
+                                                          .add(
+                                                          jsonString);
+                                                    } else {
+                                                      if(instalumusa) {
+                                                        AudioService
+                                                            .seekTo(
+                                                            Duration(
+                                                                milliseconds: (value
+                                                                    .toInt()*2)));
+                                                      }else{
+                                                        AudioService
+                                                            .seekTo(
+                                                            Duration(
+                                                                milliseconds: value
+                                                                    .toInt()));
+                                                      }
+                                                    }
+                                                  },
+                                                );
+                                              } else {
+                                                return Slider(
+                                                  value: 0,
+                                                  max: _totalDuration,
+                                                  onChanged: (
+                                                      value) {
+                                                    if(instalumusa) {
+                                                      AudioService
+                                                          .seekTo(
+                                                          Duration(
+                                                              milliseconds: (value
+                                                                  .toInt()*2)));
+                                                    }else{
+                                                      AudioService
+                                                          .seekTo(
+                                                          Duration(
+                                                              milliseconds: value
+                                                                  .toInt()));
+                                                    }
+                                                  },
+                                                );
+                                              }
+                                            },
+                                          ),)))),
+                            SizedBox(height: 22,),
+                            AnimatedContainer(
+                                duration: Duration(
+                                    milliseconds: 400),
+                                transform: Matrix4.translation(
+                                    vector.Vector3(
+                                        0, squareScaleA, 0)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment
+                                      .spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment
+                                      .center,
+                                  children: [
+                                    SizedBox(width: 50,
+                                        height: 50,
+                                        child: IconButton(
+                                            disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                            onPressed: null,
+                                            icon: Image(
+                                                color: Color.fromARGB(255, 123, 123, 124),
+                                                image: AssetImage(
+                                                    'assets/images/unloveno.png'),
+                                                width: 100
+                                            ))),
+                                    SizedBox(width: 50,
+                                        height: 50,
+                                        child: IconButton(
+                                            disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                            onPressed: null,
+                                            icon: Image(
+                                                color: Color.fromARGB(255, 123, 123, 124),
+                                                image: AssetImage(
+                                                    'assets/images/reveuws.png'),
+                                                width: 100
+                                            ))),
+                                    SizedBox(height: 50,
+                                        width: 50,
+                                        child: loadingmus ? CircularProgressIndicator() : IconButton(
+                                            onPressed: () {
+                                              setnewState(() {
+                                                playpause();
+                                              });
+                                            },
+                                            padding: EdgeInsets
+                                                .zero,
+                                            icon: AnimatedSwitcher(
+                                                duration: Duration(milliseconds: 300),
+                                                transitionBuilder: (Widget child, Animation<double> animation) {
+                                                  return RotationTransition(
+                                                    turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                                    child: ScaleTransition(scale: animation, child: child),
+                                                  );
+                                                }, child:  Icon(
+                                              iconpla.icon,
+                                              key: videoope ? ValueKey<bool>(controller.player.state.playing) : ValueKey<bool>(AudioService.playbackState.playing),
+                                              size: 50,
+                                              color: Colors
+                                                  .white,)))),
+                                    SizedBox(width: 50,
+                                        height: 50,
+                                        child: IconButton(
+                                            disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                            onPressed: null,
+                                            icon: Image(
+                                              color: Color.fromARGB(255, 123, 123, 124),
+                                              image: AssetImage(
+                                                  'assets/images/nexts.png'),
+                                              width: 120,
+                                              height: 120,
+                                            ))),
+                                    SizedBox(width: 50,
+                                        height: 50,
+                                        child: IconButton(
+                                            onPressed: null, // () {installmusic(_langData[0]);},
+                                            icon: Image(
+                                                color: Color.fromARGB(255, 123, 123, 124),
+                                                image: AssetImage(
+                                                    'assets/images/loveno.png'),
+                                                width: 100
+                                            ))),
+                                  ],)),
+                            SizedBox(height: 22,),
+                            AnimatedContainer(
+                                duration: Duration(
+                                    milliseconds: 400),
+                                transform: Matrix4.translation(
+                                    vector.Vector3(
+                                        0, squareScaleA, 0)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment
+                                      .spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment
+                                      .center,
+                                  children: [
+                                    SizedBox(width: 50,
+                                        height: 50,
+                                        child: IconButton(
+                                            onPressed: () {
+                                              connectToWebSocket();
+                                            },
+                                            padding: EdgeInsets
+                                                .zero,
+                                            icon: Icon(
+                                              Icons
+                                                  .devices_rounded,
+                                              size: 50,
+                                              color: Colors
+                                                  .white,))),
+                                    SizedBox(width: 50,
+                                        height: 50,
+                                        child: IconButton(
+                                            disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                            onPressed: null,
+                                            padding: EdgeInsets
+                                                .zero,
+                                            icon: Icon(
+                                              Icons
+                                                  .queue_music_rounded,
+                                              size: 50,
+                                              color: Color.fromARGB(255, 123, 123, 124),))),
+                                    SizedBox(height: 50,
+                                        width: 50,
+                                        child: IconButton(
+                                            disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                            onPressed: null,
+                                            padding: EdgeInsets
+                                                .zero,
+                                            icon: Icon(Icons
+                                                .settings_rounded,
+                                              size: 50,
+                                              color: Color.fromARGB(255, 123, 123, 124),))),
+                                    SizedBox(width: 50,
+                                        height: 50,
+                                        child: IconButton(
+                                            disabledColor: Color.fromARGB(255, 123, 123, 124),
+                                            onPressed: _langData[0]['vidos'] != "0" ? () {
+                                              setnewState(() {
+                                                _setvi(shazid,true, false);
+                                              });
+                                            }: null,
+                                            padding: EdgeInsets
+                                                .zero,
+                                            icon: Image(
+                                              color: _langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                              image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
+                                              width: 120,
+                                              height: 120,
+                                            ))),
+                                  ],))
+                          ],)
+                        ],))
+                  ]);
+            },
+          )
+          );}
+    );
+  }
+
+
+
+
+
+
 
   Widget smallscreenbottomshet(){
     Size size = MediaQuery
@@ -2308,11 +3003,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   late List<Widget> pages = [
     _buildNavigator(_playlistNavigatorKey, PlaylistScreen(onCallback: (dynamic input) {
-      getaboutmus(input, false, false);
+      getaboutmus(input, false, false, false);
     }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp,)),
     _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey,onCallback: (dynamic input) {
-      getaboutmus(input, false, false);
-    }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp,)),
+      getaboutmus(input, false, false, false);
+    }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp, essension: essension,)),
     _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
       _setvi(input, false, true);
     }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, dsad: resetapp,)),
@@ -2408,6 +3103,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _stopServer();
+    _pageController.removeListener(_onPageChanged);
+    _pageController.dispose();
     super.dispose();
     videob.dispose();
     videoshort.dispose();
@@ -2422,7 +3119,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       print(dff);
       setState(() {
         _jemData = dff;
-        getaboutmus(_jemData, true, false);
+        getaboutmus(_jemData, true, false, false);
         isjemnow = true;
       });
     }else{

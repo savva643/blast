@@ -27,9 +27,10 @@ class MusicScreen extends StatefulWidget {
   final VoidCallback hie;
   final VoidCallback showlog;
   final VoidCallback resre;
-  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.resre}) : super(key: key);
+  final VoidCallback essension;
+  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.resre, required this.essension}) : super(key: key);
   @override
-  State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, showlog, resre);
+  State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, showlog, resre,essension);
 
 
 
@@ -53,6 +54,7 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
   }
   late  Function(dynamic) onCallback;
   late VoidCallback onCallbacki;
+  late VoidCallback essension;
   late VoidCallback showsearch;
   late VoidCallback showlog;
   late VoidCallback reseti;
@@ -102,12 +104,13 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
 
 
 
-  MusicScreenState(Function(dynamic) onk,VoidCallback onki, VoidCallback fg, VoidCallback dawsd, VoidCallback dsacf){
+  MusicScreenState(Function(dynamic) onk,VoidCallback onki, VoidCallback fg, VoidCallback dawsd, VoidCallback dsacf, VoidCallback dsacfdcs){
     onCallback = onk;
     onCallbacki = onki;
     showsearch = fg;
     showlog = dawsd;
     reseti = dsacf;
+    essension = dsacfdcs;
   }
   late Animation<double> _animation;
   bool isAnimating = false;
@@ -326,14 +329,7 @@ bottom: false,
   ];
   final _searchLanguageController = TextEditingController();
 
-  bool essensionbool = false;
-  void essension(){
-    if(!essensionbool){
-      essensionbool = true;
 
-    }
-
-  }
 
   @override
   void dispose() {
