@@ -20,15 +20,16 @@ const kBgColor = Color(0xFF1604E2);
 class MusInPlaylistScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
   final String onCallbacki;
+  final  Function(dynamic, dynamic) onCallbackt;
   final String name;
   final String img;
   final bool imgnd;
   final VoidCallback hie;
   final VoidCallback showlog;
   final VoidCallback resre;
-  MusInPlaylistScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.name, required this.img, required this.imgnd, required this.showlog, required this.resre}) : super(key: key);
+  MusInPlaylistScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.name, required this.img, required this.imgnd, required this.showlog, required this.resre, required this.onCallbackt}) : super(key: key);
   @override
-  State<MusInPlaylistScreen> createState() => MusInPlaylistScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, name, img, imgnd,showlog,resre);
+  State<MusInPlaylistScreen> createState() => MusInPlaylistScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, name, img, imgnd,showlog,resre,(dynamic input, dynamic inputi) {onCallbackt(input, inputi);});
 
 
 
@@ -45,6 +46,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     });
   }
   late  Function(dynamic) onCallback;
+  late  Function(dynamic,dynamic) dfv;
   late String palylsitid;
   late String palylsitname;
   late String palylsitimg;
@@ -57,18 +59,18 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
       'id': '1',
       'img': 'https://kompot.site/img/music.jpg',
       'name': 'Название',
-      'message': 'Имполнитель',
+      'message': 'Иcполнитель',
     },
     {
       'id': '2',
       'img': 'https://kompot.site/img/music.jpg',
       'name': 'Название',
-      'message': 'Имполнитель',
+      'message': 'Иcполнитель',
     },
   ];
   var player;
 
-  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad, VoidCallback dawsd, VoidCallback fgdfxg){
+  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad, VoidCallback dawsd, VoidCallback fgdfxg, Function(dynamic, dynamic) onkhngf){
     onCallback = onk;
     palylsitid = onki;
     showsearch = fg;
@@ -77,6 +79,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     palylsitimgnd = fdsfad;
     showlog = dawsd;
     reset = fgdfxg;
+    dfv = onkhngf;
   }
 
   @override
@@ -284,7 +287,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5)),
                 onTap: () async {
-                  onCallback(_searchedLangData[idx-1]['idshaz']);
+                  sendpalulit(_searchedLangData[idx-1]['idshaz']);
                 },
                 leadingAndTrailingTextStyle: TextStyle(),
                 leading: SizedBox(width: 90,
@@ -463,7 +466,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5)),
                 onTap: () async {
-                  onCallback(_searchedLangData[idx-1]['idshaz']);
+                  sendpalulit(_searchedLangData[idx-1]['idshaz']);
                 },
                 leadingAndTrailingTextStyle: TextStyle(),
                 leading: SizedBox(width: 90,
@@ -528,6 +531,10 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
         }
       },
     );
+  }
+
+  void sendpalulit(var fdsvds){
+    dfv(_searchedLangData,fdsvds);
   }
 
   Future<void> installedmus() async {

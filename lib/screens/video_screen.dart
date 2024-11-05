@@ -333,30 +333,37 @@ class CustomTile extends StatelessWidget {
             errorWidget: (context, url, error) => Icon(Icons.error),)
           ),
           SizedBox(height: 8),
-          Text(
-            title,
-            textAlign: TextAlign.start,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 18,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w500,
-                color: Color.fromARGB(255, 246, 244, 244)
-            ),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.start,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w500,
+                    color: Color.fromARGB(255, 246, 244, 244)
+                ),
+              ),
+              Text(
+                subtitle,
+                textAlign: TextAlign.start,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w300,
+                    color: Color.fromARGB(255, 246, 244, 244)
+                ),
+              ),],
           ),
-          Text(
-            subtitle,
-            textAlign: TextAlign.start,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 14,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w300,
-                color: Color.fromARGB(255, 246, 244, 244)
-            ),
-          ),
+
+          ],)
+
         ],
       ),SizedBox(height: ((size.width/16)*9)+40, width: size.width,  child: ElevatedButton(
         onPressed: () {
@@ -371,7 +378,18 @@ class CustomTile extends StatelessWidget {
           shadowColor: Colors.transparent, // Убираем тень
           elevation: 0, // Убираем эффект возвышенности
         ), child: Container(width: wih,),
-      ))],)
+      )),
+        Container(alignment: Alignment.bottomCenter, child:
+        Container(height: 62, child:
+Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Row(mainAxisAlignment: MainAxisAlignment.end, crossAxisAlignment: CrossAxisAlignment.end, children: [
+          IconButton(
+
+            icon: Icon(Icons.more_vert),
+            color: Colors.white,
+            onPressed: () {},
+          )],)])))
+      ],)
     );
   }
 

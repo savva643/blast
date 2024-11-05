@@ -23,12 +23,13 @@ const kBgColor = Color(0xFF1604E2);
 
 class PlaylistScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
+  final  Function(dynamic, dynamic) onCallbackt;
   final VoidCallback hie;
   final VoidCallback showlog;
   final VoidCallback resdf;
-  const PlaylistScreen({Key? key, required this.onCallback, required this.hie, required this.showlog, required this.resdf}) : super(key: key);
+  const PlaylistScreen({Key? key, required this.onCallback, required this.hie, required this.showlog, required this.resdf, required this.onCallbackt}) : super(key: key);
   @override
-  State<PlaylistScreen> createState() => _PlaylistScreenState((dynamic input) {onCallback(input);}, hie,showlog,resdf);
+  State<PlaylistScreen> createState() => _PlaylistScreenState((dynamic input) {onCallback(input);}, hie,showlog,resdf,(dynamic input,dynamic inputi) {onCallbackt(input, inputi);});
 
 
 
@@ -39,13 +40,15 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late VoidCallback showsearch;
   late Function(dynamic) onCallback;
+  late Function(dynamic, dynamic) onCallbackrfdg;
   late VoidCallback showlog;
   late VoidCallback reseti;
-  _PlaylistScreenState(Function(dynamic) onk, VoidCallback fg, VoidCallback dawsd, VoidCallback gbdfgb) {
+  _PlaylistScreenState(Function(dynamic) onk, VoidCallback fg, VoidCallback dawsd, VoidCallback gbdfgb, Function(dynamic,dynamic inputi) onksd) {
     onCallback = onk;
     showsearch = fg;
     showlog = dawsd;
     reseti = gbdfgb;
+    onCallbackrfdg = onksd;
   }
   List _langData = [
     {
@@ -215,7 +218,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => MusInPlaylistScreen(onCallback: (dynamic input) {
         onCallback(input);
-      }, onCallbacki: fds, hie: showsearch, name: name, img: img, imgnd:imgnd, showlog: showlog, resre: reseti,),
+      }, onCallbacki: fds, hie: showsearch, name: name, img: img, imgnd:imgnd, showlog: showlog, resre: reseti, onCallbackt: (dynamic input, dynamic inputi) {
+        onCallbackrfdg(input, inputi);
+      }),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset(0.0, 0.0);
@@ -559,7 +564,7 @@ class CustomTile extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return Padding(
         padding: const EdgeInsets.all(8.0),
-        child:  Stack(children: [ SizedBox(height: wih/2, width: wih/2,  child:Column(
+        child:  Stack( children: [ SizedBox(height: wih/2, width: wih/2,  child:Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [AspectRatio(aspectRatio: 1, child: fd ?  ClipRRect(
               borderRadius: BorderRadius.circular(18.0), // Радиус закругления углов
@@ -584,7 +589,7 @@ class CustomTile extends StatelessWidget {
             errorWidget: (context, url, error) => Icon(Icons.error),)
           ),
             SizedBox(height: 8),
-            Text(
+            Row(mainAxisAlignment: MainAxisAlignment.start, children: [Text(
               title,
               textAlign: TextAlign.start,
               maxLines: 1,
@@ -596,8 +601,11 @@ class CustomTile extends StatelessWidget {
                   color: Color.fromARGB(255, 246, 244, 244)
               ),
             ),
+              ],),
+
           ],
-        )),SizedBox(height: wih/4, width: wih/4,  child: ElevatedButton(
+        )),SizedBox(height: wih/3.8, width: wih/4,  child:
+        Stack(children: [ElevatedButton(
           onPressed: () {
             hie();
           },
@@ -610,7 +618,18 @@ class CustomTile extends StatelessWidget {
             shadowColor: Colors.transparent, // Убираем тень
             elevation: 0, // Убираем эффект возвышенности
           ), child: Container(width: wih,),
-        ))],)
+        ),
+          Container(alignment: Alignment.bottomCenter, child:
+          Row(mainAxisAlignment: MainAxisAlignment.end, crossAxisAlignment: CrossAxisAlignment.end, children: [
+            IconButton(
+
+              icon: Icon(Icons.more_vert),
+              color: Colors.white,
+              onPressed: () {},
+            )],))
+        ],)
+        ),
+        ],)
     );
   }
 

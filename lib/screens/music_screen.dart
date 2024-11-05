@@ -45,11 +45,16 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
   double dragValue = 0.0;
 
 
-
+  var iconplaese = Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing));
   var iconpla = Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing));
   void updateIcon(Icon newIcon) {
     setState(() {
       iconpla = newIcon;
+    });
+  }
+  void updateIconese(Icon newIcon) {
+    setState(() {
+      iconplaese = newIcon;
     });
   }
   late  Function(dynamic) onCallback;
@@ -79,7 +84,8 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
       context: context,
       builder: (BuildContext context) {
         return Center(child: Container(margin: EdgeInsets.only(right: 100, left: 100, bottom: 80, top: 80), padding: EdgeInsets.only(right: 60, left: 60, bottom: 60, top: 60), decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(40)), color: Color.fromARGB(255, 15, 15, 16)),child:
-        Column(children: [
+        Column(mainAxisSize: MainAxisSize.min,
+          children: [
           Text("blast! находится в alpha",
           style: TextStyle(
             fontSize: 30,
@@ -94,7 +100,32 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w700,
               color: Colors.white,
+            ),),
+        Expanded(child:
+        ListView.builder(
+        itemCount: 1,
+        itemBuilder: (BuildContext context, int idx)
+        {
+        return Container(child: Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Функция Эссенция",
+          textAlign: TextAlign.start,
+          style: TextStyle(
+            fontSize: 20,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),),
+          Text("Это инструмент, который позволяет пользователю познакомиться с треками через наиболее выразительные и запоминающиеся фрагменты. Каждая песня в библиотеке имеет короткий отрывок, специально подобранный для максимального впечатления, который и составляет её Эссенцию.",
+            textAlign: TextAlign.start,
+            style: TextStyle(
+              fontSize: 20,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+              color: Colors.white,
             ),)
+        ],),);
+
+        },
+        ))
         ],),));
       },
     );
@@ -113,7 +144,9 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
     essension = dsacfdcs;
   }
   late Animation<double> _animation;
+  late Animation<double> _animationi;
   bool isAnimating = false;
+  bool isAnimatingi = false;
   void toggleAnimation(bool ds) {
     setState(() {
       if (ds) {
@@ -122,6 +155,18 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
         controllermuscircle.animateTo(controllermuscircle.value+0.01, duration: const Duration(seconds: 1));
       }
       isAnimating = ds;
+    });
+  }
+
+
+  void toggleAnimationese(bool ds) {
+    setState(() {
+      if (ds) {
+        _controllere.repeat();
+      } else {
+        _controllere.animateTo(_controllere.value+0.01, duration: const Duration(seconds: 1));
+      }
+      isAnimatingi = ds;
     });
   }
 
@@ -142,6 +187,11 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
 
     _animation = CurvedAnimation(
       parent: controllermuscircle,
+      curve: Curves.easeInOut,  // Плавное ускорение и замедление
+    );
+
+    _animationi = CurvedAnimation(
+      parent: _controllere,
       curve: Curves.easeInOut,  // Плавное ускорение и замедление
     );
     super.initState();
@@ -281,7 +331,7 @@ bottom: false,
                                         child: ScaleTransition(scale: animation, child: child),
                                       );
                                     },
-                                    child:iconpla)))],)
+                                    child:iconplaese)))],)
                         ),
                       ],
                     ),
@@ -630,10 +680,10 @@ bottom: false,
                                 child:iconpla)))],)
                   ),
                 ],)),
-                  Container(child:   Stack(
+                  Container( margin: EdgeInsets.only(left: 32,right: 32), child:   Stack(
                     alignment: Alignment.center,
                     children: [
-                      Container(margin: EdgeInsets.only(left: 40,right: 40), child:
+                      Container(padding: EdgeInsets.only(left: 12,right: 12), child:
                       RotationTransition(
                           turns: Tween(begin: 0.0, end: 1.0).animate(_controllere),
                           child:Image.asset('assets/images/forclock.png', width: 800,))),
@@ -693,7 +743,7 @@ bottom: false,
                                       child: ScaleTransition(scale: animation, child: child),
                                     );
                                   },
-                                  child:iconpla)))],)
+                                  child:iconplaese)))],)
                       ),
                     ],
                   ),

@@ -74,12 +74,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> essension() async {
     if(!essensionbool){
       essensionbool = true;
-      var urli = Uri.parse("https://kompot.site/getaboutmus?sidi=");
+      var urli = Uri.parse("https://kompot.site/getesemus");
+
       var response = await http.get(urli);
       String dff = response.body.toString();
+      print(dff);
       setState(() {
-        nestedArray = jsonDecode(dff);
-        getaboutmus(nestedArray[0]["short"], false, false, true);
+        nestedArray.clear();
+        nestedArray.add(jsonDecode(dff));
+        getaboutmus(nestedArray[0]["idshaz"], false, false, true, false);
       });
     }else{
       playpause();
@@ -112,6 +115,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _childKey.currentState?.toggleAnimation(true);
           _childKey.currentState?.updateIcon(
               Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+        }
+        if (essensionbool) {
+          _childKey.currentState?.toggleAnimationese(true);
+          _childKey.currentState?.updateIconese(Icon(
+              Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+        }
+        if(_langData[0]["doi"] == "0"){
+          isDisLiked = true;
+          isLiked = false;
+        }else if(_langData[0]["doi"] == "1"){
+          isDisLiked = false;
+          isLiked = true;
+        }else if(_langData[0]["doi"] == "2"){
+          isDisLiked = false;
+          isLiked = false;
         }
         namemus = _langData[0]["name"];
         ispolmus = _langData[0]["message"];
@@ -173,6 +191,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       setState(() {
         print("dsfxv"+videoope.toString());
         if (!videoope) {
+          if (_langData[0]['bgvideo'] == "0") {
+            opac = 0;
+            opacityi3 = 1;
+          }
           if (!state.playing) {
             setState(() {
               if(_langData[0]['bgvideo'] != "0"){
@@ -182,6 +204,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               if (isjemnow) {
                 _childKey.currentState?.toggleAnimation(false);
                 _childKey.currentState?.updateIcon(Icon(
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+              }
+              if (essensionbool) {
+                _childKey.currentState?.toggleAnimationese(false);
+                _childKey.currentState?.updateIconese(Icon(
                     Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
             });
@@ -195,6 +222,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _childKey.currentState?.toggleAnimation(true);
                 _childKey.currentState?.updateIcon(
                     Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+              }
+              if (essensionbool) {
+                _childKey.currentState?.toggleAnimationese(true);
+                _childKey.currentState?.updateIconese(Icon(
+                    Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
             });
           }
@@ -216,20 +248,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             opac = 0;
             opacityi3 = 1;
           }else {
-            if (!state) {
-              if(fj){
-                fj = false;
-                if(!AudioService.playbackState.playing){
+            if (_langData[0]['bgvideo'] == "0") {
+              opac = 0;
+              opacityi3 = 1;
+            } else {
+              if (!state) {
+                if (fj) {
+                  fj = false;
+                  if (!AudioService.playbackState.playing) {
+                    opac = 0;
+                    opacityi3 = 1;
+                  }
+                } else {
                   opac = 0;
                   opacityi3 = 1;
                 }
-              }else {
-                opac = 0;
-                opacityi3 = 1;
+              } else {
+                opac = 1;
+                opacityi3 = 0;
               }
-            } else {
-              opac = 1;
-              opacityi3 = 0;
             }
           }
         });
@@ -243,6 +280,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   _childKey.currentState?.updateIcon(Icon(
                       Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(state)));
                 }
+                if (essensionbool) {
+                  _childKey.currentState?.toggleAnimationese(false);
+                  _childKey.currentState?.updateIconese(Icon(
+                      Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+                }
                 AudioService.seekTo(Duration(milliseconds: 1));
               });
             } else {
@@ -252,6 +294,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   _childKey.currentState?.toggleAnimation(true);
                   _childKey.currentState?.updateIcon(
                       Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(state)));
+                }
+                if (essensionbool) {
+                  _childKey.currentState?.toggleAnimationese(true);
+                  _childKey.currentState?.updateIconese(Icon(
+                      Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
                 }
                 AudioService.seekTo(Duration(milliseconds: 1));
               });
@@ -275,6 +322,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _childKey.currentState?.updateIcon(Icon(
                     Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
               }
+              if (essensionbool) {
+                _childKey.currentState?.toggleAnimationese(false);
+                _childKey.currentState?.updateIconese(Icon(
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+              }
               AudioService.seekTo(Duration(milliseconds: 1));
             });
           } else {
@@ -284,6 +336,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _childKey.currentState?.toggleAnimation(true);
                 _childKey.currentState?.updateIcon(
                     Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
+              }
+              if (essensionbool) {
+                _childKey.currentState?.toggleAnimationese(true);
+                _childKey.currentState?.updateIconese(Icon(
+                    Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
               AudioService.seekTo(Duration(milliseconds: 1));
             });
@@ -318,7 +375,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Future<void> getaboutmus(String shazid, bool jem, bool install, bool ese) async {
+
+
+  Future<void> getaboutmus(String shazid, bool jem, bool install, bool ese, bool isfromochered) async {
     setState(() {
     loadingmus = false;
     if(_isBottomSheetOpen){
@@ -329,14 +388,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
     print(shazid+"jkljl"+this.shazid);
     if (shazid != this.shazid) {
+      if(ese == false){
+        essensionbool = false;
+      }
         if (!jem) {
           isjemnow = false;
           _childKey.currentState?.toggleAnimation(false);
           _childKey.currentState?.updateIcon(
               Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white));
         }
-        var urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid);
-
+      var urli;
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? ds = prefs.getString("token");
+      if(ds != "") {
+        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid + "&tokeni=" + ds!);
+      }else{
+        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid);
+      }
         var response = await http.get(urli);
         String dff = response.body.toString();
         print(dff);
@@ -353,16 +421,51 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           fsaf.add(jsonDecode(dff)["id"]);
           await prefs.setStringList("historymusid", fsaf);
         }
-        
+      setState(() {
+        print("hyhg");
+        _langData[0] = jsonDecode(dff);
+        if(isfromochered){
+          int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
+          print((dsv+2).toString()+"i"+(ocherd.length).toString()+"fdsfdfd"+(dsv-1).toString());
+          if(dsv+2 <= ocherd.length) {
+            cannext = true;
+          }else{
+            cannext = false;
+          }
+          if(dsv-1 > 0) {
+            canrevew = true;
+          }else{
+            canrevew = false;
+          }
+        }else {
+          ocherd.clear();
+          ocherd.add(_langData[0]["idshaz"]);
+          ispalylistochered = false;
+        }
+      });
+      bool fvd = false;
+      bool fvd2 = await filterValidImages(_langData[0]['url']);
+      print("hjtghjgthjy"+install.toString());
+      print("hjtghjgthjycsadc"+fvd2.toString());
+      if(install) {
+         fvd = await filterValidImages(_langData[0]['timeurl']);
+
+      }
+
         setState(() {
-          print("hyhg");
-          _langData[0] = jsonDecode(dff);
           if(install){
             instalumusa = true;
             print("vfdvvfdv");
             print(_langData[0]['timeurl']);
-            _langData[0]['url'] = _langData[0]['timeurl'];
-
+            if(fvd) {
+              _langData[0]['url'] = _langData[0]['timeurl'];
+            }
+          }else{
+            if(!fvd2) {
+              print("objefghngfhgbfdct");
+              installmus(_langData[0]);
+              return;
+            }
           }
           if (_langData[0]['vidos'] != '0' && videoope) {
             playVideo(_langData[0]['idshaz'], false);
@@ -404,6 +507,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               _childKey.currentState?.updateIcon(Icon(
                   Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
             }
+            if (essensionbool) {
+              _childKey.currentState?.toggleAnimationese(false);
+              _childKey.currentState?.updateIconese(Icon(
+                  Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+            }
           });
         } else {
           controller.player.play();
@@ -413,6 +521,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               _childKey.currentState?.toggleAnimation(true);
               _childKey.currentState?.updateIcon(
                   Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
+            }
+            if (essensionbool) {
+              _childKey.currentState?.toggleAnimationese(true);
+              _childKey.currentState?.updateIconese(Icon(
+                  Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
             }
           });
         }
@@ -427,6 +540,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               _childKey.currentState?.updateIcon(Icon(
                   Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
             }
+            if (essensionbool) {
+              _childKey.currentState?.toggleAnimationese(false);
+              _childKey.currentState?.updateIconese(Icon(
+                  Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+            }
           });
         } else {
           AudioService.play();
@@ -436,6 +554,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               _childKey.currentState?.toggleAnimation(true);
               _childKey.currentState?.updateIcon(
                   Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+            }
+            if (essensionbool) {
+              _childKey.currentState?.toggleAnimationese(true);
+              _childKey.currentState?.updateIconese(Icon(
+                  Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
             }
           });
         }
@@ -534,6 +657,76 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
   }
 
+
+  var ocherd = [];
+  bool isLiked = false;
+  bool isDisLiked = false;
+  bool isLoading = false;
+
+  Future<void> toggleLike(int type) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ds = prefs.getString("token");
+    if(ds != "") {
+      if (isLoading) return; // Блокируем повторное нажатие во время запроса
+      setState(() {
+        isLoading = true;
+      });
+
+      try {
+        var yes = "0";
+        if (type == 1) {
+          if (isLiked) {
+            yes = "0";
+          } else {
+            yes = "1";
+          }
+        } else if (type == 0) {
+          if (isDisLiked) {
+            yes = "0";
+          } else {
+            yes = "1";
+          }
+        }
+        // Отправляем GET-запрос
+        final response = await http.get(Uri.parse(
+            'https://kompot.site/reactmusic?mus=' +
+                _langData[0]['id'].toString() + '&type=' + type.toString() +
+                '&yes=' + yes.toString() + "&token="+ds!));
+
+        if (response.statusCode == 200) {
+          // Успешный ответ, меняем состояние лайка
+          String dff = response.body.toString();
+          var _fdsb = jsonDecode(dff);
+          if (_fdsb['status'] == "true") {
+            setState(() {
+              setnewState(() {
+                if (type == 1) {
+                  isLiked = !isLiked;
+                } else if (type == 0) {
+                  isDisLiked = !isDisLiked;
+                }
+              });
+            });
+          }
+        } else {
+          // Обработка ошибок
+          print('Ошибка: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Ошибка запроса: $e');
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }else{
+
+    }
+  }
+
+
+
+
   bool loadingmus = false;
 
   Future<void> installmus(dynamic sdcv) async {
@@ -545,11 +738,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       AudioService.pause();
     }
     setState(() {
+      setnewState(() {
+      if(sdcv["doi"] == "0"){
+        isDisLiked = true;
+        isLiked = false;
+      }else if(sdcv["doi"] == "1"){
+        isDisLiked = false;
+        isLiked = true;
+      }else if(sdcv["doi"] == "2"){
+        isDisLiked = false;
+        isLiked = false;
+      }
       namemus = sdcv["name"];
       ispolmus = sdcv["message"];
       imgmus = sdcv['img'];
       idmus = "0";
       shazid = sdcv['idshaz'];
+    });
     });
     setState(() {
       loadingmus = true;
@@ -564,10 +769,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     String dff = response.body.toString();
     print("jhghjgz");
     print(dff);
-    getaboutmus(dff, false, true, false);
+    getaboutmus(dff, false, true, false, false);
 
   }
 
+  Future<bool> filterValidImages(String url) async {
+    var dsv = false;
+
+
+    try {
+      final response = await http.head(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        dsv = true;
+      }
+    }catch (e) {
+      print("Ошибка при загрузке музыки: $e");
+
+    }
+
+    print(dsv);
+    return dsv;
+  }
 
   String vidaftermus = "false";
   String musaftervid = "false";
@@ -590,7 +813,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _totalDuration = 1;
     _currentPosition = 0;
     print(listok["id"]);
-    if(!essensioni){
+    if(essensioni == false){
       essensionbool = false;
     }
     if(devicecon){
@@ -607,6 +830,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       String jsonString = jsonEncode(sdc[0]);
       channeldev.sink.add(jsonString);
       setState(() {
+        setnewState(() {
+        if(listok["doi"] == "0"){
+          isDisLiked = true;
+          isLiked = false;
+        }else if(listok["doi"] == "1"){
+          isDisLiked = false;
+          isLiked = true;
+        }else if(listok["doi"] == "2"){
+          isDisLiked = false;
+          isLiked = false;
+        }
         namemus = listok["name"];
         ispolmus = listok["message"];
         if(!install) {
@@ -614,6 +848,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         }
         idmus = listok['id'];
         shazid = listok['idshaz'];
+      });
       });
       if(_langData[0]['bgvideo'] != "0") {
         print("https://kompot.site/"+_langData[0]['bgvideo']);
@@ -638,6 +873,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if (idmus != listok["id"] || frmvid) {
         if (frstsd) {
           if (essensioni) {
+            print("dsccsd");
+            print(listok['short']);
             _playNewTrack(listok['short']);
           }else{
             _playNewTrack(listok['url']);
@@ -665,6 +902,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               _childKey.currentState?.updateIcon(
                   Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing),), );
             }
+            if (essensionbool) {
+              _childKey.currentState?.toggleAnimationese(true);
+              _childKey.currentState?.updateIconese(Icon(
+                  Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+            }
+            if(_isBottomSheetOpen){
+            setnewState(() {
+            if(listok["doi"] == "0"){
+              isDisLiked = true;
+              isLiked = false;
+            }else if(listok["doi"] == "1"){
+              isDisLiked = false;
+              isLiked = true;
+            }else if(listok["doi"] == "2"){
+              isDisLiked = false;
+              isLiked = false;
+            }
             namemus = listok["name"];
             ispolmus = listok["message"];
             if(!install) {
@@ -672,6 +926,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
             idmus = listok['id'];
             shazid = listok['idshaz'];
+            });}else{
+              if(listok["doi"] == "0"){
+                isDisLiked = true;
+                isLiked = false;
+              }else if(listok["doi"] == "1"){
+                isDisLiked = false;
+                isLiked = true;
+              }else if(listok["doi"] == "2"){
+                isDisLiked = false;
+                isLiked = false;
+              }
+              namemus = listok["name"];
+              ispolmus = listok["message"];
+              if(!install) {
+                imgmus = listok['img'];
+              }
+              idmus = listok['id'];
+              shazid = listok['idshaz'];
+            }
 
           });
         } else {
@@ -704,13 +977,45 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             );
           }
           setState(() {
-            namemus = listok["name"];
-            ispolmus = listok["message"];
-            if(!install) {
-              imgmus = listok['img'];
+            if(_isBottomSheetOpen) {
+              setnewState(() {
+                if (listok["doi"] == "0") {
+                  isDisLiked = true;
+                  isLiked = false;
+                } else if (listok["doi"] == "1") {
+                  isDisLiked = false;
+                  isLiked = true;
+                } else if (listok["doi"] == "2") {
+                  isDisLiked = false;
+                  isLiked = false;
+                }
+                namemus = listok["name"];
+                ispolmus = listok["message"];
+                if (!install) {
+                  imgmus = listok['img'];
+                }
+                idmus = listok['id'];
+                shazid = listok['idshaz'];
+              });
+            }else{
+              if (listok["doi"] == "0") {
+                isDisLiked = true;
+                isLiked = false;
+              } else if (listok["doi"] == "1") {
+                isDisLiked = false;
+                isLiked = true;
+              } else if (listok["doi"] == "2") {
+                isDisLiked = false;
+                isLiked = false;
+              }
+              namemus = listok["name"];
+              ispolmus = listok["message"];
+              if (!install) {
+                imgmus = listok['img'];
+              }
+              idmus = listok['id'];
+              shazid = listok['idshaz'];
             }
-            idmus = listok['id'];
-            shazid = listok['idshaz'];
           });
           if(_langData[0]['bgvideo'] != "0") {
             print("https://kompot.site/"+_langData[0]['bgvideo']);
@@ -777,7 +1082,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 });
               });
               return showsearch ? SearchScreen(onCallback: (dynamic input) {
-                getaboutmus(input, false, false, false);
+                getaboutmus(input, false, false, false, false);
               }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
                 installmus(input);
               } ) : Container(
@@ -817,7 +1122,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Route _createSearchRoute() {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(onCallback: (dynamic input) {
-        getaboutmus(input, false, false, false);
+        getaboutmus(input, false, false, false, false);
       }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
         installmus(input);
       }),
@@ -916,6 +1221,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               onDoubleTapDown: (details) =>
               _onDoubleTap(details, context), child:
           PageView.builder(
+            physics: BouncingScrollPhysics(),
             controller: _pageController,
             itemCount: nestedArray.length,
             itemBuilder: (context, index) {
@@ -1372,20 +1678,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         height: 50,
                                         child: IconButton(
                                             disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                            onPressed: null,
+                                            onPressed: () {toggleLike(0);},
                                             icon: Image(
-                                                color: Color.fromARGB(255, 123, 123, 124),
-                                                image: AssetImage(
+                                                color: Color.fromARGB(255, 255, 255, 255),
+                                                image: isDisLiked ? AssetImage(
+                                                    'assets/images/unloveyes.png') : AssetImage(
                                                     'assets/images/unloveno.png'),
                                                 width: 100
                                             ))),
                                     SizedBox(width: 50,
                                         height: 50,
                                         child: IconButton(
-                                            disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                            onPressed: null,
+                                            disabledColor: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                            onPressed: canrevew ? previosmusic : null,
                                             icon: Image(
-                                                color: Color.fromARGB(255, 123, 123, 124),
+                                                color: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
                                                 image: AssetImage(
                                                     'assets/images/reveuws.png'),
                                                 width: 100
@@ -1416,10 +1723,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     SizedBox(width: 50,
                                         height: 50,
                                         child: IconButton(
-                                            disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                            onPressed: null,
+                                            disabledColor: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                            onPressed: cannext ? nextmusic : null,
                                             icon: Image(
-                                              color: Color.fromARGB(255, 123, 123, 124),
+                                              color: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
                                               image: AssetImage(
                                                   'assets/images/nexts.png'),
                                               width: 120,
@@ -1428,10 +1735,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     SizedBox(width: 50,
                                         height: 50,
                                         child: IconButton(
-                                            onPressed: null, // () {installmusic(_langData[0]);},
+                                            onPressed: () {toggleLike(1);}, // () {installmusic(_langData[0]);},
                                             icon: Image(
-                                                color: Color.fromARGB(255, 123, 123, 124),
-                                                image: AssetImage(
+                                                color: Color.fromARGB(255, 255, 255, 255),
+                                                image: isLiked ? AssetImage(
+                                                    'assets/images/loveyes.png') : AssetImage(
                                                     'assets/images/loveno.png'),
                                                 width: 100
                                             ))),
@@ -1982,20 +2290,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               height: 50,
                               child: IconButton(
                                   disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: null,
+                                  onPressed: () {toggleLike(0);},
                                   icon: Image(
-                                      color: Color.fromARGB(255, 123, 123, 124),
-                                      image: AssetImage(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      image: isDisLiked ? AssetImage(
+                                          'assets/images/unloveyes.png') : AssetImage(
                                           'assets/images/unloveno.png'),
                                       width: 100
                                   ))),
                           SizedBox(width: 50,
                               height: 50,
                               child: IconButton(
-                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: null,
+                                  disabledColor: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                  onPressed: canrevew ? previosmusic : null,
                                   icon: Image(
-                                      color: Color.fromARGB(255, 123, 123, 124),
+                                      color: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
                                       image: AssetImage(
                                           'assets/images/reveuws.png'),
                                       width: 100
@@ -2026,10 +2335,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           SizedBox(width: 50,
                               height: 50,
                               child: IconButton(
-                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: null,
+                                  disabledColor: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                  onPressed: cannext ? nextmusic : null,
                                   icon: Image(
-                                    color: Color.fromARGB(255, 123, 123, 124),
+                                    color: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
                                     image: AssetImage(
                                         'assets/images/nexts.png'),
                                     width: 120,
@@ -2038,10 +2347,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           SizedBox(width: 50,
                               height: 50,
                               child: IconButton(
-                                  onPressed: null, // () {installmusic(_langData[0]);},
+                                  onPressed: () {toggleLike(1);}, // () {installmusic(_langData[0]);},
                                   icon: Image(
-                                      color: Color.fromARGB(255, 123, 123, 124),
-                                      image: AssetImage(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      image: isLiked ? AssetImage(
+                                          'assets/images/loveyes.png') : AssetImage(
                                           'assets/images/loveno.png'),
                                       width: 100
                                   ))),
@@ -2587,20 +2897,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 height: 50,
                                 child: IconButton(
                                     disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: null,
+                                    onPressed: () {toggleLike(0);},
                                     icon: Image(
-                                        color: Color.fromARGB(255, 123, 123, 124),
-                                        image: AssetImage(
+                                        color: Color.fromARGB(255, 255, 255, 255),
+                                        image: isDisLiked ? AssetImage(
+                                            'assets/images/unloveyes.png') : AssetImage(
                                             'assets/images/unloveno.png'),
                                         width: 100
                                     ))),
                             SizedBox(width: 50,
                                 height: 50,
                                 child: IconButton(
-                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: null,
+                                    disabledColor: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                    onPressed: canrevew ? previosmusic : null,
                                     icon: Image(
-                                        color: Color.fromARGB(255, 123, 123, 124),
+                                        color: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
                                         image: AssetImage(
                                             'assets/images/reveuws.png'),
                                         width: 100
@@ -2631,10 +2942,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             SizedBox(width: 50,
                                 height: 50,
                                 child: IconButton(
-                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: null,
+                                    disabledColor: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                    onPressed: cannext ? nextmusic : null,
                                     icon: Image(
-                                      color: Color.fromARGB(255, 123, 123, 124),
+                                      color: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
                                       image: AssetImage(
                                           'assets/images/nexts.png'),
                                       width: 120,
@@ -2643,10 +2954,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             SizedBox(width: 50,
                                 height: 50,
                                 child: IconButton(
-                                    onPressed: null, // () {installmusic(_langData[0]);},
+                                    onPressed: () {toggleLike(1);}, // () {installmusic(_langData[0]);},
                                     icon: Image(
-                                        color: Color.fromARGB(255, 123, 123, 124),
-                                        image: AssetImage(
+                                        color: Color.fromARGB(255, 255, 255, 255),
+                                        image: isLiked ? AssetImage(
+                                            'assets/images/loveyes.png') : AssetImage(
                                             'assets/images/loveno.png'),
                                         width: 100
                                     ))),
@@ -2754,8 +3066,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   borderRadius = screenWidth >= 800
                       ? BorderRadius.circular(20)
                       : BorderRadius.circular(0);
-                   return screenWidth >= screenhfg ?
-                        bigscreenbottomshet() : smallscreenbottomshet();
+                   return  essensionbool ? (screenWidth >= screenhfg ?
+                   bigscreenbottomshet() : smallscreenesensionbottomshet()) : (screenWidth >= screenhfg ?
+                        bigscreenbottomshet() : smallscreenbottomshet());
 
           }));
           }
@@ -3003,10 +3316,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   late List<Widget> pages = [
     _buildNavigator(_playlistNavigatorKey, PlaylistScreen(onCallback: (dynamic input) {
-      getaboutmus(input, false, false, false);
-    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp,)),
+      getaboutmus(input, false, false, false, false);
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp, onCallbackt: (dynamic input, dynamic inputi) { loadpalylisttoochered(input, inputi); },)),
     _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey,onCallback: (dynamic input) {
-      getaboutmus(input, false, false, false);
+      getaboutmus(input, false, false, false, false);
     }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp, essension: essension,)),
     _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
       _setvi(input, false, true);
@@ -3119,7 +3432,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       print(dff);
       setState(() {
         _jemData = dff;
-        getaboutmus(_jemData, true, false, false);
+        getaboutmus(_jemData, true, false, false, false);
         isjemnow = true;
       });
     }else{
@@ -3280,6 +3593,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     _childKey.currentState?.updateIcon(Icon(
                         Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
                   }
+                  if (essensionbool) {
+                    _childKey.currentState?.toggleAnimationese(false);
+                    _childKey.currentState?.updateIconese(Icon(
+                        Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+                  }
                   });
                 });
               }else{
@@ -3290,6 +3608,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     _childKey.currentState?.toggleAnimation(true);
                     _childKey.currentState?.updateIcon(
                         Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+                  }
+                  if (essensionbool) {
+                    _childKey.currentState?.toggleAnimationese(true);
+                    _childKey.currentState?.updateIconese(Icon(
+                        Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
                   }
                   });});
               }
@@ -3307,6 +3630,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _childKey.currentState?.updateIcon(Icon(
                     Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
+              if (essensionbool) {
+                _childKey.currentState?.toggleAnimationese(false);
+                _childKey.currentState?.updateIconese(Icon(
+                    Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+              }
               });});
           }else{
             setState(() {
@@ -3316,6 +3644,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _childKey.currentState?.toggleAnimation(true);
                 _childKey.currentState?.updateIcon(
                     Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+              }
+              if (essensionbool) {
+                _childKey.currentState?.toggleAnimationese(true);
+                _childKey.currentState?.updateIconese(Icon(
+                    Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
               }
               });});
           }
@@ -3571,15 +3904,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     print(mrp.toString());
   }
 
+  bool ispalylistochered = false;
+
+  void loadpalylisttoochered(var listokd, var issahzafrompaly){
+    ocherd.clear();
+    for (var num in listokd) {
+      ocherd.add(num["idshaz"]);
+    }
+    int dsv = ocherd.indexOf(issahzafrompaly);
+    getaboutmus(ocherd[dsv], false, false, false, true);
+    ispalylistochered = true;
+  }
+
+
   void showtextmus(){
 
   }
 
   void addplaylist(){
-
-  }
-
-  void reactionmus(){
 
   }
 
@@ -3596,14 +3938,45 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void setqualitymus(){
 
   }
-
+  bool cannext = false;
+  bool canrevew = false;
   void nextmusic(){
+    if (isLoading) return; // Блокируем повторное нажатие во время запроса
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      if (ispalylistochered) {
+        int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
+        if (dsv + 2 <= ocherd.length) {
+          getaboutmus(ocherd[dsv + 1].toString(), false, false, false, true);
+        }
+      } else {
 
+      }
+    }finally{
+      isLoading = false;
+    }
   }
 
 
   void previosmusic(){
+    if (isLoading) return; // Блокируем повторное нажатие во время запроса
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      if (ispalylistochered) {
+        int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
+        if (dsv - 1 > 0) {
+          getaboutmus(ocherd[dsv - 1].toString(), false, false, false, true);
+        }
+      } else {
 
+      }
+    }finally{
+      isLoading = false;
+    }
   }
 
 }

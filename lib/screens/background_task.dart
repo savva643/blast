@@ -62,6 +62,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
   }
 
   Future<void> _playNewTrack(MediaItem mediaItem) async {
+    print("hhgm"+mediaItem.id);
     await player.setUrl(mediaItem.id);
     notifier.setDuration(player.duration ?? Duration.zero);
     player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
