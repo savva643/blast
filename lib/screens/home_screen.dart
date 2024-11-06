@@ -403,8 +403,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if(ds != null) {
         if (ds != "") {
           urli = Uri.parse(
-              "https://kompot.site/getaboutmus?sidi=" + shazid + "&tokeni=" +
-                  ds!);
+              "https://kompot.site/getaboutmus?sidi=" + shazid + "&tokeni=" + ds!);
         } else {
           urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid);
         }
@@ -744,23 +743,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       AudioService.pause();
     }
     setState(() {
-      setnewState(() {
-      if(sdcv["doi"] == "0"){
-        isDisLiked = true;
-        isLiked = false;
-      }else if(sdcv["doi"] == "1"){
-        isDisLiked = false;
-        isLiked = true;
-      }else if(sdcv["doi"] == "2"){
-        isDisLiked = false;
-        isLiked = false;
+      if(_isBottomSheetOpen) {
+        setnewState(() {
+          if (sdcv["doi"] == "0") {
+            isDisLiked = true;
+            isLiked = false;
+          } else if (sdcv["doi"] == "1") {
+            isDisLiked = false;
+            isLiked = true;
+          } else if (sdcv["doi"] == "2") {
+            isDisLiked = false;
+            isLiked = false;
+          }
+          namemus = sdcv["name"];
+          ispolmus = sdcv["message"];
+          imgmus = sdcv['img'];
+          idmus = "0";
+          shazid = sdcv['idshaz'];
+        });
+      }else{
+        if (sdcv["doi"] == "0") {
+          isDisLiked = true;
+          isLiked = false;
+        } else if (sdcv["doi"] == "1") {
+          isDisLiked = false;
+          isLiked = true;
+        } else if (sdcv["doi"] == "2") {
+          isDisLiked = false;
+          isLiked = false;
+        }
+        namemus = sdcv["name"];
+        ispolmus = sdcv["message"];
+        imgmus = sdcv['img'];
+        idmus = "0";
+        shazid = sdcv['idshaz'];
       }
-      namemus = sdcv["name"];
-      ispolmus = sdcv["message"];
-      imgmus = sdcv['img'];
-      idmus = "0";
-      shazid = sdcv['idshaz'];
-    });
     });
     setState(() {
       loadingmus = true;
