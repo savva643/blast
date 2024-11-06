@@ -287,7 +287,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5)),
                 onTap: () async {
-                  sendpalulit(_searchedLangData[idx-1]['idshaz']);
+                  sendpalulit(idx-1);
                 },
                 leadingAndTrailingTextStyle: TextStyle(),
                 leading: SizedBox(width: 90,
@@ -466,7 +466,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5)),
                 onTap: () async {
-                  sendpalulit(_searchedLangData[idx-1]['idshaz']);
+                  sendpalulit(idx-1);
                 },
                 leadingAndTrailingTextStyle: TextStyle(),
                 leading: SizedBox(width: 90,

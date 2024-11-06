@@ -400,8 +400,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       var urli;
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       String? ds = prefs.getString("token");
-      if(ds != "") {
-        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid + "&tokeni=" + ds!);
+      if(ds != null) {
+        if (ds != "") {
+          urli = Uri.parse(
+              "https://kompot.site/getaboutmus?sidi=" + shazid + "&tokeni=" +
+                  ds!);
+        } else {
+          urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid);
+        }
       }else{
         urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid);
       }
@@ -880,21 +886,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             _playNewTrack(listok['url']);
           }
           AudioService.play();
-          if(_langData[0]['bgvideo'] != "0") {
-            print("https://kompot.site/"+_langData[0]['bgvideo']);
-            final directory = await getApplicationDocumentsDirectory();
-            final filePath = '${directory.path}/cached_video.mp4';
-            try {
-              // Загружаем видео и сохраняем его
-              await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
-              print("Видео загружено и сохранено в локальном хранилище.");
-              videoshort.open(Media(filePath));
 
-            } catch (e) {
-              print("Ошибка при загрузке видео: $e");
-              return;
-            }
-          }
           setState(() {
             iconpla = Icon(Icons.pause_rounded, size: 40, key: ValueKey<bool>(AudioService.playbackState.playing),);
             if (isjemnow) {
@@ -947,6 +939,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
 
           });
+          if(_langData[0]['bgvideo'] != "0") {
+            print("https://kompot.site/"+_langData[0]['bgvideo']);
+            final directory = await getApplicationDocumentsDirectory();
+            final filePath = '${directory.path}/cached_video.mp4';
+            try {
+              // Загружаем видео и сохраняем его
+              await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
+              print("Видео загружено и сохранено в локальном хранилище.");
+              videoshort.open(Media(filePath));
+
+            } catch (e) {
+              print("Ошибка при загрузке видео: $e");
+              return;
+            }
+          }
         } else {
           frstsd = true;
           if(essensioni) {
@@ -3127,7 +3134,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       Container(
           height: 134+ MediaQuery.of(context).padding.bottom,
           decoration: const BoxDecoration(
-              color: Color.fromARGB(120, 25, 24, 24),
+              color: Color.fromARGB(200, 25, 24, 24),
               borderRadius: BorderRadius.vertical(top: Radius.circular(15))
           ),
           child:
@@ -3140,7 +3147,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: Container(
 
                 decoration: const BoxDecoration(
-                    color: Color.fromARGB(120, 25, 24, 24),
+                    color: Color.fromARGB(0, 25, 24, 24),
                     borderRadius: BorderRadius.vertical(top: Radius.circular(15))
                 ),
                 child:
@@ -3906,13 +3913,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   bool ispalylistochered = false;
 
-  void loadpalylisttoochered(var listokd, var issahzafrompaly){
+  void loadpalylisttoochered(var listokd, var index){
     ocherd.clear();
     for (var num in listokd) {
       ocherd.add(num["idshaz"]);
     }
-    int dsv = ocherd.indexOf(issahzafrompaly);
-    getaboutmus(ocherd[dsv], false, false, false, true);
+    getaboutmus(ocherd[index], false, false, false, true);
     ispalylistochered = true;
   }
 
