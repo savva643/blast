@@ -155,7 +155,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   get listok => null;
 
   double opac = 0;
-
+  String getCacheBustedUrl(String url) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return "$url?timestamp=$timestamp";
+  }
   @override
   void initState() {
     super.initState();
@@ -164,29 +167,47 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _getLocalIp();
     AudioService.customEventStream.listen((event) {
       if(!devicecon) {
+        print("hyffyj");
         if (event != null) {
           setState(() {
-            if(instalumusa) {
-              _currentPosition = event['position'].toDouble()~/ 2;
-              _totalDuration = event['duration'].toDouble()~/ 2;
-              print(event['duration'].toString());
-            }else{
-              _currentPosition = event['position'].toDouble();
-              _totalDuration = event['duration'].toDouble();
-              print(event['duration'].toString());
+            if(_isBottomSheetOpen){
+              setnewState(() {
+                if(instalumusa) {
+                  print(event);
+                  _currentPosition = ((event['position'].toDouble()) ~/ 2).toDouble();
+                  _totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
+                  print(event['duration'].toString());
+                }else{
+                  _currentPosition = event['position'].toDouble();
+                  _totalDuration = event['duration'].toDouble();
+                  print(event['duration'].toString());
+                }
+              });
+            }else {
+              if (instalumusa) {
+                print(event);
+                _currentPosition = ((event['position'].toDouble()) ~/ 2).toDouble();
+                _totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
+                print(event['duration'].toString());
+              } else {
+                _currentPosition = event['position'].toDouble();
+                _totalDuration = event['duration'].toDouble();
+                print(event['duration'].toString());
+              }
             }
           });
         }
       }else{
         setnewState(() {
           if(instalumusa) {
-            _totalDuration = event['duration'].toDouble()~/ 2;
+            _totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
           }else{
             _totalDuration = event['duration'].toDouble();
           }
         });
       }
     });
+
     AudioService.playbackStateStream.listen((PlaybackState state) {
       setState(() {
         print("dsfxv"+videoope.toString());
@@ -236,11 +257,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       });
     });
     bool fj = false;
-    controllershort.player.stream.completed.listen((_) {
-      videoshort.setPlaylistMode(PlaylistMode.loop);
-      videoshort.play(); // Запускаем воспроизведение заново
+    Duration _threshold = Duration(milliseconds: 300); // за 300 мс до конца видео
+     controllershort.player.stream.completed.listen((_) async {
+       // videoshort.setPlaylistMode(PlaylistMode.loop);
+       await videoshort.seek(Duration.zero);
+       await videoshort.play(); // Запускаем воспроизведение заново
       fj = true;
     });
+
     controllershort.player.stream.playing.listen((bool state) {
       if(_isBottomSheetOpen){
         setnewState(() {
@@ -378,16 +402,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
 
   Future<void> getaboutmus(String shazid, bool jem, bool install, bool ese, bool isfromochered) async {
-    setState(() {
-    loadingmus = false;
-    if(_isBottomSheetOpen){
-      setnewState(() {
-        loadingmus = false;
-      });
-    }
-    });
+
     print(shazid+"jkljl"+this.shazid);
     if (shazid != this.shazid) {
+      AudioService.stop();
       if(ese == false){
         essensionbool = false;
       }
@@ -457,20 +475,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
       }
 
-        setState(() {
+      setState(() {
+        loadingmus = false;
+        if(_isBottomSheetOpen){
+          setnewState(() {
+            loadingmus = false;
+          });
+        }
+
           if(install){
             instalumusa = true;
             print("vfdvvfdv");
             print(_langData[0]['timeurl']);
             if(fvd) {
+              print("haveconnect");
               _langData[0]['url'] = _langData[0]['timeurl'];
             }
           }else{
             if(!fvd2) {
               print("objefghngfhgbfdct");
-              installmus(_langData[0]);
+              installmus(_langData[0], false);
+              instalumusa = true;
               return;
             }
+            instalumusa = false;
           }
           if (_langData[0]['vidos'] != '0' && videoope) {
             playVideo(_langData[0]['idshaz'], false);
@@ -734,7 +762,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   bool loadingmus = false;
 
-  Future<void> installmus(dynamic sdcv) async {
+  Future<void> installmus(dynamic sdcv, bool search) async {
     if(videoope){
       videoope = false;
       _toogleAnimky();
@@ -742,6 +770,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }else{
       AudioService.pause();
     }
+    AudioService.stop();
     setState(() {
       if(_isBottomSheetOpen) {
         setnewState(() {
@@ -787,12 +816,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         });
       }
     });
-    var urli = Uri.parse("https://kompot.site/installmusapple?nice=" + sdcv['idshaz']);
-    var response = await http.get(urli);
-    String dff = response.body.toString();
-    print("jhghjgz");
-    print(dff);
-    getaboutmus(dff, false, true, false, false);
+    bool fvd2 = await filterValidImages(getCacheBustedUrl(sdcv['url']));
+    if(search || !fvd2) {
+      var urli = Uri.parse(
+          "https://kompot.site/installmusapple?nice=" + sdcv['idshaz']);
+      var response = await http.get(urli);
+      String dff = response.body.toString();
+      print("jhghjgz");
+      print(dff);
+      getaboutmus(dff, false, true, false, false);
+    }else{
+      getaboutmus(sdcv['idshaz'], false, false, false, false);
+    }
 
   }
 
@@ -881,7 +916,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Загружаем видео и сохраняем его
           await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
           print("Видео загружено и сохранено в локальном хранилище.");
-          videoshort.open(Media(filePath));
+          await videoshort.open(Media(filePath));
         } catch (e) {
           print("Ошибка при загрузке видео: $e");
           return;
@@ -964,7 +999,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               // Загружаем видео и сохраняем его
               await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
               print("Видео загружено и сохранено в локальном хранилище.");
-              videoshort.open(Media(filePath));
+              await videoshort.open(Media(filePath));
 
             } catch (e) {
               print("Ошибка при загрузке видео: $e");
@@ -1049,7 +1084,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               // Загружаем видео и сохраняем его
               await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
               print("Видео загружено и сохранено в локальном хранилище.");
-              videoshort.open(Media(filePath));
+              await videoshort.open(Media(filePath));
             } catch (e) {
               print("Ошибка при загрузке видео: $e");
               return;
@@ -1108,7 +1143,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               return showsearch ? SearchScreen(onCallback: (dynamic input) {
                 getaboutmus(input, false, false, false, false);
               }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
-                installmus(input);
+                installmus(input, true);
               } ) : Container(
                   height: size.height, child: IndexedStack(
                 index: pageIndex, // Отображение выбранного экрана
@@ -1148,7 +1183,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(onCallback: (dynamic input) {
         getaboutmus(input, false, false, false, false);
       }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
-        installmus(input);
+        installmus(input, true);
       }),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
@@ -3882,7 +3917,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if (sac != null) {
       if (sac.isNotEmpty) {
         if (sac.contains(_langData[0]["idshaz"])) {
-          
+
         }else{
           ins(mus);
         }

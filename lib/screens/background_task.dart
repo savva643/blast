@@ -15,87 +15,194 @@ class AudioPlayerTask extends BackgroundAudioTask {
     }
   }
 
+  bool newstart = false;
 
-  @override
+
+  Future<void> loopstarta(MediaItem mediaItem) async {
+    if(newstart){
+      try {
+        await player.setUrl(getCacheBustedUrl(mediaItem.id)); // Assuming mediaItem.id contains the URL
+
+        bool firstsartn = false;
+
+        player.processingStateStream.firstWhere((state) =>
+        state == ProcessingState.ready).then((_) async {
+          notifier.setPlaying(true);
+          _broadcastState();
+          AudioServiceBackground.setMediaItem(MediaItem(
+              id: mediaItem.id,
+              artUri: mediaItem.artUri,
+              artist: mediaItem.artist,
+              title: mediaItem.title,
+              duration: player.duration
+
+          ));
+          newstart = false;
+          await player.positionStream.listen((position) {
+            notifier.setPosition(position);
+            AudioServiceBackground.sendCustomEvent({
+              'position': position.inMilliseconds,
+              'duration': player.duration?.inMilliseconds ?? 0,
+            });
+            _broadcastState();
+            if (!firstsartn) {
+              player.play();
+              firstsartn = true;
+            }
+          });
+
+
+          player.processingStateStream.firstWhere((state) =>
+          state == ProcessingState.completed).then((_) async {
+            await player.pause();
+          });
+
+        });
+      }catch (e){
+        print("Ошибка загрузки: $e.");
+        newstart = true;
+        loopstarta(mediaItem);
+      }
+    }
+  }
+
+    @override
   Future<void> onPlayMediaItem(MediaItem mediaItem) async {
     // When a new media item is requested, load and play it
-    await player.setUrl(mediaItem.id); // Assuming mediaItem.id contains the URL
+      newstart = false;
+    try {
+      await player.setUrl(
+          mediaItem.id); // Assuming mediaItem.id contains the URL
 
-    bool firstsartn = false;
+      bool firstsartn = false;
 
-    player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
-      notifier.setPlaying(true);
-      _broadcastState();
-      AudioServiceBackground.setMediaItem(MediaItem(
-          id: mediaItem.id,
-          artUri: mediaItem.artUri,
-          artist: mediaItem.artist,
-          title: mediaItem.title,
-          duration: player.duration
-
-      ));
-      await player.positionStream.listen((position) {
-        notifier.setPosition(position);
-        AudioServiceBackground.sendCustomEvent({
-          'position': position.inMilliseconds,
-          'duration': player.duration?.inMilliseconds ?? 0,
-        });
+      player.processingStateStream.firstWhere((state) =>
+      state == ProcessingState.ready).then((_) async {
+        notifier.setPlaying(true);
         _broadcastState();
-        if(!firstsartn) {
-          player.play();
-          firstsartn = true;
-        }
+        AudioServiceBackground.setMediaItem(MediaItem(
+            id: mediaItem.id,
+            artUri: mediaItem.artUri,
+            artist: mediaItem.artist,
+            title: mediaItem.title,
+            duration: player.duration
+
+        ));
+        await player.positionStream.listen((position) {
+          notifier.setPosition(position);
+          print("fdvfvsdz"+(player.duration?.inMilliseconds ?? 0).toString());
+          AudioServiceBackground.sendCustomEvent({
+            'position': position.inMilliseconds,
+            'duration': player.duration?.inMilliseconds ?? 0,
+          });
+          _broadcastState();
+          if (!firstsartn) {
+            player.play();
+            firstsartn = true;
+          }
+        });
+
+
+        player.processingStateStream.firstWhere((state) =>
+        state == ProcessingState.completed).then((_) async {
+          await player.pause();
+        });
 
       });
+    }catch (e){
+      print("Ошибка загрузки: $e.");
+      newstart = true;
+      loopstarta(mediaItem);
+    }
+  }
 
 
 
-      player.processingStateStream.firstWhere((state) => state == ProcessingState.completed).then((_) async {
-        await player.pause();
-      });
-      // Listen for duration updates (in case it's updated after the track starts playing)
-      await player.durationStream.listen((duration) {
-        notifier.setDuration(duration ?? Duration.zero);
-        print("jkh"+duration!.inSeconds.toString());
-      });
-    });
+
+
+
+  Future<void> loopstartb(MediaItem mediaItem) async {
+    if(newstart){
+      try {
+        print("hhgm"+mediaItem.id);
+        await player.setUrl(getCacheBustedUrl(mediaItem.id));
+        notifier.setDuration(player.duration ?? Duration.zero);
+        player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
+          _broadcastState();
+          AudioServiceBackground.setMediaItem(MediaItem(
+              id: mediaItem.id,
+              artUri: mediaItem.artUri,
+              artist: mediaItem.artist,
+              title: mediaItem.title,
+              duration: player.duration
+          ));
+          await player.positionStream.listen((position) {
+            notifier.setPosition(position);
+            AudioServiceBackground.sendCustomEvent({
+              'position': position.inMilliseconds,
+              'duration': player.duration?.inMilliseconds ?? 0,
+            });
+            _broadcastState();
+          });
+
+
+        });
+        print(mediaItem);
+      }catch (e){
+        print("Ошибка загрузки: $e.");
+        newstart = true;
+        loopstartb(mediaItem);
+      }
+    }
   }
 
   Future<void> _playNewTrack(MediaItem mediaItem) async {
     print("hhgm"+mediaItem.id);
-    await player.setUrl(mediaItem.id);
-    notifier.setDuration(player.duration ?? Duration.zero);
-    player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
-      _broadcastState();
-      AudioServiceBackground.setMediaItem(MediaItem(
-          id: mediaItem.id,
-          artUri: mediaItem.artUri,
-          artist: mediaItem.artist,
-          title: mediaItem.title,
-          duration: player.duration
-      ));
-      await player.positionStream.listen((position) {
-        notifier.setPosition(position);
-        AudioServiceBackground.sendCustomEvent({
-          'position': position.inMilliseconds,
-          'duration': player.duration?.inMilliseconds ?? 0,
-        });
+    try {
+      await player.setUrl(mediaItem.id);
+      notifier.setDuration(player.duration ?? Duration.zero);
+      player.processingStateStream.firstWhere((state) =>
+      state == ProcessingState.ready).then((_) async {
         _broadcastState();
+        AudioServiceBackground.setMediaItem(MediaItem(
+            id: mediaItem.id,
+            artUri: mediaItem.artUri,
+            artist: mediaItem.artist,
+            title: mediaItem.title,
+            duration: player.duration
+        ));
+        await player.positionStream.listen((position) {
+          notifier.setPosition(position);
+          print("fbfgfxgb"+(player.duration?.inMilliseconds ?? 0).toString());
+          print("nhgfghdgn"+position.inMilliseconds.toString());
+          print("fbgdghdgh"+player.position.inMilliseconds.toString());
+          AudioServiceBackground.sendCustomEvent({
+            'position': position.inMilliseconds,
+            'duration': player.duration?.inMilliseconds ?? 0,
+          });
+          _broadcastState();
+        });
+
       });
+      print(mediaItem);
 
-      // Listen for duration updates (in case it's updated after the track starts playing)
-      await player.durationStream.listen((duration) {
-        notifier.setDuration(duration ?? Duration.zero);
-        print("jkh"+duration!.inSeconds.toString());
-      });
-    });
-    print(mediaItem);
-
-    // Listen for position updates
-
-
+      // Listen for position updates
+    }catch (e){
+      print("Ошибка загрузки: $e.");
+      newstart = true;
+      loopstartb(mediaItem);
+    }
 
   }
+
+  String getCacheBustedUrl(String url) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return "$url?timestamp=$timestamp";
+  }
+
+
+
+
   double _volume = 1.0; // начальная громкость
   Timer? _fadeTimer;
 
