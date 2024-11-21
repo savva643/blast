@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
+      color: Color.fromARGB(255, 15, 15, 16),
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
     );

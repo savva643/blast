@@ -46,8 +46,22 @@ class AudioPlayerTask extends BackgroundAudioTask {
             });
             _broadcastState();
             if (!firstsartn) {
+              _fadeTimer?.cancel();
               player.play();
               firstsartn = true;
+              notifier.setPlaying(true);
+              _broadcastState();
+              const duration = Duration(milliseconds: 20);
+              _fadeTimer = Timer.periodic(duration, (timer) {
+                if (_volume < 1.0) {
+                  _volume += 0.05;
+                  player.setVolume(_volume);
+                } else {
+                  _volume = 1.0;
+                  player.setVolume(_volume);
+                  timer.cancel();
+                }
+              });
             }
           });
 
@@ -97,8 +111,23 @@ class AudioPlayerTask extends BackgroundAudioTask {
           });
           _broadcastState();
           if (!firstsartn) {
+            _fadeTimer?.cancel();
             player.play();
             firstsartn = true;
+            notifier.setPlaying(true);
+            _broadcastState();
+            const duration = Duration(milliseconds: 20);
+            _fadeTimer = Timer.periodic(duration, (timer) {
+              if (_volume < 1.0) {
+                _volume += 0.05;
+                player.setVolume(_volume);
+              } else {
+                _volume = 1.0;
+                player.setVolume(_volume);
+                timer.cancel();
+              }
+            });
+
           }
         });
 
@@ -213,16 +242,21 @@ class AudioPlayerTask extends BackgroundAudioTask {
     await super.onStop();
   }
 
+  double _clampVolume(double volume) {
+    return volume.clamp(0.0, 1.0);
+  }
+
+
   @override
   Future<void> onPlay() async {
     _fadeTimer?.cancel();
     await player.play();
     notifier.setPlaying(true);
     _broadcastState();
-    const duration = Duration(milliseconds: 10);
+    const duration = Duration(milliseconds: 20);
     _fadeTimer = Timer.periodic(duration, (timer) {
       if (_volume < 1.0) {
-        _volume += 0.05;
+        _volume = _clampVolume(_volume + 0.05); // Обновляем громкость
         player.setVolume(_volume);
       } else {
         _volume = 1.0;
@@ -230,7 +264,6 @@ class AudioPlayerTask extends BackgroundAudioTask {
         timer.cancel();
       }
     });
-
   }
 
   @override
@@ -241,22 +274,19 @@ class AudioPlayerTask extends BackgroundAudioTask {
     const duration = Duration(milliseconds: 10);
     _fadeTimer = Timer.periodic(duration, (timer) async {
       if (_volume > 0.0) {
-        _volume -= 0.05;
+        _volume = _clampVolume(_volume - 0.05); // Обновляем громкость
         player.setVolume(_volume);
       } else {
         _volume = 0.0;
         player.setVolume(_volume);
         timer.cancel();
         await player.pause();
-
       }
     });
     notifier.setPlaying(false);
     _broadcastState();
-
-    // await player.pause();
-
   }
+
 
   @override
   Future<void> onSeekTo(Duration position) async {

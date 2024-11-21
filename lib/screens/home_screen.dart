@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:blast/screens/search_screen.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -33,7 +35,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:dio/dio.dart';
 
-const kBgColor = Color(0xFF1604E2);
+const kBgColor = Color.fromARGB(255, 15, 15, 16);
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -74,6 +76,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> essension() async {
     if(!essensionbool){
       essensionbool = true;
+      if(videoope){
+        controller.player.pause();
+      }else{
+        AudioService.pause();
+      }
       var urli = Uri.parse("https://kompot.site/getesemus");
 
       var response = await http.get(urli);
@@ -90,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   }
 
-
+  bool _isPressed = false; // Флаг для отслеживания состояния нажатия
   bool instalumusa = false;
 
   Future<void> playVideo(String shazidi, bool frommus) async {
@@ -142,8 +149,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       playpause();
     }
   }
-
-
+  double _scaleY = 1.0; // Начальный масштаб по оси Y (высота)
+  double _translateX = 26; // Начальное смещение по оси X (сдвиг влево)
   late double squareScaleA = videoope ? MediaQuery.of(context).size.width > 800 ? -320 : -80 * (MediaQuery.of(context).size.width / 280) : 0;
   late double squareScaleB = videoope ? 0 : MediaQuery.of(context).size.width > 800 ? -320 : 80 * (MediaQuery.of(context).size.width / 280);
   String shazid = "0";
@@ -151,6 +158,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String namemus = "Название";
   String ispolmus = "Исполнитель";
   String imgmus = "https://kompot.site/img/music.jpg";
+
+
+  double newposition = 0.0;
 
   get listok => null;
 
@@ -259,8 +269,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     bool fj = false;
     Duration _threshold = Duration(milliseconds: 300); // за 300 мс до конца видео
      controllershort.player.stream.completed.listen((_) async {
-       // videoshort.setPlaylistMode(PlaylistMode.loop);
-       await videoshort.seek(Duration.zero);
+       videoshort.setPlaylistMode(PlaylistMode.loop);
+       // await videoshort.seek(Duration.zero);
        await videoshort.play(); // Запускаем воспроизведение заново
       fj = true;
     });
@@ -407,7 +417,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if (shazid != this.shazid) {
       AudioService.stop();
       if(ese == false){
-        essensionbool = false;
+        setState(() {
+          essensionbool = false;
+        });
       }
         if (!jem) {
           isjemnow = false;
@@ -1415,7 +1427,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment
                                           .start,
-                                      children: [Text(namemus,
+                                      children: [AutoSizeText(namemus,
                                         textAlign: TextAlign
                                             .start,
                                         overflow: TextOverflow
@@ -1430,7 +1442,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 255, 246, 244,
                                                 244)
                                         ),),
-                                        Text(ispolmus,
+                                        AutoSizeText(ispolmus,
                                           overflow: TextOverflow
                                               .ellipsis,
                                           maxLines: 1,
@@ -1522,7 +1534,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         .translation(
                                         vector.Vector3(
                                             0, squareScaleA, 0)),
-                                    child: Text(namemus,
+                                    child: AutoSizeText(namemus,
                                       textAlign: TextAlign.center,
                                       overflow: TextOverflow.fade,
                                       maxLines: 1,
@@ -1544,7 +1556,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         .translation(
                                         vector.Vector3(
                                             0, squareScaleA, 0)),
-                                    child: Text(ispolmus,
+                                    child: AutoSizeText(ispolmus,
                                       overflow: TextOverflow.fade,
                                       maxLines: 1,
 
@@ -1576,7 +1588,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           mainAxisAlignment: MainAxisAlignment
                                               .spaceBetween,
                                           children: [
-                                            Text(_formatDuration(
+                                            AutoSizeText(_formatDuration(
                                                 Duration(
                                                     milliseconds: _currentPosition
                                                         .toInt())),
@@ -1591,7 +1603,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                       244,
                                                       244)
                                               ),),
-                                            Text(_formatDuration(
+                                            AutoSizeText(_formatDuration(
                                                 Duration(
                                                     milliseconds: _totalDuration
                                                         .toInt())),
@@ -1620,28 +1632,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                             0, squareScaleA, 0)),
                                     child: SizedBox(
                                         height: 8,
-                                        child: SliderTheme(
-                                          data: SliderTheme.of(
-                                              context)
-                                              .copyWith(
-                                            trackHeight: 8.0,
-                                            tickMarkShape: RoundSliderTickMarkShape(
-                                                tickMarkRadius: 24),
-                                            thumbShape: SliderComponentShape
-                                                .noThumb,
-                                            overlayShape: RoundSliderOverlayShape(
-                                                overlayRadius: 24.0),
-                                            activeTrackColor: Colors
-                                                .blue,
-                                            inactiveTrackColor: Colors
-                                                .blue
-                                                .withOpacity(0.3),
-                                            overlayColor: Colors
-                                                .blue
-                                                .withOpacity(0.0),
-                                            trackShape: RoundedRectSliderTrackShape(),
-                                          ),
-                                          child: StreamBuilder(
+                                        child: StreamBuilder(
                                             stream: AudioService
                                                 .positionStream,
                                             builder: (context,
@@ -1654,72 +1645,204 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                       0) {
                                                 final position = snapshot
                                                     .data as Duration;
-                                                return Slider(
-                                                  value: _currentPosition,
-                                                  max: _totalDuration,
-                                                  onChanged: (
-                                                      value) {
-                                                    if (devicecon) {
-                                                      Duration jda = Duration(
-                                                          milliseconds: value
-                                                              .toInt());
-                                                      List<
-                                                          dynamic> sdc = [
-                                                        {
-                                                          "type": "media",
-                                                          "what": "seekto",
-                                                          "timecurrent": jda
-                                                              .inSeconds,
-                                                          "iddevice": "2"
-                                                        }
-                                                      ];
-                                                      String jsonString = jsonEncode(
-                                                          sdc[0]);
-                                                      channeldev
-                                                          .sink
-                                                          .add(
-                                                          jsonString);
-                                                    } else {
-                                                      if(instalumusa) {
-                                                        AudioService
-                                                            .seekTo(
-                                                            Duration(
-                                                                milliseconds: (value
-                                                                    .toInt()*2)));
-                                                      }else{
-                                                        AudioService
-                                                            .seekTo(
-                                                            Duration(
-                                                                milliseconds: value
-                                                                    .toInt()));
-                                                      }
-                                                    }
+                                                return GestureDetector(
+                                                  onTapDown: (_) {
+                                                    setState(() {
+                                                      _isPressed = true; // Устанавливаем флаг нажатия
+                                                      _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                      _translateX = 12.0; // Сдвигаем слайдер влево
+                                                    });
                                                   },
+                                                  onTapUp: (_) {
+                                                    setState(() {
+                                                      _isPressed = false; // Сбрасываем флаг нажатия
+                                                      _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                      _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                    });
+                                                  },
+                                                  child: AnimatedContainer(
+                                                    duration: Duration(milliseconds: 200),
+                                                    padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                                    curve: Curves.easeInOut,
+                                                    transform: Matrix4.identity()
+                                                      ..scale(1.0, _scaleY), // Применяем масштаб
+                                                    child: FlutterSlider(
+                                                      values: _isPressed ? [newposition] : [_currentPosition],
+                                                      max: _totalDuration,
+                                                      min: 0,
+                                                      tooltip: FlutterSliderTooltip(
+                                                        disabled: true, // Отключаем текст со значением
+                                                      ),
+                                                      handler: FlutterSliderHandler(
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.transparent, // Делаем thumb полностью прозрачным
+                                                        ),
+                                                        child: SizedBox.shrink(), // Полностью скрываем thumb
+                                                      ),
+                                                      onDragStarted: (handlerIndex, lowerValue, upperValue) {
+                                                        setState(() {
+                                                          newposition = lowerValue;
+                                                        });
+                                                      },
+                                                      onDragging: (handlerIndex, lowerValue, upperValue) {
+                                                        // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                                        setState(() {
+                                                          newposition = lowerValue; // Обновляем текущую позицию слайдера
+                                                          setState(() {
+                                                            _isPressed = true; // Устанавливаем флаг нажатия
+                                                            _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                            _translateX = 12.0; // Сдвигаем слайдер влево
+                                                          });
+                                                        });
+                                                      },
+                                                      onDragCompleted: (handlerIndex, lowerValue, upperValue) {
+                                                        // Логика завершения перетаскивания
+                                                        setState(() {
+                                                          _currentPosition = lowerValue;
+                                                        });
+                                                        Duration jda = Duration(milliseconds: lowerValue.toInt());
+                                                        print("Position: ${jda.inMilliseconds} ms");
+                                                        setState(() {
+                                                          _isPressed = false; // Сбрасываем флаг нажатия
+                                                          _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                          _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                        });
+                                                        if (devicecon) {
+                                                          List<dynamic> sdc = [
+                                                            {
+                                                              "type": "media",
+                                                              "what": "seekto",
+                                                              "timecurrent": jda.inSeconds,
+                                                              "iddevice": "2"
+                                                            }
+                                                          ];
+                                                          String jsonString = jsonEncode(sdc[0]);
+                                                          // Предполагается, что channeldev доступен и открыт для отправки
+                                                          channeldev.sink.add(jsonString);
+                                                        } else {
+                                                          if (instalumusa) {
+                                                            AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+                                                          } else {
+                                                            AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+                                                          }
+                                                        }
+                                                      },
+                                                      trackBar: FlutterSliderTrackBar(
+                                                        activeTrackBarHeight: 8,
+                                                        inactiveTrackBarHeight: 8,
+                                                        activeTrackBar: BoxDecoration(
+                                                          color: Colors.blue,
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                        inactiveTrackBar: BoxDecoration(
+                                                          color: Colors.blue.withOpacity(0.3),
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 );
                                               } else {
-                                                return Slider(
-                                                  value: 0,
-                                                  max: _totalDuration,
-                                                  onChanged: (
-                                                      value) {
-                                                    if(instalumusa) {
-                                                      AudioService
-                                                          .seekTo(
-                                                          Duration(
-                                                              milliseconds: (value
-                                                                  .toInt()*2)));
-                                                    }else{
-                                                      AudioService
-                                                          .seekTo(
-                                                          Duration(
-                                                              milliseconds: value
-                                                                  .toInt()));
-                                                    }
+                                                return GestureDetector(
+                                                  onTapDown: (_) {
+                                                    setState(() {
+                                                      _isPressed = true; // Устанавливаем флаг нажатия
+                                                      _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                      _translateX = 12.0; // Сдвигаем слайдер влево
+                                                    });
                                                   },
+                                                  onTapUp: (_) {
+                                                    setState(() {
+                                                      _isPressed = false; // Сбрасываем флаг нажатия
+                                                      _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                      _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                    });
+                                                  },
+                                                  child: AnimatedContainer(
+                                                    duration: Duration(milliseconds: 200),
+                                                    padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                                    curve: Curves.easeInOut,
+                                                    transform: Matrix4.identity()
+                                                      ..scale(1.0, _scaleY), // Применяем масштаб
+                                                    child: FlutterSlider(
+                                                      values: _isPressed ? [newposition] : [_currentPosition],
+                                                      max: _totalDuration,
+                                                      min: 0,
+                                                      tooltip: FlutterSliderTooltip(
+                                                        disabled: true, // Отключаем текст со значением
+                                                      ),
+                                                      handler: FlutterSliderHandler(
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.transparent, // Делаем thumb полностью прозрачным
+                                                        ),
+                                                        child: SizedBox.shrink(), // Полностью скрываем thumb
+                                                      ),
+                                                      onDragStarted: (handlerIndex, lowerValue, upperValue) {
+                                                        setState(() {
+                                                          newposition = lowerValue;
+                                                        });
+                                                      },
+                                                      onDragging: (handlerIndex, lowerValue, upperValue) {
+                                                        // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                                        setState(() {
+                                                          newposition = lowerValue; // Обновляем текущую позицию слайдера
+                                                          setState(() {
+                                                            _isPressed = true; // Устанавливаем флаг нажатия
+                                                            _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                            _translateX = 12.0; // Сдвигаем слайдер влево
+                                                          });
+                                                        });
+                                                      },
+                                                      onDragCompleted: (handlerIndex, lowerValue, upperValue) {
+                                                        // Логика завершения перетаскивания
+                                                        setState(() {
+                                                          _currentPosition = lowerValue;
+                                                        });
+                                                        Duration jda = Duration(milliseconds: lowerValue.toInt());
+                                                        print("Position: ${jda.inMilliseconds} ms");
+                                                        setState(() {
+                                                          _isPressed = false; // Сбрасываем флаг нажатия
+                                                          _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                          _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                        });
+                                                        if (devicecon) {
+                                                          List<dynamic> sdc = [
+                                                            {
+                                                              "type": "media",
+                                                              "what": "seekto",
+                                                              "timecurrent": jda.inSeconds,
+                                                              "iddevice": "2"
+                                                            }
+                                                          ];
+                                                          String jsonString = jsonEncode(sdc[0]);
+                                                          // Предполагается, что channeldev доступен и открыт для отправки
+                                                          channeldev.sink.add(jsonString);
+                                                        } else {
+                                                          if (instalumusa) {
+                                                            AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+                                                          } else {
+                                                            AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+                                                          }
+                                                        }
+                                                      },
+                                                      trackBar: FlutterSliderTrackBar(
+                                                        activeTrackBarHeight: 8,
+                                                        inactiveTrackBarHeight: 8,
+                                                        activeTrackBar: BoxDecoration(
+                                                          color: Colors.blue,
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                        inactiveTrackBar: BoxDecoration(
+                                                          color: Colors.blue.withOpacity(0.3),
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 );
                                               }
                                             },
-                                          ),)))),
+                                          ),))),
                             SizedBox(height: 22,),
                             AnimatedContainer(
                                 duration: Duration(
@@ -2027,7 +2150,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           Column(
                             crossAxisAlignment: CrossAxisAlignment
                                 .start,
-                            children: [Text(namemus,
+                            children: [AutoSizeText(namemus,
                               textAlign: TextAlign
                                   .start,
                               overflow: TextOverflow
@@ -2042,7 +2165,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       255, 246, 244,
                                       244)
                               ),),
-                              Text(ispolmus,
+                              AutoSizeText(ispolmus,
                                 overflow: TextOverflow
                                     .ellipsis,
                                 maxLines: 1,
@@ -2134,7 +2257,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               .translation(
                               vector.Vector3(
                                   0, squareScaleA, 0)),
-                          child: Text(namemus,
+                          child: AutoSizeText(namemus,
                             textAlign: TextAlign.center,
                             overflow: TextOverflow.fade,
                             maxLines: 1,
@@ -2156,7 +2279,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               .translation(
                               vector.Vector3(
                                   0, squareScaleA, 0)),
-                          child: Text(ispolmus,
+                          child: AutoSizeText(ispolmus,
                             overflow: TextOverflow.fade,
                             maxLines: 1,
 
@@ -2188,7 +2311,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 mainAxisAlignment: MainAxisAlignment
                                     .spaceBetween,
                                 children: [
-                                  Text(_formatDuration(
+                                  AutoSizeText(_formatDuration(
                                       Duration(
                                           milliseconds: _currentPosition
                                               .toInt())),
@@ -2203,7 +2326,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                             244,
                                             244)
                                     ),),
-                                  Text(_formatDuration(
+                                  AutoSizeText(_formatDuration(
                                       Duration(
                                           milliseconds: _totalDuration
                                               .toInt())),
@@ -2232,28 +2355,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   0, squareScaleA, 0)),
                           child: SizedBox(
                               height: 8,
-                              child: SliderTheme(
-                                data: SliderTheme.of(
-                                    context)
-                                    .copyWith(
-                                  trackHeight: 8.0,
-                                  tickMarkShape: RoundSliderTickMarkShape(
-                                      tickMarkRadius: 24),
-                                  thumbShape: SliderComponentShape
-                                      .noThumb,
-                                  overlayShape: RoundSliderOverlayShape(
-                                      overlayRadius: 24.0),
-                                  activeTrackColor: Colors
-                                      .blue,
-                                  inactiveTrackColor: Colors
-                                      .blue
-                                      .withOpacity(0.3),
-                                  overlayColor: Colors
-                                      .blue
-                                      .withOpacity(0.0),
-                                  trackShape: RoundedRectSliderTrackShape(),
-                                ),
-                                child: StreamBuilder(
+                              child:  StreamBuilder(
                                   stream: AudioService
                                       .positionStream,
                                   builder: (context,
@@ -2266,72 +2368,205 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                             0) {
                                       final position = snapshot
                                           .data as Duration;
-                                      return Slider(
-                                        value: _currentPosition,
-                                        max: _totalDuration,
-                                        onChanged: (
-                                            value) {
-                                          if (devicecon) {
-                                            Duration jda = Duration(
-                                                milliseconds: value
-                                                    .toInt());
-                                            List<
-                                                dynamic> sdc = [
-                                              {
-                                                "type": "media",
-                                                "what": "seekto",
-                                                "timecurrent": jda
-                                                    .inSeconds,
-                                                "iddevice": "2"
-                                              }
-                                            ];
-                                            String jsonString = jsonEncode(
-                                                sdc[0]);
-                                            channeldev
-                                                .sink
-                                                .add(
-                                                jsonString);
-                                          } else {
-                                            if(instalumusa) {
-                                              AudioService
-                                                  .seekTo(
-                                                  Duration(
-                                                      milliseconds: (value
-                                                          .toInt()*2)));
-                                            }else{
-                                              AudioService
-                                                  .seekTo(
-                                                  Duration(
-                                                      milliseconds: value
-                                                          .toInt()));
-                                            }
-                                          }
-                                        },
-                                      );
+                                      return
+                                        GestureDetector(
+                                          onTapDown: (_) {
+                                            setState(() {
+                                              _isPressed = true; // Устанавливаем флаг нажатия
+                                              _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                              _translateX = 12.0; // Сдвигаем слайдер влево
+                                            });
+                                          },
+                                          onTapUp: (_) {
+                                            setState(() {
+                                              _isPressed = false; // Сбрасываем флаг нажатия
+                                              _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                              _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                            });
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: Duration(milliseconds: 200),
+                                            padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                            curve: Curves.easeInOut,
+                                            transform: Matrix4.identity()
+                                              ..scale(1.0, _scaleY), // Применяем масштаб
+                                            child: FlutterSlider(
+                                              values: _isPressed ? [newposition] : [_currentPosition],
+                                              max: _totalDuration,
+                                              min: 0,
+                                              tooltip: FlutterSliderTooltip(
+                                                disabled: true, // Отключаем текст со значением
+                                              ),
+                                              handler: FlutterSliderHandler(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.transparent, // Делаем thumb полностью прозрачным
+                                                ),
+                                                child: SizedBox.shrink(), // Полностью скрываем thumb
+                                              ),
+                                              onDragStarted: (handlerIndex, lowerValue, upperValue) {
+                                                setState(() {
+                                                  newposition = lowerValue;
+                                                });
+                                              },
+                                              onDragging: (handlerIndex, lowerValue, upperValue) {
+                                                // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                                setState(() {
+                                                  newposition = lowerValue; // Обновляем текущую позицию слайдера
+                                                  setState(() {
+                                                    _isPressed = true; // Устанавливаем флаг нажатия
+                                                    _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                    _translateX = 12.0; // Сдвигаем слайдер влево
+                                                  });
+                                                });
+                                              },
+                                              onDragCompleted: (handlerIndex, lowerValue, upperValue) {
+                                                // Логика завершения перетаскивания
+                                                setState(() {
+                                                  _currentPosition = lowerValue;
+                                                });
+                                                Duration jda = Duration(milliseconds: lowerValue.toInt());
+                                                print("Position: ${jda.inMilliseconds} ms");
+                                                setState(() {
+                                                  _isPressed = false; // Сбрасываем флаг нажатия
+                                                  _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                  _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                });
+                                                if (devicecon) {
+                                                  List<dynamic> sdc = [
+                                                    {
+                                                      "type": "media",
+                                                      "what": "seekto",
+                                                      "timecurrent": jda.inSeconds,
+                                                      "iddevice": "2"
+                                                    }
+                                                  ];
+                                                  String jsonString = jsonEncode(sdc[0]);
+                                                  // Предполагается, что channeldev доступен и открыт для отправки
+                                                  channeldev.sink.add(jsonString);
+                                                } else {
+                                                  if (instalumusa) {
+                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+                                                  } else {
+                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+                                                  }
+                                                }
+                                              },
+                                              trackBar: FlutterSliderTrackBar(
+                                                activeTrackBarHeight: 8,
+                                                inactiveTrackBarHeight: 8,
+                                                activeTrackBar: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                inactiveTrackBar: BoxDecoration(
+                                                  color: Colors.blue.withOpacity(0.3),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
                                     } else {
-                                      return Slider(
-                                        value: 0,
-                                        max: _totalDuration,
-                                        onChanged: (
-                                            value) {
-                                          if(instalumusa) {
-                                            AudioService
-                                                .seekTo(
-                                                Duration(
-                                                    milliseconds: (value
-                                                        .toInt()*2)));
-                                          }else{
-                                            AudioService
-                                                .seekTo(
-                                                Duration(
-                                                    milliseconds: value
-                                                        .toInt()));
-                                          }
+                                      return GestureDetector(
+                                        onTapDown: (_) {
+                                          setState(() {
+                                            _isPressed = true; // Устанавливаем флаг нажатия
+                                            _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                            _translateX = 12.0; // Сдвигаем слайдер влево
+                                          });
                                         },
+                                        onTapUp: (_) {
+                                          setState(() {
+                                            _isPressed = false; // Сбрасываем флаг нажатия
+                                            _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                            _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                          });
+                                        },
+                                        child: AnimatedContainer(
+                                          duration: Duration(milliseconds: 200),
+                                          padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                          curve: Curves.easeInOut,
+                                          transform: Matrix4.identity()
+                                            ..scale(1.0, _scaleY), // Применяем масштаб
+                                          child: FlutterSlider(
+                                            values: _isPressed ? [newposition] : [_currentPosition],
+                                            max: _totalDuration,
+                                            min: 0,
+                                            tooltip: FlutterSliderTooltip(
+                                              disabled: true, // Отключаем текст со значением
+                                            ),
+                                            handler: FlutterSliderHandler(
+                                              decoration: BoxDecoration(
+                                                color: Colors.transparent, // Делаем thumb полностью прозрачным
+                                              ),
+                                              child: SizedBox.shrink(), // Полностью скрываем thumb
+                                            ),
+                                            onDragStarted: (handlerIndex, lowerValue, upperValue) {
+                                              setState(() {
+                                                newposition = lowerValue;
+                                              });
+                                            },
+                                            onDragging: (handlerIndex, lowerValue, upperValue) {
+                                              // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                              setState(() {
+                                                newposition = lowerValue; // Обновляем текущую позицию слайдера
+                                                setState(() {
+                                                  _isPressed = true; // Устанавливаем флаг нажатия
+                                                  _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                  _translateX = 12.0; // Сдвигаем слайдер влево
+                                                });
+                                              });
+                                            },
+                                            onDragCompleted: (handlerIndex, lowerValue, upperValue) {
+                                              // Логика завершения перетаскивания
+                                              setState(() {
+                                                _currentPosition = lowerValue;
+                                              });
+                                              Duration jda = Duration(milliseconds: lowerValue.toInt());
+                                              print("Position: ${jda.inMilliseconds} ms");
+                                              setState(() {
+                                                _isPressed = false; // Сбрасываем флаг нажатия
+                                                _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                              });
+                                              if (devicecon) {
+                                                List<dynamic> sdc = [
+                                                  {
+                                                    "type": "media",
+                                                    "what": "seekto",
+                                                    "timecurrent": jda.inSeconds,
+                                                    "iddevice": "2"
+                                                  }
+                                                ];
+                                                String jsonString = jsonEncode(sdc[0]);
+                                                // Предполагается, что channeldev доступен и открыт для отправки
+                                                channeldev.sink.add(jsonString);
+                                              } else {
+                                                if (instalumusa) {
+                                                  AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+                                                } else {
+                                                  AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+                                                }
+                                              }
+                                            },
+                                            trackBar: FlutterSliderTrackBar(
+                                              activeTrackBarHeight: 8,
+                                              inactiveTrackBarHeight: 8,
+                                              activeTrackBar: BoxDecoration(
+                                                color: Colors.blue,
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              inactiveTrackBar: BoxDecoration(
+                                                color: Colors.blue.withOpacity(0.3),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       );
                                     }
                                   },
-                                ),)))),
+                                ),))),
                   SizedBox(height: 22,),
                   AnimatedContainer(
                       duration: Duration(
@@ -2634,7 +2869,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(namemus,
+                            AutoSizeText(namemus,
                               textAlign: TextAlign
                                   .start,
                               overflow: TextOverflow
@@ -2649,7 +2884,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       255, 246, 244,
                                       244)
                               ),),
-                            Text(ispolmus,
+                            AutoSizeText(ispolmus,
                               overflow: TextOverflow
                                   .ellipsis,
                               maxLines: 1,
@@ -2741,7 +2976,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               .translation(
                               vector.Vector3(
                                   0, 0, 0)),
-                          child: Text(namemus,
+                          child: AutoSizeText(namemus,
                             textAlign: TextAlign.center,
                             overflow: TextOverflow.fade,
                             maxLines: 1,
@@ -2763,7 +2998,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 .translation(
                                 vector.Vector3(
                                     0, 0, 0)),
-                            child: Text(ispolmus,
+                            child: AutoSizeText(ispolmus,
                               overflow: TextOverflow.fade,
                               maxLines: 1,
 
@@ -2795,7 +3030,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   mainAxisAlignment: MainAxisAlignment
                                       .spaceBetween,
                                   children: [
-                                    Text(_formatDuration(
+                                    AutoSizeText(_formatDuration(
                                         Duration(
                                             milliseconds: _currentPosition
                                                 .toInt())),
@@ -2810,7 +3045,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                               244,
                                               244)
                                       ),),
-                                    Text(_formatDuration(
+                                    AutoSizeText(_formatDuration(
                                         Duration(
                                             milliseconds: _totalDuration
                                                 .toInt())),
@@ -2839,28 +3074,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     0, 0, 0)),
                             child: SizedBox(
                                 height: 8,
-                                child: SliderTheme(
-                                  data: SliderTheme.of(
-                                      context)
-                                      .copyWith(
-                                    trackHeight: 8.0,
-                                    tickMarkShape: RoundSliderTickMarkShape(
-                                        tickMarkRadius: 24),
-                                    thumbShape: SliderComponentShape
-                                        .noThumb,
-                                    overlayShape: RoundSliderOverlayShape(
-                                        overlayRadius: 24.0),
-                                    activeTrackColor: Colors
-                                        .blue,
-                                    inactiveTrackColor: Colors
-                                        .blue
-                                        .withOpacity(0.3),
-                                    overlayColor: Colors
-                                        .blue
-                                        .withOpacity(0.0),
-                                    trackShape: RoundedRectSliderTrackShape(),
-                                  ),
-                                  child: StreamBuilder(
+                                child:  StreamBuilder(
                                     stream: AudioService
                                         .positionStream,
                                     builder: (context,
@@ -2873,72 +3087,204 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                               0) {
                                         final position = snapshot
                                             .data as Duration;
-                                        return Slider(
-                                          value: _currentPosition,
-                                          max: _totalDuration,
-                                          onChanged: (
-                                              value) {
-                                            if (devicecon) {
-                                              Duration jda = Duration(
-                                                  milliseconds: value
-                                                      .toInt());
-                                              List<
-                                                  dynamic> sdc = [
-                                                {
-                                                  "type": "media",
-                                                  "what": "seekto",
-                                                  "timecurrent": jda
-                                                      .inSeconds,
-                                                  "iddevice": "2"
-                                                }
-                                              ];
-                                              String jsonString = jsonEncode(
-                                                  sdc[0]);
-                                              channeldev
-                                                  .sink
-                                                  .add(
-                                                  jsonString);
-                                            } else {
-                                              if(instalumusa) {
-                                                AudioService
-                                                    .seekTo(
-                                                    Duration(
-                                                        milliseconds: (value
-                                                            .toInt()*2)));
-                                              }else{
-                                                AudioService
-                                                    .seekTo(
-                                                    Duration(
-                                                        milliseconds: value
-                                                            .toInt()));
-                                              }
-                                            }
+                                        return GestureDetector(
+                                          onTapDown: (_) {
+                                            setState(() {
+                                              _isPressed = true; // Устанавливаем флаг нажатия
+                                              _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                              _translateX = 12.0; // Сдвигаем слайдер влево
+                                            });
                                           },
+                                          onTapUp: (_) {
+                                            setState(() {
+                                              _isPressed = false; // Сбрасываем флаг нажатия
+                                              _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                              _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                            });
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: Duration(milliseconds: 200),
+                                            padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                            curve: Curves.easeInOut,
+                                            transform: Matrix4.identity()
+                                              ..scale(1.0, _scaleY), // Применяем масштаб
+                                            child: FlutterSlider(
+                                              values: _isPressed ? [newposition] : [_currentPosition],
+                                              max: _totalDuration,
+                                              min: 0,
+                                              tooltip: FlutterSliderTooltip(
+                                                disabled: true, // Отключаем текст со значением
+                                              ),
+                                              handler: FlutterSliderHandler(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.transparent, // Делаем thumb полностью прозрачным
+                                                ),
+                                                child: SizedBox.shrink(), // Полностью скрываем thumb
+                                              ),
+                                              onDragStarted: (handlerIndex, lowerValue, upperValue) {
+                                                setState(() {
+                                                  newposition = lowerValue;
+                                                });
+                                              },
+                                              onDragging: (handlerIndex, lowerValue, upperValue) {
+                                                // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                                setState(() {
+                                                  newposition = lowerValue; // Обновляем текущую позицию слайдера
+                                                  setState(() {
+                                                    _isPressed = true; // Устанавливаем флаг нажатия
+                                                    _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                    _translateX = 12.0; // Сдвигаем слайдер влево
+                                                  });
+                                                });
+                                              },
+                                              onDragCompleted: (handlerIndex, lowerValue, upperValue) {
+                                                // Логика завершения перетаскивания
+                                                setState(() {
+                                                  _currentPosition = lowerValue;
+                                                });
+                                                Duration jda = Duration(milliseconds: lowerValue.toInt());
+                                                print("Position: ${jda.inMilliseconds} ms");
+                                                setState(() {
+                                                  _isPressed = false; // Сбрасываем флаг нажатия
+                                                  _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                  _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                });
+                                                if (devicecon) {
+                                                  List<dynamic> sdc = [
+                                                    {
+                                                      "type": "media",
+                                                      "what": "seekto",
+                                                      "timecurrent": jda.inSeconds,
+                                                      "iddevice": "2"
+                                                    }
+                                                  ];
+                                                  String jsonString = jsonEncode(sdc[0]);
+                                                  // Предполагается, что channeldev доступен и открыт для отправки
+                                                  channeldev.sink.add(jsonString);
+                                                } else {
+                                                  if (instalumusa) {
+                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+                                                  } else {
+                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+                                                  }
+                                                }
+                                              },
+                                              trackBar: FlutterSliderTrackBar(
+                                                activeTrackBarHeight: 8,
+                                                inactiveTrackBarHeight: 8,
+                                                activeTrackBar: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                inactiveTrackBar: BoxDecoration(
+                                                  color: Colors.blue.withOpacity(0.3),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         );
                                       } else {
-                                        return Slider(
-                                          value: 0,
-                                          max: _totalDuration,
-                                          onChanged: (
-                                              value) {
-                                            if(instalumusa) {
-                                              AudioService
-                                                  .seekTo(
-                                                  Duration(
-                                                      milliseconds: (value
-                                                          .toInt()*2)));
-                                            }else{
-                                              AudioService
-                                                  .seekTo(
-                                                  Duration(
-                                                      milliseconds: value
-                                                          .toInt()));
-                                            }
+                                        return GestureDetector(
+                                          onTapDown: (_) {
+                                            setState(() {
+                                              _isPressed = true; // Устанавливаем флаг нажатия
+                                              _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                              _translateX = 12.0; // Сдвигаем слайдер влево
+                                            });
                                           },
+                                          onTapUp: (_) {
+                                            setState(() {
+                                              _isPressed = false; // Сбрасываем флаг нажатия
+                                              _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                              _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                            });
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: Duration(milliseconds: 200),
+                                            padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                            curve: Curves.easeInOut,
+                                            transform: Matrix4.identity()
+                                              ..scale(1.0, _scaleY), // Применяем масштаб
+                                            child: FlutterSlider(
+                                              values: _isPressed ? [newposition] : [_currentPosition],
+                                              max: _totalDuration,
+                                              min: 0,
+                                              tooltip: FlutterSliderTooltip(
+                                                disabled: true, // Отключаем текст со значением
+                                              ),
+                                              handler: FlutterSliderHandler(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.transparent, // Делаем thumb полностью прозрачным
+                                                ),
+                                                child: SizedBox.shrink(), // Полностью скрываем thumb
+                                              ),
+                                              onDragStarted: (handlerIndex, lowerValue, upperValue) {
+                                                setState(() {
+                                                  newposition = lowerValue;
+                                                });
+                                              },
+                                              onDragging: (handlerIndex, lowerValue, upperValue) {
+                                                // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                                setState(() {
+                                                  newposition = lowerValue; // Обновляем текущую позицию слайдера
+                                                  setState(() {
+                                                    _isPressed = true; // Устанавливаем флаг нажатия
+                                                    _scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                    _translateX = 12.0; // Сдвигаем слайдер влево
+                                                  });
+                                                });
+                                              },
+                                              onDragCompleted: (handlerIndex, lowerValue, upperValue) {
+                                                // Логика завершения перетаскивания
+                                                setState(() {
+                                                  _currentPosition = lowerValue;
+                                                });
+                                                Duration jda = Duration(milliseconds: lowerValue.toInt());
+                                                print("Position: ${jda.inMilliseconds} ms");
+                                                setState(() {
+                                                  _isPressed = false; // Сбрасываем флаг нажатия
+                                                  _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                  _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                });
+                                                if (devicecon) {
+                                                  List<dynamic> sdc = [
+                                                    {
+                                                      "type": "media",
+                                                      "what": "seekto",
+                                                      "timecurrent": jda.inSeconds,
+                                                      "iddevice": "2"
+                                                    }
+                                                  ];
+                                                  String jsonString = jsonEncode(sdc[0]);
+                                                  // Предполагается, что channeldev доступен и открыт для отправки
+                                                  channeldev.sink.add(jsonString);
+                                                } else {
+                                                  if (instalumusa) {
+                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+                                                  } else {
+                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+                                                  }
+                                                }
+                                              },
+                                              trackBar: FlutterSliderTrackBar(
+                                                activeTrackBarHeight: 8,
+                                                inactiveTrackBarHeight: 8,
+                                                activeTrackBar: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                inactiveTrackBar: BoxDecoration(
+                                                  color: Colors.blue.withOpacity(0.3),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         );
                                       }
                                     },
-                                  ),)))),
+                                  ),))),
                     SizedBox(height: 22,),
                     AnimatedContainer(
                         duration: Duration(
@@ -3249,7 +3595,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         errorWidget: (context, url, error) => Icon(Icons.error),
                                       ),
                                     ),)),
-                              title: Text(
+                              title: AutoSizeText(
                                 namemus,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
@@ -3261,7 +3607,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     color: Color.fromARGB(255, 246, 244, 244)
                                 ),
                               ),
-                              subtitle: Text(
+                              subtitle: AutoSizeText(
                                 ispolmus,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -3821,7 +4167,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       height: 60,
                       child: Icon(Icons.device_unknown_rounded, color: devicelis[idx]['status'] == "true" ? Colors.white : Colors.grey,),),
                   ],),),
-              title: Text(
+              title: AutoSizeText(
                 devicelis[idx]['name'],
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
