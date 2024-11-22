@@ -1,21 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
+  <style>
+    /* Установка фона и выравнивание splash-экрана */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0f0f10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
 
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0f0f10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #splash-screen img {
+      width: 200px; /* Укажите размер логотипа */
+      height: auto;
+    }
+  </style>
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Blast eee">
@@ -40,20 +56,33 @@
   <script src="flutter.js" defer></script>
 </head>
 <body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
-          });
-        }
-      });
+<!-- Splash screen -->
+<div id="splash-screen">
+  <img src="icons/Icon-512.png" alt="Blast Logo">
+</div>
+
+<script>
+  // Скрываем splash-экран после загрузки Flutter
+  window.addEventListener('flutter-first-frame', function () {
+    const splashScreen = document.getElementById('splash-screen');
+    if (splashScreen) {
+      splashScreen.style.display = 'none';
+    }
+  });
+
+  window.addEventListener('load', function(ev) {
+    // Download main.dart.js
+    _flutter.loader.loadEntrypoint({
+      serviceWorker: {
+        serviceWorkerVersion: serviceWorkerVersion,
+      },
+      onEntrypointLoaded: function(engineInitializer) {
+        engineInitializer.initializeEngine().then(function(appRunner) {
+          appRunner.runApp();
+        });
+      }
     });
-  </script>
+  });
+</script>
 </body>
 </html>

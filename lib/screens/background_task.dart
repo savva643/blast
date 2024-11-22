@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'AudioManager.dart';
-
+import 'dart:html' as html;
+import 'dart:html';
 class AudioPlayerTask extends BackgroundAudioTask {
   final player = AudioPlayer();
   final AudioManager notifier = AudioManager();
@@ -246,6 +246,60 @@ class AudioPlayerTask extends BackgroundAudioTask {
     return volume.clamp(0.0, 1.0);
   }
 
+  Timer? _progressTimer;
+
+
+
+  void _updateMediaSession(MediaItem mediaItem) {
+    if (html.window.navigator.mediaSession != null) {
+      final mediaSession = html.window.navigator.mediaSession!;
+
+      // Установить метаданные текущего трека
+      mediaSession.metadata = html.MediaMetadata({
+        'title': mediaItem.title,
+        'artist': mediaItem.artist,
+        'album': 'Album', // Добавьте альбом, если он доступен
+        'artwork': [
+          {
+            'src': mediaItem.artUri?.toString() ?? '',
+            'sizes': '512x512',
+            'type': 'image/png',
+          }
+        ],
+      });
+
+      // Установить действия управления
+      mediaSession.setActionHandler('play', () {
+        onPlay();
+      });
+
+      mediaSession.setActionHandler('pause', () {
+        onPause();
+      });
+
+      mediaSession.setActionHandler('seekbackward', () {
+        final currentPosition = player.position;
+        onSeekTo(currentPosition - const Duration(seconds: 10));
+      });
+
+      mediaSession.setActionHandler('seekforward', () {
+        final currentPosition = player.position;
+        onSeekTo(currentPosition + const Duration(seconds: 10));
+      });
+
+      mediaSession.setActionHandler('seekto', (dynamic details) {
+        if (details.seekTime != null) {
+          onSeekTo(Duration(seconds: details.seekTime!.toInt()));
+        }
+      } as html.MediaSessionActionHandler?);
+
+      // Установить состояние воспроизведения
+      mediaSession.playbackState = player.playing ? 'playing' : 'paused';
+    }
+  }
+
+
+
 
   @override
   Future<void> onPlay() async {
@@ -256,7 +310,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
     const duration = Duration(milliseconds: 20);
     _fadeTimer = Timer.periodic(duration, (timer) {
       if (_volume < 1.0) {
-        _volume = _clampVolume(_volume + 0.05); // Обновляем громкость
+        _volume = (_volume + 0.05); // Обновляем громкость
         player.setVolume(_volume);
       } else {
         _volume = 1.0;
@@ -274,7 +328,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
     const duration = Duration(milliseconds: 10);
     _fadeTimer = Timer.periodic(duration, (timer) async {
       if (_volume > 0.0) {
-        _volume = _clampVolume(_volume - 0.05); // Обновляем громкость
+        _volume = (_volume - 0.05); // Обновляем громкость
         player.setVolume(_volume);
       } else {
         _volume = 0.0;
@@ -306,12 +360,13 @@ class AudioPlayerTask extends BackgroundAudioTask {
         MediaAction.play,
         MediaAction.pause,
       ],
-
       processingState: AudioProcessingState.ready,
       playing: player.playing,
       position: player.position,
       bufferedPosition: player.bufferedPosition,
-
     );
+
+
   }
+
 }
