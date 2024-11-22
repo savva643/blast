@@ -454,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> getaboutmusmini(MediaItem item) async {
     String shazik = item.extras?['idshaz'];
     if (shazik != shazid) {
-
+      instalumusa = false;
       var urli;
       setState(() {
             namemus = item.title;
