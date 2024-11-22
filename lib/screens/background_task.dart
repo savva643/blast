@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'AudioManager.dart';
-import 'dart:html' as html;
-import 'dart:html';
 class AudioPlayerTask extends BackgroundAudioTask {
   final player = AudioPlayer();
   final AudioManager notifier = AudioManager();
   @override
   Future<void> onStart(Map<String, dynamic>? params) async {
-    final url = params?['url'] as MediaItem?;
-    if (url != null) {
-      await _playNewTrack(url);
+    final initialTrack = params?['track'] as MediaItem?;
+    if (initialTrack != null) {
+      await _playNewTrack(initialTrack);
+
     }
   }
 
@@ -19,9 +19,10 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
 
   Future<void> loopstarta(MediaItem mediaItem) async {
+    stopListening();
     if(newstart){
       try {
-        await player.setUrl(getCacheBustedUrl(mediaItem.id)); // Assuming mediaItem.id contains the URL
+        await player.setUrl(getCacheBustedUrl(mediaItem.extras?['url'])); // Assuming mediaItem.id contains the URL
 
         bool firstsartn = false;
 
@@ -66,11 +67,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
           });
 
 
-          player.processingStateStream.firstWhere((state) =>
-          state == ProcessingState.completed).then((_) async {
-            await player.pause();
-          });
-
+          startListening();
         });
       }catch (e){
         print("Ошибка загрузки: $e.");
@@ -80,13 +77,92 @@ class AudioPlayerTask extends BackgroundAudioTask {
     }
   }
 
-    @override
+
+  MediaItem mediaItemFromJson(Map<String, dynamic> json) {
+    return MediaItem(
+      id: json['id'] as String,
+      album: json['album'] as String?,
+      title: json['title'] as String,
+      artist: json['artist'] as String?,
+      genre: json['genre'] as String?,
+      duration: json['duration'] != null ? Duration(milliseconds: json['duration']) : null,
+      artUri: json['artUri'] != null ? Uri.parse(json['artUri']) : null,
+      extras: json['extras'] as Map<String, dynamic>?,
+    );
+  }
+
+
+
+  @override
+  Future<dynamic> onCustomAction(String action, dynamic params) async {
+    switch (action) {
+      case 'addToQueue':
+        if (params != null && params['track'] != null) {
+          final track = mediaItemFromJson(params['track'] as Map<String, dynamic>);
+          trackQueue.add(track);
+          onQueueChanged();
+        }
+        break;
+
+      case 'removeFromQueue':
+        if (params != null && params['trackId'] != null) {
+          trackQueue.removeWhere((item) => item.id == params['trackId']);
+          onQueueChanged();
+        }
+        break;
+
+      case 'setQueue':
+        if (params != null && params['playlist'] != null) {
+          trackQueue.clear();
+
+          // Парсинг плейлиста
+          final playlist = (params['playlist'] as List)
+              .map((track) => mediaItemFromJson(track as Map<String, dynamic>))
+              .toList();
+          trackQueue.addAll(playlist);
+
+          // Обновить очередь
+          onQueueChanged();
+
+          // Если передан индекс, воспроизвести трек с этим индексом
+          final int? startIndex = params['startIndex'] as int?;
+          if (startIndex != null && startIndex >= 0 && startIndex < trackQueue.length) {
+            _playNewTrack(trackQueue[startIndex]);
+          } else if (trackQueue.isNotEmpty && player.processingState != ProcessingState.ready) {
+            // Если индекс не передан, воспроизвести первый трек
+            _playNewTrack(trackQueue.first);
+          }
+        }
+        break;
+      case 'next':
+        await _playNextTrack();
+        break;
+
+      case 'previous':
+        await _playPreviousTrack();
+        break;
+      default:
+        break;
+    }
+    return super.onCustomAction(action, params);
+  }
+
+
+  void onQueueChanged() {
+    AudioServiceBackground.setQueue(trackQueue);
+  }
+
+
+
+
+  @override
   Future<void> onPlayMediaItem(MediaItem mediaItem) async {
+    stopListening();
     // When a new media item is requested, load and play it
       newstart = false;
     try {
       await player.setUrl(
-          mediaItem.id); // Assuming mediaItem.id contains the URL
+          mediaItem.extras?['url']); // Assuming mediaItem.id contains the URL
 
       bool firstsartn = false;
 
@@ -130,12 +206,9 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
           }
         });
+        startListening();
 
 
-        player.processingStateStream.firstWhere((state) =>
-        state == ProcessingState.completed).then((_) async {
-          await player.pause();
-        });
 
       });
     }catch (e){
@@ -146,15 +219,56 @@ class AudioPlayerTask extends BackgroundAudioTask {
   }
 
 
+  Future<void> _playNextTrack() async {
+    print("hgghnmghnghnhg"+currentTrackIndex.toString());
+    if (currentTrackIndex < trackQueue.length - 1) {
+      currentTrackIndex++;
+      await _playNewTrack(trackQueue[currentTrackIndex]);
+
+      print("csdvfdsvvsdfv"+trackQueue.toString());
+    } else {
+      await player.stop();
+      notifier.setPlaying(false);
+      _broadcastState();
+    }
+  }
+
+  Future<void> _playPreviousTrack() async {
+    if (currentTrackIndex > 0) {
+      currentTrackIndex--;
+      await _playNewTrack(trackQueue[currentTrackIndex]);
+    }
+  }
+
+  void addTrackToQueue(Map<String, dynamic> trackData) {
+    final mediaItem = _createMediaItem(trackData);
+    trackQueue.add(mediaItem);
+  }
+
+  List<MediaItem> trackQueue = [];
+  int currentTrackIndex = 0;
 
 
 
+  MediaItem _createMediaItem(Map<String, dynamic> trackData) {
+    return MediaItem(
+      id: trackData['id'] as String,
+      title: trackData['name'] as String,
+      artist: trackData['artist'] as String,
+      artUri: Uri.parse(trackData['img'] as String),
+      extras: {
+        'idshaz': trackData['idshaz'],
+        'url': trackData['url'],
+      },
+    );
+  }
 
   Future<void> loopstartb(MediaItem mediaItem) async {
+    stopListening();
     if(newstart){
       try {
         print("hhgm"+mediaItem.id);
-        await player.setUrl(getCacheBustedUrl(mediaItem.id));
+        await player.setUrl(getCacheBustedUrl(mediaItem.extras?['url']));
         notifier.setDuration(player.duration ?? Duration.zero);
         player.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) async {
           _broadcastState();
@@ -176,6 +290,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
 
         });
+        startListening();
         print(mediaItem);
       }catch (e){
         print("Ошибка загрузки: $e.");
@@ -184,22 +299,32 @@ class AudioPlayerTask extends BackgroundAudioTask {
       }
     }
   }
+  void stopListening() {
+    processingStateSubscription?.cancel();
+    processingStateSubscription = null; // Убираем ссылку для избежания утечек памяти.
+  }
+  StreamSubscription? processingStateSubscription;
 
+  void startListening() {
+    processingStateSubscription = player.processingStateStream.listen((state) async {
+      if (state == ProcessingState.completed) {
+        await _playNextTrack();
+        print("bgcfgbbgfcgbcccccccccccccccccccccccccccccchi");
+      }
+    });
+  }
   Future<void> _playNewTrack(MediaItem mediaItem) async {
-    print("hhgm"+mediaItem.id);
+    stopListening();
+    print("hhgm"+mediaItem.extras?['url']);
     try {
-      await player.setUrl(mediaItem.id);
+
+      await player.setUrl(mediaItem.extras?['url']);
       notifier.setDuration(player.duration ?? Duration.zero);
+      currentTrackIndex = trackQueue.indexWhere((item) => item.id == mediaItem.id);
+      AudioServiceBackground.setMediaItem(mediaItem);
       player.processingStateStream.firstWhere((state) =>
       state == ProcessingState.ready).then((_) async {
         _broadcastState();
-        AudioServiceBackground.setMediaItem(MediaItem(
-            id: mediaItem.id,
-            artUri: mediaItem.artUri,
-            artist: mediaItem.artist,
-            title: mediaItem.title,
-            duration: player.duration
-        ));
         await player.positionStream.listen((position) {
           notifier.setPosition(position);
           print("fbfgfxgb"+(player.duration?.inMilliseconds ?? 0).toString());
@@ -215,6 +340,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
       });
       print(mediaItem);
 
+      startListening();
       // Listen for position updates
     }catch (e){
       print("Ошибка загрузки: $e.");
@@ -250,53 +376,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
 
 
-  void _updateMediaSession(MediaItem mediaItem) {
-    if (html.window.navigator.mediaSession != null) {
-      final mediaSession = html.window.navigator.mediaSession!;
 
-      // Установить метаданные текущего трека
-      mediaSession.metadata = html.MediaMetadata({
-        'title': mediaItem.title,
-        'artist': mediaItem.artist,
-        'album': 'Album', // Добавьте альбом, если он доступен
-        'artwork': [
-          {
-            'src': mediaItem.artUri?.toString() ?? '',
-            'sizes': '512x512',
-            'type': 'image/png',
-          }
-        ],
-      });
-
-      // Установить действия управления
-      mediaSession.setActionHandler('play', () {
-        onPlay();
-      });
-
-      mediaSession.setActionHandler('pause', () {
-        onPause();
-      });
-
-      mediaSession.setActionHandler('seekbackward', () {
-        final currentPosition = player.position;
-        onSeekTo(currentPosition - const Duration(seconds: 10));
-      });
-
-      mediaSession.setActionHandler('seekforward', () {
-        final currentPosition = player.position;
-        onSeekTo(currentPosition + const Duration(seconds: 10));
-      });
-
-      mediaSession.setActionHandler('seekto', (dynamic details) {
-        if (details.seekTime != null) {
-          onSeekTo(Duration(seconds: details.seekTime!.toInt()));
-        }
-      } as html.MediaSessionActionHandler?);
-
-      // Установить состояние воспроизведения
-      mediaSession.playbackState = player.playing ? 'playing' : 'paused';
-    }
-  }
 
 
 
@@ -354,6 +434,8 @@ class AudioPlayerTask extends BackgroundAudioTask {
       controls: [
         MediaControl.play,
         MediaControl.pause,
+        MediaControl.skipToNext,
+        MediaControl.skipToPrevious,
       ],
       systemActions: [
         MediaAction.seek,

@@ -401,15 +401,100 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     print("object");
     AudioService.playMediaItem(
       MediaItem(
-        id: url,
+        id: _langData[0]['id'],
         artUri: Uri.parse(_langData[0]['img']),
         artist: _langData[0]['message'],
         title: _langData[0]['name'],
+        extras: {
+          'idshaz': _langData[0]['idshaz'],
+          'url': _langData[0]['url'],
+        },
       ),
     );
   }
 
 
+
+  Future<bool> canSkipToNext() async {
+    try {
+      // Получаем очередь и текущий трек
+      final queue = AudioService.queue;
+      final currentMediaItem = AudioService.currentMediaItem;
+
+      if (queue != null && queue.isNotEmpty && currentMediaItem != null) {
+        final currentIndex = queue.indexWhere((item) => item.id == currentMediaItem.id);
+        return currentIndex != -1 && currentIndex < queue.length - 1;
+      }
+
+      return false;
+    } catch (e) {
+      print("Ошибка при проверке перехода к следующему треку: $e");
+      return false;
+    }
+  }
+
+  // Проверка возможности перехода к предыдущему треку
+  Future<bool> canSkipToPrevious() async {
+    try {
+      // Получаем очередь и текущий трек
+      final queue = AudioService.queue;
+      final currentMediaItem = AudioService.currentMediaItem;
+
+      if (queue != null && queue.isNotEmpty && currentMediaItem != null) {
+        final currentIndex = queue.indexWhere((item) => item.id == currentMediaItem.id);
+        return currentIndex != -1 && currentIndex > 0;
+      }
+
+      return false;
+    } catch (e) {
+      print("Ошибка при проверке перехода к предыдущему треку: $e");
+      return false;
+    }
+  }
+  Future<void> getaboutmusmini(MediaItem item) async {
+    String shazik = item.extras?['idshaz'];
+    if (shazik != shazid) {
+
+      var urli;
+      setState(() {
+            namemus = item.title;
+            ispolmus = item.artist!;
+            imgmus = item.artUri.toString();
+            idmus = item.id;
+            shazid = item.extras?['idshaz'];
+      });
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? ds = prefs.getString("token");
+      if(ds != null) {
+        if (ds != "") {
+          urli = Uri.parse(
+              "https://kompot.site/getaboutmus?sidi=" + shazik + "&tokeni=" + ds!);
+        } else {
+          urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazik);
+        }
+      }else{
+        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazik);
+      }
+      var response = await http.get(urli);
+      String dff = response.body.toString();
+      _langData[0] = jsonDecode(dff);
+
+
+      if (_langData[0]['vidos'] != '0' && videoope) {
+        playVideo(_langData[0]['idshaz'], false);
+      } else {
+        print("thytfyjyju");
+        playmusamini(_langData[0]);
+        if (videoope) {
+          videoope = false;
+          _toogleAnimky();
+          controller.player.pause();
+        }
+      }
+    } else {
+      playpause();
+    }
+  }
 
   Future<void> getaboutmus(String shazid, bool jem, bool install, bool ese, bool isfromochered) async {
 
@@ -459,6 +544,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       setState(() {
         print("hyhg");
         _langData[0] = jsonDecode(dff);
+
         if(isfromochered){
           int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
           print((dsv+2).toString()+"i"+(ocherd.length).toString()+"fdsfdfd"+(dsv-1).toString());
@@ -484,7 +570,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       print("hjtghjgthjycsadc"+fvd2.toString());
       if(install) {
          fvd = await filterValidImages(_langData[0]['timeurl']);
-
       }
 
       setState(() {
@@ -876,6 +961,116 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   ];
   bool frstsd = false;
 
+  Future<void> playmusamini(dynamic listok) async {
+    musaftervid = listok["id"];
+    _totalDuration = 1;
+    _currentPosition = 0;
+    if(devicecon){
+      List<dynamic> sdc = [
+        {
+          "type": "openmus",
+          "id": listok["id"],
+          "idshaz": listok["idshaz"],
+          "vidos": videoope.toString(),
+          "timecurrent": "0",
+          "iddevice": "2"
+        }
+      ];
+      String jsonString = jsonEncode(sdc[0]);
+      channeldev.sink.add(jsonString);
+      setState(() {
+        setnewState(() {
+          if(listok["doi"] == "0"){
+            isDisLiked = true;
+            isLiked = false;
+          }else if(listok["doi"] == "1"){
+            isDisLiked = false;
+            isLiked = true;
+          }else if(listok["doi"] == "2"){
+            isDisLiked = false;
+            isLiked = false;
+          }
+        });
+      });
+      if(_langData[0]['bgvideo'] != "0") {
+        print("https://kompot.site/"+_langData[0]['bgvideo']);
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath = '${directory.path}/cached_video.mp4';
+        try {
+          // Загружаем видео и сохраняем его
+          await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
+          print("Видео загружено и сохранено в локальном хранилище.");
+          await videoshort.open(Media(filePath));
+        } catch (e) {
+          print("Ошибка при загрузке видео: $e");
+          return;
+        }
+      }
+
+    }else {
+      if (idmus != listok["id"]) {
+          AudioService.play();
+          setState(() {
+            iconpla = Icon(Icons.pause_rounded, size: 40, key: ValueKey<bool>(AudioService.playbackState.playing),);
+            if (isjemnow) {
+              _childKey.currentState?.toggleAnimation(true);
+              _childKey.currentState?.updateIcon(
+                Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing),), );
+            }
+            if (essensionbool) {
+              _childKey.currentState?.toggleAnimationese(true);
+              _childKey.currentState?.updateIconese(Icon(
+                  Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+            }
+            if(_isBottomSheetOpen){
+              setnewState(() {
+                if(listok["doi"] == "0"){
+                  isDisLiked = true;
+                  isLiked = false;
+                }else if(listok["doi"] == "1"){
+                  isDisLiked = false;
+                  isLiked = true;
+                }else if(listok["doi"] == "2"){
+                  isDisLiked = false;
+                  isLiked = false;
+                }
+              });
+            }else{
+              if(listok["doi"] == "0"){
+                isDisLiked = true;
+                isLiked = false;
+              }else if(listok["doi"] == "1"){
+                isDisLiked = false;
+                isLiked = true;
+              }else if(listok["doi"] == "2"){
+                isDisLiked = false;
+                isLiked = false;
+              }
+
+            }
+
+          });
+          if(_langData[0]['bgvideo'] != "0") {
+            print("https://kompot.site/"+_langData[0]['bgvideo']);
+            final directory = await getApplicationDocumentsDirectory();
+            final filePath = '${directory.path}/cached_video.mp4';
+            try {
+              // Загружаем видео и сохраняем его
+              await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
+              print("Видео загружено и сохранено в локальном хранилище.");
+              await videoshort.open(Media(filePath));
+
+            } catch (e) {
+              print("Ошибка при загрузке видео: $e");
+              return;
+            }
+          }
+      } else {
+        playpause();
+      }
+    }
+  }
+
   Future<void> playmusa(dynamic listok, bool frmvid, bool install, bool essensioni) async {
     print("object");
     print(idmus);
@@ -1026,11 +1221,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               androidNotificationChannelName: 'blast!',
               androidNotificationColor: 0xFF2196f3,
               androidNotificationIcon: 'drawable/mus_logo_foreground',
-              params: {'url': MediaItem(
+              params: {'track': MediaItem(
                 id: _langData[0]['short'],
                 artUri: Uri.parse(_langData[0]['img']),
                 artist: _langData[0]['message'],
                 title: _langData[0]['name'],
+                extras: {
+                  'idshaz': _langData[0]['idshaz'],
+                  'url': _langData[0]['url'],
+                },
               )},
             );
           }else{
@@ -1039,11 +1238,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               androidNotificationChannelName: 'blast!',
               androidNotificationColor: 0xFF2196f3,
               androidNotificationIcon: 'drawable/mus_logo_foreground',
-              params: {'url': MediaItem(
+              params: {'track': MediaItem(
                 id: _langData[0]['url'],
                 artUri: Uri.parse(_langData[0]['img']),
                 artist: _langData[0]['message'],
                 title: _langData[0]['name'],
+                extras: {
+                  'idshaz': _langData[0]['idshaz'],
+                  'url': _langData[0]['url'],
+                },
               )},
             );
           }
@@ -4312,13 +4515,70 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool ispalylistochered = false;
 
   void loadpalylisttoochered(var listokd, var index){
-    ocherd.clear();
+    // ocherd.clear();
+    // for (var num in listokd) {
+    //  ocherd.add(num["idshaz"]);
+    //}
+    // getaboutmus(ocherd[index], false, false, false, true);
+    // ispalylistochered = true;
+
+
+    List<MediaItem> playlist = [];
     for (var num in listokd) {
-      ocherd.add(num["idshaz"]);
+      playlist.add(MediaItem(
+        id: num['id'],
+        artUri: Uri.parse(num['img']),
+        artist: num['message'],
+        title: num['name'],
+        extras: {
+          'idshaz': num['idshaz'],
+          'url': num['url'],
+        },
+      ));
     }
-    getaboutmus(ocherd[index], false, false, false, true);
-    ispalylistochered = true;
+    setQueue(playlist, index);
   }
+
+
+  Future<void> addToQueue(MediaItem track) async {
+    Map<String, dynamic> trackData = {
+      'id': track.id,
+      'title': track.title,
+      'artist': track.artist,
+      'album': track.album,
+      'artUri': track.artUri?.toString(),
+      'extras': track.extras,
+      'duration': track.duration?.inMilliseconds,
+    };
+
+    await AudioService.customAction('addToQueue', {'track': trackData});
+  }
+
+
+
+  Future<void> removeFromQueue(String trackId) async {
+    await AudioService.customAction('removeFromQueue', {'trackId': trackId});
+  }
+
+
+  Future<void> setQueue(List<MediaItem> playlist, int inx) async {
+    // Преобразуем список MediaItem в список Map<String, dynamic>
+    List<Map<String, dynamic>> tracks = playlist.map((track) {
+      return {
+        'id': track.id,
+        'title': track.title,
+        'artist': track.artist,
+        'album': track.album,
+        'artUri': track.artUri?.toString(),
+        'extras': track.extras,
+        'duration': track.duration?.inMilliseconds,
+      };
+    }).toList();
+
+    await AudioService.customAction('setQueue', {'playlist': tracks, 'startIndex': inx});
+    await getaboutmusmini(playlist[inx]);
+  }
+
 
 
   void showtextmus(){
@@ -4344,40 +4604,40 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
   bool cannext = false;
   bool canrevew = false;
-  void nextmusic(){
-    if (isLoading) return; // Блокируем повторное нажатие во время запроса
-    setState(() {
-      isLoading = true;
+  Future<void> nextmusic() async {
+     if (isLoading) return; // Блокируем повторное нажатие во время запроса
+     setState(() {
+       isLoading = true;
     });
     try {
-      if (ispalylistochered) {
-        int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
-        if (dsv + 2 <= ocherd.length) {
-          getaboutmus(ocherd[dsv + 1].toString(), false, false, false, true);
-        }
-      } else {
-
-      }
-    }finally{
-      isLoading = false;
-    }
+    //   if (ispalylistochered) {
+    //     int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
+    //     if (dsv + 2 <= ocherd.length) {
+    //       getaboutmus(ocherd[dsv + 1].toString(), false, false, false, true);
+    //     }
+    //   } else {
+     //  }
+      await AudioService.customAction('next', {});
+     }finally{
+       isLoading = false;
+     }
   }
 
 
-  void previosmusic(){
+  Future<void> previosmusic() async {
     if (isLoading) return; // Блокируем повторное нажатие во время запроса
     setState(() {
       isLoading = true;
     });
     try {
-      if (ispalylistochered) {
-        int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
-        if (dsv - 1 > 0) {
-          getaboutmus(ocherd[dsv - 1].toString(), false, false, false, true);
-        }
-      } else {
-
-      }
+      //   if (ispalylistochered) {
+      //     int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
+      //     if (dsv - 1 > 0) {
+      //      getaboutmus(ocherd[dsv - 1].toString(), false, false, false, true);
+      //   }
+      // } else {
+      // }
+      await AudioService.customAction('previous', {});
     }finally{
       isLoading = false;
     }
