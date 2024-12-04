@@ -10,7 +10,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
   Future<void> onStart(Map<String, dynamic>? params) async {
     final initialTrack = params?['track'] as MediaItem?;
     if (initialTrack != null) {
-      await _playNewTrack(initialTrack);
+      await _playNewTrack(initialTrack, false);
 
     }
   }
@@ -78,6 +78,35 @@ class AudioPlayerTask extends BackgroundAudioTask {
   }
 
 
+
+
+  String canSkipToNext()  {
+    print("tyfyuhjgfghj"+AudioService.currentMediaItem!.id.toString());
+    // Проверяем, если есть хотя бы 1 трек в очереди и текущая позиция не последняя
+    if (trackQueue != null && trackQueue.isNotEmpty) {
+      final currentIndex = trackQueue.indexWhere((item) => item.id == AudioService.currentMediaItem?.id);
+      return (currentIndex != -1 && currentIndex < trackQueue.length - 1).toString();
+    }
+
+    return "false";
+  }
+
+
+
+  String canSkipToPrevious() {
+    // Получаем текущую позицию в очереди
+
+    // Проверяем, если есть хотя бы 1 трек в очереди
+    if (trackQueue != null && trackQueue.isNotEmpty) {
+      final currentIndex = trackQueue.indexWhere((item) => item.id == AudioService.currentMediaItem?.id);
+      return (currentIndex != -1 && currentIndex > 0).toString();
+    }
+
+    return "false";
+  }
+
+
+
   MediaItem mediaItemFromJson(Map<String, dynamic> json) {
     return MediaItem(
       id: json['id'] as String,
@@ -123,16 +152,27 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
           // Обновить очередь
           onQueueChanged();
-
           // Если передан индекс, воспроизвести трек с этим индексом
           final int? startIndex = params['startIndex'] as int?;
-          if (startIndex != null && startIndex >= 0 && startIndex < trackQueue.length) {
-            _playNewTrack(trackQueue[startIndex]);
-          } else if (trackQueue.isNotEmpty && player.processingState != ProcessingState.ready) {
-            // Если индекс не передан, воспроизвести первый трек
-            _playNewTrack(trackQueue.first);
+          final bool? needplay = params['needplay'] as bool?;
+          if(needplay != null && needplay) {
+            if (startIndex != null && startIndex >= 0 &&
+                startIndex < trackQueue.length) {
+              _playNewTrack(trackQueue[startIndex], true);
+            } else if (trackQueue.isNotEmpty &&
+                player.processingState != ProcessingState.ready) {
+              // Если индекс не передан, воспроизвести первый трек
+              _playNewTrack(trackQueue.first, true);
+            }
           }
         }
+        break;
+      case 'getskip':
+        AudioServiceBackground.sendCustomEvent({
+          'skip': "fgbds",
+          'canforward': canSkipToNext(),
+          'canprevious': canSkipToPrevious(),
+        });
         break;
       case 'next':
         await _playNextTrack();
@@ -148,7 +188,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
   }
 
 
-  void onQueueChanged() {
+  Future<void> onQueueChanged() async {
     AudioServiceBackground.setQueue(trackQueue);
   }
 
@@ -223,7 +263,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
     print("hgghnmghnghnhg"+currentTrackIndex.toString());
     if (currentTrackIndex < trackQueue.length - 1) {
       currentTrackIndex++;
-      await _playNewTrack(trackQueue[currentTrackIndex]);
+      await _playNewTrack(trackQueue[currentTrackIndex], true);
 
       print("csdvfdsvvsdfv"+trackQueue.toString());
     } else {
@@ -231,13 +271,16 @@ class AudioPlayerTask extends BackgroundAudioTask {
       notifier.setPlaying(false);
       _broadcastState();
     }
+
+    _sendTrackChangedEvent();
   }
 
   Future<void> _playPreviousTrack() async {
     if (currentTrackIndex > 0) {
       currentTrackIndex--;
-      await _playNewTrack(trackQueue[currentTrackIndex]);
+      await _playNewTrack(trackQueue[currentTrackIndex], true);
     }
+    _sendTrackChangedEvent();
   }
 
   void addTrackToQueue(Map<String, dynamic> trackData) {
@@ -313,7 +356,26 @@ class AudioPlayerTask extends BackgroundAudioTask {
       }
     });
   }
-  Future<void> _playNewTrack(MediaItem mediaItem) async {
+
+  void _sendTrackChangedEvent() {
+    final currentTrack = trackQueue[currentTrackIndex];
+    Map<String, dynamic> trackData = {
+      'id': currentTrack.id,
+      'title': currentTrack.title,
+      'artist': currentTrack.artist,
+      'album': currentTrack.album,
+      'artUri': currentTrack.artUri?.toString(),
+      'extras': currentTrack.extras,
+      'duration': currentTrack.duration?.inMilliseconds,
+    };
+    AudioServiceBackground.sendCustomEvent({
+      'event': 'trackChanged',
+      'currentTrack': trackData, // Преобразуем MediaItem в Map
+    });
+    print("hhghngfvhngvm"+trackData.toString());
+  }
+
+  Future<void> _playNewTrack(MediaItem mediaItem, bool dfs) async {
     stopListening();
     print("hhgm"+mediaItem.extras?['url']);
     try {
@@ -325,6 +387,9 @@ class AudioPlayerTask extends BackgroundAudioTask {
       player.processingStateStream.firstWhere((state) =>
       state == ProcessingState.ready).then((_) async {
         _broadcastState();
+        if(dfs){
+          player.play();
+        }
         await player.positionStream.listen((position) {
           notifier.setPosition(position);
           print("fbfgfxgb"+(player.duration?.inMilliseconds ?? 0).toString());

@@ -13,6 +13,9 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../api/api_service.dart';
+import '../parts/music_cell.dart';
+
 
 
 const kBgColor = Color(0xFF1604E2);
@@ -54,20 +57,6 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   late VoidCallback showsearch;
   late VoidCallback showlog;
   late VoidCallback reset;
-  List _langData = [
-    {
-      'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Иcполнитель',
-    },
-    {
-      'id': '2',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Иcполнитель',
-    },
-  ];
   var player;
 
   MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad, VoidCallback dawsd, VoidCallback fgdfxg, Function(dynamic, dynamic) onkhngf){
@@ -82,15 +71,34 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     dfv = onkhngf;
   }
 
+
+  final ApiService apiService = ApiService();
+  void load() async {
+    late var langData;
+    var usera = await apiService.getUser();
+    setState(() {
+      if(usera['status'] != 'false') {
+        useri = true;
+        imgprofile = usera["img_kompot"];
+      }else{
+        useri = false;
+      }
+    });
+    if(palylsitid != "install") {
+       langData = await apiService.getMusicInPlaylist(palylsitid);
+    }else{
+      langData = await apiService.getInstalledMusic();
+    }
+    print(usera.toString()+'kighj');
+    setState(() {
+      _searchedLangData = langData;
+    });
+  }
+
   @override
   void initState()
   {
-    if(palylsitid != "install") {
-      loadmusinplilsr(palylsitid);
-    }else{
-      installedmus();
-    }
-    getpr();
+    load();
     super.initState();
   }
 
@@ -150,7 +158,6 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
       'message': 'Имполнитель',
     },
   ];
-  final _searchLanguageController = TextEditingController();
 
 
   @override
@@ -158,23 +165,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     super.dispose();
   }
 
-  _loadSearchedLanguages(String? textVal) {
-    if(textVal != null && textVal.isNotEmpty) {
-      final data = _langData.where((lang) {
-        return lang['name'].toLowerCase().contains(textVal.toLowerCase());
-      }).toList();
-      setState(() => _searchedLangData = data);
-    } else {
-      setState(() => _searchedLangData = _langData);
-    }
-  }
 
-
-
-  _clearSearch() {
-    _searchLanguageController.clear();
-    setState(() => _searchedLangData = _langData);
-  }
 
   Widget _loadListViewmore() {
     Size size = MediaQuery.of(context).size;
@@ -187,6 +178,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Stack(
+                clipBehavior: Clip.none,
                 children: [
                   AnimatedContainer(
                       margin: EdgeInsets
@@ -218,17 +210,15 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                             fit: BoxFit
                                 .cover, // Изображ
                           ) : Image(image: AssetImage(palylsitimg), width: size.width,))),
-                  SizedBox(
-                    height: 80,width: 220,
-                    child: OverflowBox(
-                      maxWidth: double.infinity,
-                      maxHeight: double.infinity,
-                      child:
-                      Container(
-                        padding: EdgeInsets.only(top: 140),
-                        child:
-                        Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-                    ),),
+                  Positioned(
+                    child: Image.asset(
+                      'assets/images/circlebg.png',
+                      width: 420,
+                      height: 420,
+                    ),
+                    top: -280,
+                    left: -196,
+                  ),
                   Row(children: [
                     Container(padding: EdgeInsets.only(left: 12,top: 0),
                         child:
@@ -273,82 +263,8 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
             ],
           );
         }else{
-          print("idx");
-          print(_searchedLangData[idx-1]['img']);
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: Material(
 
-              color: Color.fromARGB(0, 15, 15, 16),
-              borderRadius: BorderRadius.circular(5),
-              child: ListTile(
-                contentPadding: EdgeInsets.only(
-                    left: 0, right: 0, bottom: 4, top: 4),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5)),
-                onTap: () async {
-                  sendpalulit(idx-1);
-                },
-                leadingAndTrailingTextStyle: TextStyle(),
-                leading: SizedBox(width: 90,
-                  height: 60,
-                  child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [ SizedBox(
-                      width: 60,
-                      height: 60,
-                      child: OverflowBox(
-                        maxWidth: double.infinity,
-                        maxHeight: double.infinity,
-                        child: CachedNetworkImage(
-                          imageUrl: _searchedLangData[idx-1]['img'],
-                          imageBuilder: (context, imageProvider) =>
-                              Container(
-                                padding: EdgeInsets.only(
-                                    left: 0, right: 0, bottom: 0, top: 0),
-                                width: 64.0,
-                                height: 64.0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.circular(5),
-                                  image: DecorationImage(
-                                      image: imageProvider),
-                                ),
-                              ),
-                          placeholder: (context, url) =>
-                              CircularProgressIndicator(),
-                          errorWidget: (context, url, error) => Icon(Icons.error),
-                        ),
-                      ),),
-                    ],),),
-                title: Text(
-                  _searchedLangData[idx-1]['name'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                      color: Color.fromARGB(255, 246, 244, 244)
-                  ),
-                ),
-                subtitle: Text(
-                  _searchedLangData[idx-1]['message'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w300,
-                      color: Color.fromARGB(255, 246, 244, 244)
-                  ),
-                ),
-                trailing: IconButton(icon: Icon(Icons.more_vert),
-                  color: Colors.white,
-                  onPressed: () {},),
-              ),
-            ),
-          );
+          return MussicCell( _searchedLangData[idx-1], (){onCallback(_searchedLangData[idx-1]['idshaz']);});
         }
       },
     );
@@ -366,6 +282,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Stack(
+                clipBehavior: Clip.none,
                 children: [
                   AnimatedContainer(
                       margin: EdgeInsets
@@ -398,17 +315,15 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                             fit: BoxFit
                                 .cover, // Изображ
                           ) : Image(image: AssetImage(palylsitimg), width: size.width,))),
-                  SizedBox(
-                    height: 80,width: 220,
-                    child: OverflowBox(
-                      maxWidth: double.infinity,
-                      maxHeight: double.infinity,
-                      child:
-                      Container(
-                        padding: EdgeInsets.only(top: 140),
-                        child:
-                        Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-                    ),),
+                  Positioned(
+                    child: Image.asset(
+                      'assets/images/circlebg.png',
+                      width: 420,
+                      height: 420,
+                    ),
+                    top: -280,
+                    left: -196,
+                  ),
                   Row(children: [
                     Container(padding: EdgeInsets.only(left: 12,top: 0),
                         child:
@@ -452,82 +367,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
             ],
           );
         }else{
-          print("idx");
-          print(_searchedLangData[idx-1]['img']);
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: Material(
-
-              color: Color.fromARGB(0, 15, 15, 16),
-              borderRadius: BorderRadius.circular(5),
-              child: ListTile(
-                contentPadding: EdgeInsets.only(
-                    left: 0, right: 0, bottom: 4, top: 4),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5)),
-                onTap: () async {
-                  sendpalulit(idx-1);
-                },
-                leadingAndTrailingTextStyle: TextStyle(),
-                leading: SizedBox(width: 90,
-                  height: 60,
-                  child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [ SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: OverflowBox(
-                          maxWidth: double.infinity,
-                          maxHeight: double.infinity,
-                          child: CachedNetworkImage(
-                            imageUrl: _searchedLangData[idx-1]['img'],
-                            imageBuilder: (context, imageProvider) =>
-                                Container(
-                                  padding: EdgeInsets.only(
-                                      left: 0, right: 0, bottom: 0, top: 0),
-                                  width: 64.0,
-                                  height: 64.0,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    borderRadius: BorderRadius.circular(5),
-                                    image: DecorationImage(
-                                        image: imageProvider),
-                                  ),
-                                ),
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => Icon(Icons.error),
-                          ),
-                        ),),
-                    ],),),
-                title: Text(
-                  _searchedLangData[idx-1]['name'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                      color: Color.fromARGB(255, 246, 244, 244)
-                  ),
-                ),
-                subtitle: Text(
-                  _searchedLangData[idx-1]['message'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w300,
-                      color: Color.fromARGB(255, 246, 244, 244)
-                  ),
-                ),
-                trailing: IconButton(icon: Icon(Icons.more_vert),
-                  color: Colors.white,
-                  onPressed: () {},),
-              ),
-            ),
-          );
+          return MussicCell( _searchedLangData[idx-1], (){onCallback(_searchedLangData[idx-1]['idshaz']);});
         }
       },
     );
@@ -537,55 +377,11 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     dfv(_searchedLangData,fdsvds);
   }
 
-  Future<void> installedmus() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? dfrd = prefs.getString("installmus");
 
-    print("dfrd");
-    print(jsonDecode(dfrd!));
-    setState(() {
-      _langData = jsonDecode(jsonDecode(dfrd!).toString());
-      _searchedLangData = jsonDecode(jsonDecode(dfrd!).toString());
-    });
-  }
-
-  Future<void> loadmusinplilsr(String id) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    String? ds = prefs.getString("token");
-    print("https://kompot.site/getmusfromplaylist?token="+ds!+"&playlst="+id);
-    var urli = Uri.parse("https://kompot.site/getmusfromplaylist?token="+ds!+"&playlst="+id);
-    var response = await http.get(urli);
-    String dff = response.body.toString();
-    print("hjk"+id);
-    setState(() {
-      _langData = jsonDecode(dff)[0];
-      _searchedLangData = jsonDecode(dff)[0];
-    });
-  }
 
   String imgprofile = "";
-  String tokenbf = "";
   bool useri = false;
-  Future<void> getpr () async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? ds = prefs.getString("token");
-    if(ds != ""){
-      print("object"+ds!);
-      var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
 
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-
-      setState(() {
-        var _langData = jsonDecode(dff);
-        tokenbf = ds;
-        useri = true;
-        imgprofile = _langData["img_kompot"];
-        print("object"+imgprofile);
-      });
-    }
-  }
 
 }
 

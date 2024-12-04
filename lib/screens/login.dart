@@ -99,18 +99,17 @@ class LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  SizedBox(
-                    height: 80,width: 220,
-                    child: OverflowBox(
-                      maxWidth: double.infinity,
-                      maxHeight: double.infinity,
-                      child:
-                      Container(
-                        padding: EdgeInsets.only(top: 140),
-                        child:
-                        Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-                    ),),
+                  Positioned(
+                    child: Image.asset(
+                      'assets/images/circlebg.png',
+                      width: 420,
+                      height: 420,
+                    ),
+                    top: -280,
+                    left: -196,
+                  ),
                   Row(children: [
                     Container(padding: EdgeInsets.only(left: 12,top: 0),
                         child:

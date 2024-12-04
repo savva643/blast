@@ -97,6 +97,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   }
 
+  
+
+
+
   bool _isPressed = false; // Флаг для отслеживания состояния нажатия
   bool instalumusa = false;
 
@@ -159,6 +163,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String ispolmus = "Исполнитель";
   String imgmus = "https://kompot.site/img/music.jpg";
 
+  bool _isMuted = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS); // Состояние звука
+  bool _isWeb = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS); // Проверка для iOS на вебе
+
+  void _toggleMute() {
+    if (_isWeb && _isMuted) {
+      setState(() {
+        _isMuted = !_isMuted;
+        controller.player.setVolume(_isMuted ? 0.0 : 1.0); // Если звук выключен, устанавливаем 0, иначе 1
+      });
+    }
+  }
 
   double newposition = 0.0;
 
@@ -176,24 +191,87 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _startServer();
     _getLocalIp();
     AudioService.customEventStream.listen((event) {
+
       if(!devicecon) {
+
         print("hyffyj");
         if (event != null) {
           setState(() {
             if(_isBottomSheetOpen){
               setnewState(() {
+                if(event['skip'].toString() == "fgbds"){
+                  print("dsaxcasc");
+                  print(event.toString());
+                  if(event['canforward'].toString() == "true"){
+                    print("jhmjmhhjmmjhmjhjmsdvs");
+                    cannext = true;
+                  }else{
+                    cannext = false;
+                  }
+                  if(event['canprevious'].toString() == "true"){
+                    canrevew = true;
+                  }else{
+                    canrevew = false;
+                  }
+                }
+                if(event['event'].toString() == "trackChanged"){
+                  final trackData = event['currentTrack'] as Map<String, dynamic>;
+                  final currentTrack = MediaItem(
+                    id: trackData['id'],
+                    title: trackData['title'],
+                    artist: trackData['artist'],
+                    artUri: Uri.parse(trackData['artUri']),
+                    extras: {
+                      'idshaz': trackData['extras']['idshaz'],
+                      'url': trackData['extras']['url'],
+                    },
+                  );
+                  print("fvdsgvv"+currentTrack.toString());
+                  getaboutmusmini(currentTrack);
+                  print("fvdsfgdfgdt"+trackData.toString());
+                }
                 if(instalumusa) {
                   print(event);
                   _currentPosition = ((event['position'].toDouble()) ~/ 2).toDouble();
                   _totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
                   print(event['duration'].toString());
-                }else{
+                } else {
                   _currentPosition = event['position'].toDouble();
                   _totalDuration = event['duration'].toDouble();
                   print(event['duration'].toString());
                 }
               });
-            }else {
+            }else{
+              if(event['skip'].toString() == "fgbds"){
+                if(event['canforward'].toString() == "true"){
+                  cannext = true;
+                }else{
+                  cannext = false;
+                }
+                if(event['canprevious'].toString() == "true"){
+                  canrevew = true;
+                }else{
+                  canrevew = false;
+                }
+              }
+              if(event['event'].toString() == "trackChanged"){
+                print("fvdsgvv1");
+                final trackData = event['currentTrack'] as Map<String, dynamic>;
+                print("fvdsgvv2");
+                final currentTrack = MediaItem(
+                  id: trackData['id'],
+                  title: trackData['title'],
+                  artist: trackData['artist'],
+                  artUri: Uri.parse(trackData['artUri']),
+                  extras: {
+                    'idshaz': trackData['extras']['idshaz'],
+                    'url': trackData['extras']['url'],
+                  },
+                );
+                print("fvdsgvv");
+                getaboutmusmini(currentTrack);
+                print("fvdsfgdfgdt"+trackData.toString());
+              }
               if (instalumusa) {
                 print(event);
                 _currentPosition = ((event['position'].toDouble()) ~/ 2).toDouble();
@@ -415,70 +493,59 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
 
 
-  Future<bool> canSkipToNext() async {
-    try {
-      // Получаем очередь и текущий трек
-      final queue = AudioService.queue;
-      final currentMediaItem = AudioService.currentMediaItem;
-
-      if (queue != null && queue.isNotEmpty && currentMediaItem != null) {
-        final currentIndex = queue.indexWhere((item) => item.id == currentMediaItem.id);
-        return currentIndex != -1 && currentIndex < queue.length - 1;
-      }
-
-      return false;
-    } catch (e) {
-      print("Ошибка при проверке перехода к следующему треку: $e");
-      return false;
-    }
-  }
-
-  // Проверка возможности перехода к предыдущему треку
-  Future<bool> canSkipToPrevious() async {
-    try {
-      // Получаем очередь и текущий трек
-      final queue = AudioService.queue;
-      final currentMediaItem = AudioService.currentMediaItem;
-
-      if (queue != null && queue.isNotEmpty && currentMediaItem != null) {
-        final currentIndex = queue.indexWhere((item) => item.id == currentMediaItem.id);
-        return currentIndex != -1 && currentIndex > 0;
-      }
-
-      return false;
-    } catch (e) {
-      print("Ошибка при проверке перехода к предыдущему треку: $e");
-      return false;
-    }
-  }
   Future<void> getaboutmusmini(MediaItem item) async {
-    String shazik = item.extras?['idshaz'];
+    print("hhgfgbffddsag1");
+    String? shazik = item.extras?['idshaz'].toString();
+    print(shazid);
+    print("hhgfgbffdg");
+    print(shazik);
     if (shazik != shazid) {
       instalumusa = false;
       var urli;
-      setState(() {
+      if(_isBottomSheetOpen) {
+        print("vfdvbsxb");
+        setState(() {
+          setnewState(() {
+            print("sdsdasddsadsadsadsa");
             namemus = item.title;
             ispolmus = item.artist!;
             imgmus = item.artUri.toString();
             idmus = item.id;
-            shazid = item.extras?['idshaz'];
-      });
+            shazid = item.extras!['idshaz'].toString();
+          });
+        });
+      }else{
+        setState(() {
+          namemus = item.title;
+          ispolmus = item.artist!;
+          imgmus = item.artUri.toString();
+          idmus = item.id;
+          shazid = item.extras!['idshaz'].toString();
+        });
+      }
+      AudioService.play();
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       String? ds = prefs.getString("token");
       if(ds != null) {
         if (ds != "") {
+          print("mghj,"+shazik!);
+          print("dcsv,"+item.toString());
+          print("https://kompot.site/getaboutmus?sidi=" + shazik! + "&tokeni=" + ds!);
           urli = Uri.parse(
-              "https://kompot.site/getaboutmus?sidi=" + shazik + "&tokeni=" + ds!);
+              "https://kompot.site/getaboutmus?sidi=" + shazik! + "&tokeni=" + ds!);
         } else {
-          urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazik);
+          print("vcvf,");
+          urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazik!);
         }
       }else{
-        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazik);
+        print("loghj,");
+        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazik!);
       }
       var response = await http.get(urli);
       String dff = response.body.toString();
+      print("gbfdbfvddbfvbv"+dff);
       _langData[0] = jsonDecode(dff);
-
+      await AudioService.customAction('getskip', {});
 
       if (_langData[0]['vidos'] != '0' && videoope) {
         playVideo(_langData[0]['idshaz'], false);
@@ -500,6 +567,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     print(shazid+"jkljl"+this.shazid);
     if (shazid != this.shazid) {
+      canrevew = false;
+      cannext = false;
       AudioService.stop();
       if(ese == false){
         setState(() {
@@ -947,6 +1016,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return dsv;
   }
 
+
+  Future<void> loadbgvideo(String url) async {
+    if(kIsWeb){
+      await videoshort.open(Media(url));
+    }else{
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/cached_video.mp4';
+      try {
+        // Загружаем видео и сохраняем его
+        await Dio().download(
+            "https://kompot.site/" + _langData[0]['bgvideo'], filePath);
+        print("Видео загружено и сохранено в локальном хранилище.");
+        await videoshort.open(Media(filePath));
+
+      } catch (e) {
+        print("Ошибка при загрузке видео: $e");
+        return;
+      }
+    }
+  }
+
+
   String vidaftermus = "false";
   String musaftervid = "false";
 
@@ -979,37 +1070,39 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       String jsonString = jsonEncode(sdc[0]);
       channeldev.sink.add(jsonString);
       setState(() {
-        setnewState(() {
-          if(listok["doi"] == "0"){
+        if(_isBottomSheetOpen) {
+          setnewState(() {
+            if (listok["doi"] == "0") {
+              isDisLiked = true;
+              isLiked = false;
+            } else if (listok["doi"] == "1") {
+              isDisLiked = false;
+              isLiked = true;
+            } else if (listok["doi"] == "2") {
+              isDisLiked = false;
+              isLiked = false;
+            }
+          });
+        }else{
+          if (listok["doi"] == "0") {
             isDisLiked = true;
             isLiked = false;
-          }else if(listok["doi"] == "1"){
+          } else if (listok["doi"] == "1") {
             isDisLiked = false;
             isLiked = true;
-          }else if(listok["doi"] == "2"){
+          } else if (listok["doi"] == "2") {
             isDisLiked = false;
             isLiked = false;
           }
-        });
+        }
       });
       if(_langData[0]['bgvideo'] != "0") {
         print("https://kompot.site/"+_langData[0]['bgvideo']);
-        final directory = await getApplicationDocumentsDirectory();
-        final filePath = '${directory.path}/cached_video.mp4';
-        try {
-          // Загружаем видео и сохраняем его
-          await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
-          print("Видео загружено и сохранено в локальном хранилище.");
-          await videoshort.open(Media(filePath));
-        } catch (e) {
-          print("Ошибка при загрузке видео: $e");
-          return;
-        }
+        loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
       }
 
     }else {
-      if (idmus != listok["id"]) {
-          AudioService.play();
+      print(idmus.toString()+"fdesfvs"+listok["id"].toString());
           setState(() {
             iconpla = Icon(Icons.pause_rounded, size: 40, key: ValueKey<bool>(AudioService.playbackState.playing),);
             if (isjemnow) {
@@ -1051,23 +1144,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
           });
           if(_langData[0]['bgvideo'] != "0") {
-            print("https://kompot.site/"+_langData[0]['bgvideo']);
-            final directory = await getApplicationDocumentsDirectory();
-            final filePath = '${directory.path}/cached_video.mp4';
-            try {
-              // Загружаем видео и сохраняем его
-              await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
-              print("Видео загружено и сохранено в локальном хранилище.");
-              await videoshort.open(Media(filePath));
-
-            } catch (e) {
-              print("Ошибка при загрузке видео: $e");
-              return;
-            }
+            loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
           }
-      } else {
-        playpause();
-      }
+
     }
   }
 
@@ -1116,18 +1195,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       });
       });
       if(_langData[0]['bgvideo'] != "0") {
-        print("https://kompot.site/"+_langData[0]['bgvideo']);
-        final directory = await getApplicationDocumentsDirectory();
-        final filePath = '${directory.path}/cached_video.mp4';
-        try {
-          // Загружаем видео и сохраняем его
-          await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
-          print("Видео загружено и сохранено в локальном хранилище.");
-          await videoshort.open(Media(filePath));
-        } catch (e) {
-          print("Ошибка при загрузке видео: $e");
-          return;
-        }
+        loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
       }
       if (essensioni) {
         _playNewTrack(listok['short']);
@@ -1199,19 +1267,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
           });
           if(_langData[0]['bgvideo'] != "0") {
-            print("https://kompot.site/"+_langData[0]['bgvideo']);
-            final directory = await getApplicationDocumentsDirectory();
-            final filePath = '${directory.path}/cached_video.mp4';
-            try {
-              // Загружаем видео и сохраняем его
-              await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
-              print("Видео загружено и сохранено в локальном хранилище.");
-              await videoshort.open(Media(filePath));
-
-            } catch (e) {
-              print("Ошибка при загрузке видео: $e");
-              return;
-            }
+            loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
           }
         } else {
           frstsd = true;
@@ -1222,13 +1278,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               androidNotificationColor: 0xFF2196f3,
               androidNotificationIcon: 'drawable/mus_logo_foreground',
               params: {'track': MediaItem(
-                id: _langData[0]['short'],
+                id: _langData[0]['id'],
                 artUri: Uri.parse(_langData[0]['img']),
                 artist: _langData[0]['message'],
                 title: _langData[0]['name'],
                 extras: {
                   'idshaz': _langData[0]['idshaz'],
-                  'url': _langData[0]['url'],
+                  'url': _langData[0]['short'],
                 },
               )},
             );
@@ -1239,7 +1295,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               androidNotificationColor: 0xFF2196f3,
               androidNotificationIcon: 'drawable/mus_logo_foreground',
               params: {'track': MediaItem(
-                id: _langData[0]['url'],
+                id: _langData[0]['id'],
                 artUri: Uri.parse(_langData[0]['img']),
                 artist: _langData[0]['message'],
                 title: _langData[0]['name'],
@@ -1292,18 +1348,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
           });
           if(_langData[0]['bgvideo'] != "0") {
-            print("https://kompot.site/"+_langData[0]['bgvideo']);
-            final directory = await getApplicationDocumentsDirectory();
-            final filePath = '${directory.path}/cached_video.mp4';
-            try {
-              // Загружаем видео и сохраняем его
-              await Dio().download("https://kompot.site/"+_langData[0]['bgvideo'], filePath);
-              print("Видео загружено и сохранено в локальном хранилище.");
-              await videoshort.open(Media(filePath));
-            } catch (e) {
-              print("Ошибка при загрузке видео: $e");
-              return;
-            }
+            loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
           }
         }
       } else {
@@ -1577,9 +1622,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 .blue,),
                                           child:ClipRRect(
                                             borderRadius: borderRadius, // Make the border round
-                                            child: Video(
+                                            child: GestureDetector(
+                                                onTap: _toggleMute, // Обработчик клика на видео
+                                                child: Video(
                                               controller: controller,
-                                            ),
+                                            )),
                                           ),
                                         ),)))),
                             Row(children: [
@@ -2300,9 +2347,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       .blue,),
                                 child:ClipRRect(
                                   borderRadius: borderRadius, // Make the border round
-                                  child: Video(
-                                    controller: controller,
-                                  ),
+                                  child: GestureDetector(
+                                      onTap: _toggleMute, // Обработчик клика на видео
+                                      child: Video(
+                                        controller: controller,
+                                      )),
                                 ),
                               ),)))),
                   Row(children: [
@@ -3016,9 +3065,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               .blue,),
           child:ClipRRect(
           borderRadius: borderRadius, // Make the border round
-          child: Video(
-          controller: controller,
-          ),
+          child: GestureDetector(
+              onTap: _toggleMute, // Обработчик клика на видео
+              child: Video(
+                controller: controller,
+              )),
           ),
           ),))))), Container(width: size.width / 2.5, child: Center(child: AnimatedContainer(duration: Duration(milliseconds: 400),
           transform: Matrix4
@@ -4026,9 +4077,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _stopServer();
     _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
-    super.dispose();
     videob.dispose();
     videoshort.dispose();
+    super.dispose();
   }
   String _jemData = "132";
   Future<void> postRequesty () async {
@@ -4574,9 +4625,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         'duration': track.duration?.inMilliseconds,
       };
     }).toList();
+    print("hnghngb"+tracks.toString());
 
-    await AudioService.customAction('setQueue', {'playlist': tracks, 'startIndex': inx});
-    await getaboutmusmini(playlist[inx]);
+
+    if(shazid != playlist[inx].extras?['idshaz']) {
+      await AudioService.customAction('setQueue', {'playlist': tracks, 'startIndex': inx, 'needplay': true});
+      await getaboutmusmini(playlist[inx]);
+    }else{
+      await AudioService.customAction('setQueue', {'playlist': tracks, 'startIndex': inx, 'needplay': false});
+      await getaboutmusmini(playlist[inx]);
+    }
   }
 
 

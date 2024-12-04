@@ -15,6 +15,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../api/api_service.dart';
 import 'login.dart';
 
 
@@ -50,36 +51,32 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     reseti = gbdfgb;
     onCallbackrfdg = onksd;
   }
-  List _langData = [
-    {
-      'id': '1',
-      'img': 'assets/images/usa.jpeg',
-      'name': 'English',
-    },
-    {
-      'id': '2',
-      'img': 'assets/images/russia.png',
-      'name': 'Русский',
-    },
-  ];
 
-  List _langDatamus = [
-    {
-      'id': '1',
-      'img': 'assets/images/usa.jpeg',
-      'name': 'English',
-    },
-    {
-      'id': '2',
-      'img': 'assets/images/russia.png',
-      'name': 'Русский',
-    },
-  ];
+
+
+
+  final ApiService apiService = ApiService();
+  void load() async {
+    var usera = await apiService.getUser();
+    setState(() {
+      if(usera['status'] != 'false') {
+        useri = true;
+        imgprofile = usera["img_kompot"];
+      }else{
+        useri = false;
+      }
+    });
+    var langData = await apiService.getPlayLists();
+    setState(() {
+      _searchedLangData = langData;
+    });
+  }
+
+
   @override
   void initState()
   {
-    postRequest();
-    getpr();
+    load();
     super.initState();
   }
   String musicUrl = ""; // Insert your music URL
@@ -121,18 +118,17 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
           Column(
           children: [
             Stack(
-        children: [
-            SizedBox(
-              height: 80,width: 220,
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                child:
-            Container(
-              padding: EdgeInsets.only(top: 140),
-              child:
-              Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-              ),),
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  child: Image.asset(
+                    'assets/images/circlebg.png',
+                    width: 420,
+                    height: 420,
+                  ),
+                  top: -280,
+                  left: -196,
+                ),
           Row(children: [
             Container(padding: EdgeInsets.only(left: 12,top: 0),
                 child:
@@ -180,27 +176,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   final _searchLanguageController = TextEditingController();
 
   String imgprofile = "";
-  String tokenbf = "";
   bool useri = false;
-  Future<void> getpr () async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? ds = prefs.getString("token");
-    if(ds != ""){
-      print("object"+ds!);
-      var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
 
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-
-      setState(() {
-        var _langData = jsonDecode(dff);
-        tokenbf = ds;
-        useri = true;
-        imgprofile = _langData["img_kompot"];
-        print("object"+imgprofile);
-      });
-    }
-  }
 
 
   @override
@@ -210,7 +187,26 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   }
 
   void _openSearchPage(BuildContext context, String fds, String name, String img, bool imgnd) {
-    Navigator.of(context).push(_createSearchRoute(fds, name, img, imgnd));
+
+    // Navigator.of(context).push(_createSearchRoute(fds, name, img, imgnd));
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MusInPlaylistScreen(
+          onCallback: (dynamic input) => onCallback(input),
+          onCallbacki: fds,
+          hie: showsearch,
+          name: name,
+          img: img,
+          imgnd: imgnd,
+          showlog: showlog,
+          resre: reseti,
+          onCallbackt: (dynamic input, dynamic inputi) =>
+              onCallbackrfdg(input, inputi),
+        ),
+      ),
+    );
+
   }
 
   // Анимация открытия страницы поиска
@@ -475,22 +471,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   }
 
 
-  _loadSearchedLanguages(String? textVal) {
-    if(textVal != null && textVal.isNotEmpty) {
-      final data = _langData.where((lang) {
-        return lang['name'].toLowerCase().contains(textVal.toLowerCase());
-      }).toList();
-      setState(() => _searchedLangData = data);
-    } else {
-      setState(() => _searchedLangData = _langData);
-    }
-  }
-
-  _clearSearch() {
-    _searchLanguageController.clear();
-    setState(() => _searchedLangData = _langData);
-  }
-
   Widget _loadGridView() {
     Size size = MediaQuery.of(context).size;
     return  Column(
@@ -520,21 +500,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     );
   }
 
-  Future<void> postRequest () async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? ds = prefs.getString("token");
-    if(ds != "") {
-      var urli = Uri.parse("https://kompot.site/getmusicplaylist?tokeni="+ds!);
 
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-      print("hjk"+dff);
-      setState(() {
-        _langData = jsonDecode(dff)[0];
-        _searchedLangData = _langData;
-      });
-    }
-  }
 
 
 

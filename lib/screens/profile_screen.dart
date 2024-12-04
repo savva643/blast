@@ -15,6 +15,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../api/api_service.dart';
+
 
 
 const kBgColor = Color(0xFF1604E2);
@@ -40,30 +42,30 @@ class ProfileScreenState extends State<ProfileScreen> {
     });
   }
   late VoidCallback resetapp;
-  List _langData = [
-    {
-      'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-    {
-      'id': '2',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-  ];
 
   ProfileScreenState(VoidCallback sdas){
     resetapp = sdas;
   }
 
+  final ApiService apiService = ApiService();
+  void load() async {
+    var usera = await apiService.getUser();
+    setState(() {
+      if(usera['status'] != 'false') {
+        useri = true;
+        imgprofile = usera["img_kompot"];
+        nameprofile = usera["name_kompot"];
+        emailprofile = usera["email"];
+      }else{
+        useri = false;
+      }
+    });
+  }
+
   @override
   void initState()
   {
-    postRequest();
-    getpr();
+    load();
     super.initState();
   }
 
@@ -151,21 +153,6 @@ class ProfileScreenState extends State<ProfileScreen> {
   }
 
 
-  List _searchedLangData = [
-    {
-      'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-    {
-      'id': '2',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-  ];
-  final _searchLanguageController = TextEditingController();
 
 
   @override
@@ -173,23 +160,6 @@ class ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  _loadSearchedLanguages(String? textVal) {
-    if(textVal != null && textVal.isNotEmpty) {
-      final data = _langData.where((lang) {
-        return lang['name'].toLowerCase().contains(textVal.toLowerCase());
-      }).toList();
-      setState(() => _searchedLangData = data);
-    } else {
-      setState(() => _searchedLangData = _langData);
-    }
-  }
-
-
-
-  _clearSearch() {
-    _searchLanguageController.clear();
-    setState(() => _searchedLangData = _langData);
-  }
 
 
 
@@ -199,18 +169,17 @@ class ProfileScreenState extends State<ProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Stack(
+          clipBehavior: Clip.none,
           children: [
-            SizedBox(
-              height: 80,width: 220,
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                child:
-                Container(
-                  padding: EdgeInsets.only(top: 140),
-                  child:
-                  Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-              ),),
+            Positioned(
+              child: Image.asset(
+                'assets/images/circlebg.png',
+                width: 420,
+                height: 420,
+              ),
+              top: -280,
+              left: -196,
+            ),
             Row(children: [
               Container(padding: EdgeInsets.only(left: 12,top: 12),
                   child:
@@ -308,18 +277,17 @@ class ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  SizedBox(
-                    height: 80,width: 220,
-                    child: OverflowBox(
-                      maxWidth: double.infinity,
-                      maxHeight: double.infinity,
-                      child:
-                      Container(
-                        padding: EdgeInsets.only(top: 140),
-                        child:
-                        Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-                    ),),
+                  Positioned(
+                    child: Image.asset(
+                      'assets/images/circlebg.png',
+                      width: 420,
+                      height: 420,
+                    ),
+                    top: -280,
+                    left: -196,
+                  ),
                   Row(children: [
                     Container(padding: EdgeInsets.only(left: 12,top: 12),
                         child:
@@ -448,63 +416,12 @@ class ProfileScreenState extends State<ProfileScreen> {
   }
 
 
-  Future<http.Response> postRequest () async {
-    var urli = Uri.parse("https://kompot.site/gettopmusic?lim=20&token=1");
-
-    var response = await http.get(urli);
-    String dff = response.body.toString();
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? sac = prefs.getStringList("installmusid");
-
-    setState(() {
-      _langData =  jsonDecode(dff)[0];
-      for (var i = 0; i < _langData.length; i++) {
-        if (sac != null) {
-          if (!sac.isEmpty) {
-            if (sac.contains(_langData[i]["idshaz"])) {
-              (_langData[i] as Map<String, dynamic>)["install"] = "1";
-            } else {
-              (_langData[i] as Map<String, dynamic>)["install"] = "0";
-            }
-          } else {
-            (_langData[i] as Map<String, dynamic>)["install"] = "0";
-          }
-        }else{
-          (_langData[i] as Map<String, dynamic>)["install"] = "0";
-        }
-      }
-      _searchedLangData = _langData;
-
-    });
-    return response;
-  }
 
   String imgprofile = "";
   String nameprofile = "";
   String emailprofile = "";
-  String tokenbf = "";
   bool useri = false;
-  Future<void> getpr () async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? ds = prefs.getString("token");
-    if(ds != ""){
-      print("object"+ds!);
-      var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
 
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-
-      setState(() {
-        var _langData = jsonDecode(dff);
-        tokenbf = ds;
-        useri = true;
-        imgprofile = _langData["img_kompot"];
-        nameprofile = _langData["name_kompot"];
-        emailprofile = _langData["email"];
-        print("object"+imgprofile);
-      });
-    }
-  }
 
 }
 

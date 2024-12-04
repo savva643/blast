@@ -14,6 +14,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../api/api_service.dart';
 import 'login.dart';
 
 
@@ -51,20 +52,6 @@ class SearchScreenState extends State<SearchScreen> {
   late VoidCallback closesearch;
   late VoidCallback showlog;
   late VoidCallback reseti;
-  List _langData = [
-    {
-      'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-    {
-      'id': '2',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-  ];
   var player;
 
   SearchScreenState(Function(dynamic) onk,VoidCallback onki,VoidCallback gf,VoidCallback sda, VoidCallback gbdfgb, Function(dynamic) fvvc){
@@ -76,11 +63,33 @@ class SearchScreenState extends State<SearchScreen> {
     installmus = fvvc;
   }
 
+  final ApiService apiService = ApiService();
+  void load() async {
+    var usera = await apiService.getUser();
+    setState(() {
+      if(usera['status'] != 'false') {
+        useri = true;
+        imgprofile = usera["img_kompot"];
+      }else{
+        useri = false;
+      }
+    });
+    var langData = await apiService.getSearchHistory();
+    setState(() {
+      _historysearch.clear();
+      if(!langData.isEmpty) {
+        _historysearch = langData;
+        showls = true;
+      }else{
+        showno = true;
+      }
+    });
+  }
+
   @override
   void initState()
   {
-    getpr();
-    historyplaylists();
+    load();
     super.initState();
   }
 
@@ -122,18 +131,17 @@ class SearchScreenState extends State<SearchScreen> {
           child: Column(
             children: [
               Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  SizedBox(
-                    height: 80,width: 220,
-                    child: OverflowBox(
-                      maxWidth: double.infinity,
-                      maxHeight: double.infinity,
-                      child:
-                      Container(
-                        padding: EdgeInsets.only(top: 140),
-                        child:
-                        Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-                    ),),
+                  Positioned(
+                    child: Image.asset(
+                      'assets/images/circlebg.png',
+                      width: 420,
+                      height: 420,
+                    ),
+                    top: -280,
+                    left: -196,
+                  ),
 
                   Row(children: [
                     Container(padding: EdgeInsets.only(left: 12,top: 0),
@@ -164,7 +172,7 @@ class SearchScreenState extends State<SearchScreen> {
                       errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
                     )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
                   ],),
-          Container(margin: EdgeInsets.only(top: 60), width: size.width, child: Row(children: [Container(margin: EdgeInsets.only(top: 16), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),Container(margin: EdgeInsets.only(top: 18), width: size.width-60, height: 40, child: SearchBar(hintText: 'Навзвание трека',  onChanged: (text){postRequest(text);}, controller: _searchLanguageController, shadowColor: WidgetStatePropertyAll(Colors.transparent), side: WidgetStatePropertyAll(const BorderSide(color: Colors.white10, width: 2)), overlayColor: WidgetStatePropertyAll(Colors.white10), hintStyle: WidgetStatePropertyAll(TextStyle(
+          Container(margin: EdgeInsets.only(top: 60), width: size.width, child: Row(children: [Container(margin: EdgeInsets.only(top: 16), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),Container(margin: EdgeInsets.only(top: 18), width: size.width-60, height: 40, child: SearchBar(hintText: 'Навзвание трека',  onChanged: onChencged, controller: _searchLanguageController, shadowColor: WidgetStatePropertyAll(Colors.transparent), side: WidgetStatePropertyAll(const BorderSide(color: Colors.white10, width: 2)), overlayColor: WidgetStatePropertyAll(Colors.white10), hintStyle: WidgetStatePropertyAll(TextStyle(
                     fontSize: 16,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w500,
@@ -239,46 +247,9 @@ class SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
-  _loadSearchedLanguages(String? textVal) {
-    if(textVal != null && textVal.isNotEmpty) {
-      final data = _langData.where((lang) {
-        return lang['name'].toLowerCase().contains(textVal.toLowerCase());
-      }).toList();
-      setState(() => _searchedLangData = data);
-    } else {
-      setState(() => _searchedLangData = _langData);
-    }
-  }
-
-
-
   String imgprofile = "";
-  String tokenbf = "";
   bool useri = false;
-  Future<void> getpr () async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? ds = prefs.getString("token");
-    if(ds != ""){
-      print("object"+ds!);
-      var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
 
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-
-      setState(() {
-        var _langData = jsonDecode(dff);
-        tokenbf = ds;
-        useri = true;
-        imgprofile = _langData["img_kompot"];
-        print("object"+imgprofile);
-      });
-    }
-  }
-
-  _clearSearch() {
-    _searchLanguageController.clear();
-    setState(() => _searchedLangData = _langData);
-  }
 
   Widget _loadListViewhist() {
     Size size = MediaQuery.of(context).size;
@@ -516,52 +487,21 @@ class SearchScreenState extends State<SearchScreen> {
 
 
 
-  Future<void> historyplaylists() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? sac = prefs.getStringList("historymusid");
-
-    print("dfrd");
-    print(sac);
-    if(sac != null) {
-      _historysearch.clear();
-      for (var num in sac) {
-        var urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + num);
-        var response = await http.get(urli);
-        String dff = response.body.toString();
-        print("jhghjg");
-        print(dff);
-        setState(() {
-          _historysearch.add(jsonDecode(dff));
-        });
-      }
-      showls = true;
-    }else{
-      showno = true;
-    }
-  }
-
   bool cscs = false;
 
-  Future<void> postRequest (String text) async {
-    if(text != '') {
-      var urli = Uri.parse("https://kompot.site/getmusshazandr?token=1&nice=" + text);
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-      print(dff);
-      setState(() {
-        _langData = jsonDecode(dff);
-        _searchedLangData = _langData;
-        showls = true;
-        cscs = showno;
-        showno = false;
-      });
+
+  Future<void> onChencged(String text) async {
+    List langData = await apiService.getSearchMusic(text);
+    if(!langData.isEmpty) {
+      _searchedLangData = langData;
+      showls = true;
+      cscs = showno;
+      showno = false;
     }else{
       _searchLanguageController.clear();
       showno = cscs;
     }
-
   }
-
 
 
 

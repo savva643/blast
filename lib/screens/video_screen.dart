@@ -14,6 +14,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../api/api_service.dart';
 import 'login.dart';
 
 
@@ -38,23 +39,29 @@ class _VideoScreenState extends State<VideoScreen> {
   late VoidCallback showlog;
   late Function(dynamic) onCallback;
   late VoidCallback reseti;
-  List _langData = [
-    {
-      'id': '1',
-      'img': 'assets/images/usa.jpeg',
-      'name': 'English',
-    },
-    {
-      'id': '2',
-      'img': 'assets/images/russia.png',
-      'name': 'Русский',
-    },
-  ];
+
+  final ApiService apiService = ApiService();
+  void load() async {
+    var usera = await apiService.getUser();
+    setState(() {
+      if(usera['status'] != 'false') {
+        useri = true;
+        imgprofile = usera["img_kompot"];
+      }else{
+        useri = false;
+      }
+    });
+    var langData = await apiService.getVideosTop();
+    setState(() {
+      _searchedLangData = langData;
+    });
+  }
+
+
   @override
   void initState()
   {
-    postRequest();
-    getpr();
+    load();
     super.initState();
   }
   String musicUrl = ""; // Insert your music URL
@@ -96,19 +103,18 @@ class _VideoScreenState extends State<VideoScreen> {
           child:
         Column(
           children: [
-           Stack(
-        children: [
-            SizedBox(
-              height: 80,width: 220,
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                child:
-            Container(
-              padding: EdgeInsets.only(top: 140),
-              child:
-              Image.asset('assets/images/kol.png',width: 220, height: 220, fit: BoxFit.cover,),),
-              ),),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  child: Image.asset(
+                    'assets/images/circlebg.png',
+                    width: 420,
+                    height: 420,
+                  ),
+                  top: -280,
+                  left: -196,
+                ),
           Row(children: [
             Container(padding: EdgeInsets.only(left: 12,top: 0),
                 child:
@@ -155,7 +161,6 @@ class _VideoScreenState extends State<VideoScreen> {
 
   List _searchedLangData = [];
 
-  final _searchLanguageController = TextEditingController();
 
   _VideoScreenState(Function(dynamic) onk, VoidCallback fg, VoidCallback dawsd, VoidCallback gbdfgb) {
     onCallback = onk;
@@ -171,21 +176,6 @@ class _VideoScreenState extends State<VideoScreen> {
     super.dispose();
   }
 
-  _loadSearchedLanguages(String? textVal) {
-    if(textVal != null && textVal.isNotEmpty) {
-      final data = _langData.where((lang) {
-        return lang['name'].toLowerCase().contains(textVal.toLowerCase());
-      }).toList();
-      setState(() => _searchedLangData = data);
-    } else {
-      setState(() => _searchedLangData = _langData);
-    }
-  }
-
-  _clearSearch() {
-    _searchLanguageController.clear();
-    setState(() => _searchedLangData = _langData);
-  }
 
   Widget _loadGridView2() {
     Size size = MediaQuery.of(context).size;
@@ -253,41 +243,10 @@ class _VideoScreenState extends State<VideoScreen> {
   }
 
 
-  Future<http.Response> postRequest () async {
-    var urli = Uri.parse("https://kompot.site/getvideomus");
 
-    var response = await http.get(urli);
-    String dff = response.body.toString();
-    print(dff);
-    setState(() {
-      _langData = jsonDecode(dff);
-      _searchedLangData = _langData;
-    });
-    return response;
-  }
   String imgprofile = "";
-
-  String tokenbf = "";
   bool useri = false;
-  Future<void> getpr () async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? ds = prefs.getString("token");
-    if(ds != ""){
-      print("object"+ds!);
-      var urli = Uri.parse("https://kompot.site/getabout?token="+ds);
 
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-
-      setState(() {
-        var _langData = jsonDecode(dff);
-        tokenbf = ds;
-        useri = true;
-        imgprofile = _langData["img_kompot"];
-        print("object"+imgprofile);
-      });
-    }
-  }
 
 }
 class CustomTile extends StatelessWidget {
@@ -381,7 +340,7 @@ class CustomTile extends StatelessWidget {
       )),
         Container(alignment: Alignment.bottomCenter, child:
         Container(height: 62, child:
-Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Row(mainAxisAlignment: MainAxisAlignment.end, crossAxisAlignment: CrossAxisAlignment.end, children: [
           IconButton(
 
