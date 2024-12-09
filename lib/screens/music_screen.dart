@@ -18,7 +18,8 @@ class MusicScreen extends StatefulWidget {
   final VoidCallback showlog;
   final VoidCallback resre;
   final VoidCallback essension;
-  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.resre, required this.essension}) : super(key: key);
+  final BuildContext parctx;
+  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.resre, required this.essension, required this.parctx}) : super(key: key);
   @override
   State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, showlog, resre,essension);
 
@@ -59,17 +60,17 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Center(child: Container(margin: EdgeInsets.only(right: 100, left: 100, bottom: 80, top: 80), padding: EdgeInsets.only(right: 60, left: 60, bottom: 60, top: 60), decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(40)), color: Color.fromARGB(255, 15, 15, 16)),child:
+        return Center(child: Container(margin: const EdgeInsets.only(right: 100, left: 100, bottom: 80, top: 80), padding: const EdgeInsets.only(right: 60, left: 60, bottom: 60, top: 60), decoration: const BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(40)), color: Color.fromARGB(255, 15, 15, 16)),child:
         Column(mainAxisSize: MainAxisSize.min,
           children: [
-          Text("blast! находится в alpha",
+          const Text("blast! находится в alpha",
           style: TextStyle(
             fontSize: 30,
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w900,
             color: Colors.white,
           ),),
-          Text("История обновления",
+          const Text("История обновления",
             textAlign: TextAlign.start,
             style: TextStyle(
               fontSize: 20,
@@ -82,7 +83,7 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
         itemCount: 1,
         itemBuilder: (BuildContext context, int idx)
         {
-        return Container(child: Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Функция Эссенция",
+        return const Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Функция Эссенция",
           textAlign: TextAlign.start,
           style: TextStyle(
             fontSize: 20,
@@ -98,7 +99,7 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
               fontWeight: FontWeight.w400,
               color: Colors.white,
             ),)
-        ],),);
+        ],);
 
         },
         ))
@@ -162,6 +163,77 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
     });
   }
 
+  void _showMainBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      backgroundColor: Colors.black87,
+      builder: (context) {
+        return ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            String category = categories.keys.elementAt(index);
+            List<String> options = categories[category]!;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  category,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: options.map((option) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context); // Закрываем BottomSheet
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),content: Center(child: Text('Вы выбрали: $option'))),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[850], // Темная кнопка
+                            foregroundColor: Colors.white, // Белый текст
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                          ),
+                          child: Text(option),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 16), // Отступ между категориями
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Данные категорий и их опций
+  final Map<String, List<String>> categories = {
+    "По занятию": ["Тренировка", "Работа", "Учёба", "Прогулка"],
+    "По характеру": ["Энергичная", "Спокойная", "Мотивирующая", "Расслабляющая"],
+    "Под настроение": ["Весёлое", "Грустное", "Романтичное", "Нейтральное"],
+    "По языку": ["Английский", "Русский", "Испанский", "Французский"],
+  };
 
 
   @override
@@ -212,12 +284,21 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
         ),
       ),
       backgroundColor: const Color.fromARGB(255, 15, 15, 16),
-      body: SafeArea(
+      body: Stack(children: [Positioned(
+        top: -280,
+        left: -196,
+        child: Image.asset(
+          'assets/images/circlebg.png',
+          width: 420,
+          height: 420,
+        ),
+      ), SafeArea(
+        top: false,
 bottom: false,
         child:
         Container(
-          decoration: new BoxDecoration(
-              gradient: new LinearGradient(
+          decoration: const BoxDecoration(
+              gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
@@ -225,46 +306,123 @@ bottom: false,
                   Color.fromARGB(255, 15, 15, 16),
                 ],
               )),
-          child: size.width > 800 ? SizedBox(width: size.width, height: size.height, child: Container(width: size.width, height: size.height, child: Row(children: [ SizedBox(height: size.height, width: size.width/2, child:_loadListViewMore()),  Container(width: size.width/2,
+          child: size.width > 800 ? SizedBox(width: size.width, height: size.height, child: SizedBox(width: size.width, height: size.height, child: Row(children: [ SizedBox(height: size.height, width: size.width/2, child: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.max, children: [Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Row(children: [
+                Container(padding: const EdgeInsets.only(left: 12,top:  11),
+                    child:
+                    const Text("blast!",
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),)),
+                Container(padding: const EdgeInsets.only(left: 6,top:  12),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                      (Set<MaterialState> states) {
+                    if (states.contains(MaterialState.pressed)) {
+                      return Colors.grey[900]; // Darker grey when pressed
+                    } else if (states.contains(MaterialState.hovered)) {
+                      return Colors.grey[700]; // Lighter grey when hovered
+                    }
+                    return Colors.grey[800]; // Default grey color
+                  },
+                ), ),child: const Text("alpha",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    )))), Expanded(child: Container()),
+
+              ],),
+
+            ],), Expanded(child: _loadListViewMore()) ],)),  SizedBox(width: size.width/2,
             child: Stack(alignment: Alignment.topRight, children: [ Center(child:
             Stack(alignment: Alignment.center,
               children: [
                 PageView(
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   children: [
-                    Container(margin: EdgeInsets.only(left: 32,right: 32), alignment: Alignment.center, child:
-                    Stack(alignment: Alignment.center,
-                      children: [
-                        RotationTransition(
-                            turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
-                            child:Image.asset('assets/images/circleblast.png', width: 600,)),
-                        Container(padding: EdgeInsets.only(left: 12,top: 12),
-                            child:
-                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
-                              style: TextStyle(
-                                fontSize: 40,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),)),Container(margin: EdgeInsets.only(right: 8), child:
-                            IconButton(onPressed: ()  {
-                              onCallbacki();
-                            }, iconSize: 64,
-                                icon: AnimatedSwitcher(
-                                    duration: Duration(milliseconds: 300),
-                                    transitionBuilder: (Widget child, Animation<double> animation) {
-                                      return RotationTransition(
-                                        turns: Tween(begin: 0.75, end: 1.0).animate(animation),
-                                        child: ScaleTransition(scale: animation, child: child),
-                                      );
-                                    },
-                                    child:iconpla)))],)
+              Container(
+              margin: const EdgeInsets.only(left: 32, right: 32),
+            alignment: Alignment.center,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                RotationTransition(
+                  turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
+                  child: Image.asset('assets/images/circleblast.png', width: 600),
+                ),
+                Container(
+                  padding: const EdgeInsets.only(left: 12, top: 12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: const Text(
+                          "Джем",
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
-                      ],)),
-                    Container(width: 600, height: 600, child:   Stack(
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: IconButton(
+                          onPressed: () {
+                            onCallbacki();
+                          },
+                          iconSize: 64,
+                          icon: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            transitionBuilder: (Widget child, Animation<double> animation) {
+                              return RotationTransition(
+                                turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                child: ScaleTransition(scale: animation, child: child),
+                              );
+                            },
+                            child: iconpla,
+                          ),
+                        ),
+                      ),
+                      // Кнопка для "Настроить джем"
+                      Container(
+                        margin: const EdgeInsets.only(top: 16),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _showMainBottomSheet(widget.parctx);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[850]?.withOpacity(0.4),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: const Text(
+                            "Настроить джем",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+            Container(width: 600, height: 600, child:   Stack(
                       alignment: Alignment.center,
                       children: [
-                        Container(margin: EdgeInsets.only(left: 12,right: 12), child:
+                        Container(margin: const EdgeInsets.only(left: 12,right: 12), child:
                         RotationTransition(
                             turns: Tween(begin: 0.0, end: 1.0).animate(_controllere),
                             child:Image.asset('assets/images/forclock.png', width: 600,))),
@@ -282,7 +440,7 @@ bottom: false,
                             child: Container(
                               height: 200, // Половина длины для часовой стрелки
                               width: 40,
-                              decoration: BoxDecoration(color: Colors.purpleAccent,borderRadius: BorderRadius.all(Radius.circular(200))),
+                              decoration: const BoxDecoration(color: Colors.purpleAccent,borderRadius: BorderRadius.all(Radius.circular(200))),
                             ),
                           ),
                         )),
@@ -300,24 +458,24 @@ bottom: false,
                             child: Container(
                               height: 160, // Длина минутной стрелки чуть больше
                               width: 40,
-                              decoration: BoxDecoration(color: Colors.purple,borderRadius: BorderRadius.all(Radius.circular(200))),
+                              decoration: const BoxDecoration(color: Colors.purple,borderRadius: BorderRadius.all(Radius.circular(200))),
                             ),
                           ),
                         )),
-                        Container(padding: EdgeInsets.only(left: 12,top: 12),
+                        Container(padding: const EdgeInsets.only(left: 12,top: 12),
                             child:
-                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Эссенция",
+                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: const EdgeInsets.only(right: 8), child:const Text("Эссенция",
                               style: TextStyle(
                                 fontSize: 40,
                                 fontFamily: 'Montserrat',
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
-                              ),)),Container(margin: EdgeInsets.only(right: 8), child:
+                              ),)),Container(margin: const EdgeInsets.only(right: 8), child:
                             IconButton(onPressed: ()  {
                               essension();
                             }, iconSize: 64,
                                 icon: AnimatedSwitcher(
-                                    duration: Duration(milliseconds: 300),
+                                    duration: const Duration(milliseconds: 300),
                                     transitionBuilder: (Widget child, Animation<double> animation) {
                                       return RotationTransition(
                                         turns: Tween(begin: 0.75, end: 1.0).animate(animation),
@@ -330,11 +488,11 @@ bottom: false,
                     ),
                     )
 
-                  ],), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed:  useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                  ],), Container(child: Row(children: [Expanded(child: Container()), Container(alignment: Alignment.topRight, margin: const EdgeInsets.only(top: 21), child: IconButton(onPressed: () {showsearch();}, icon: const Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+                Container(alignment: Alignment.topRight, margin: const EdgeInsets.only(top: 18), child: IconButton(onPressed:  useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
                   imageUrl: imgprofile, // Replace with your image URL
                   imageBuilder: (context, imageProvider) => Container(
-                    margin: EdgeInsets.only(right: 3, top: 3),
+                    margin: const EdgeInsets.only(right: 3, top: 3),
                     width: 100.0, // Set the width of the circular image
                     height: 100.0, // Set the height of the circular image
                     decoration: BoxDecoration(
@@ -345,13 +503,72 @@ bottom: false,
                       ),
                     ),
                   ),
-                  placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
-                  errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)],),)
-              ],),)],)),],),))  : _loadListView(),
+                  placeholder: (context, url) => const CircularProgressIndicator(), // Placeholder while loading
+                  errorWidget: (context, url, error) => const Icon(Icons.error), // Error icon if image fails to load
+                )) : const Icon(Icons.circle, size: 46, color: Colors.white,)),)],),)
+              ],),)],)),],),))  : Column(children: [Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: -280,
+                left: -196,
+                child: Image.asset(
+                  'assets/images/circlebg.png',
+                  width: 420,
+                  height: 420,
+                ),
+              ),
+              Row(children: [
+                Container(padding: const EdgeInsets.only(left: 12,top: 0),
+                    child:
+                    const Text("blast!",
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),)),
+                Container(padding: const EdgeInsets.only(left: 6,top: 2),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                      (Set<MaterialState> states) {
+                    if (states.contains(MaterialState.pressed)) {
+                      return Colors.grey[900]; // Darker grey when pressed
+                    } else if (states.contains(MaterialState.hovered)) {
+                      return Colors.grey[700]; // Lighter grey when hovered
+                    }
+                    return Colors.grey[800]; // Default grey color
+                  },
+                ), ),child: const Text("alpha",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    )))), Expanded(child: Container()),
+                Container(alignment: Alignment.topRight, margin: const EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: const Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
+                Container(alignment: Alignment.topRight, margin: const EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
+                  imageUrl: imgprofile, // Replace with your image URL
+                  imageBuilder: (context, imageProvider) => Container(
+                    margin: const EdgeInsets.only(right: 3, top: 3),
+                    width: 100.0, // Set the width of the circular image
+                    height: 100.0, // Set the height of the circular image
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.cover, // Adjusts the image inside the circle
+                      ),
+                    ),
+                  ),
+                  placeholder: (context, url) => const CircularProgressIndicator(), // Placeholder while loading
+                  errorWidget: (context, url, error) => const Icon(Icons.error), // Error icon if image fails to load
+                )) : const Icon(Icons.circle, size: 46, color: Colors.white,)),)
+              ],),
+
+            ],),
+            Expanded(child: _loadListView())],),
       ),
 
-      ),
+      ),],)
     );
   }
 
@@ -370,8 +587,6 @@ bottom: false,
       'message': 'Имполнитель',
     },
   ];
-  final _searchLanguageController = TextEditingController();
-
 
 
   @override
@@ -389,51 +604,9 @@ bottom: false,
       itemCount: _searchedLangData.length+1,
       itemBuilder: (BuildContext context, int idx)
       {
-          return SizedBox(child: idx == 0 ?  Column(
+          return SizedBox(child: idx == 0 ?  const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    child: Image.asset(
-                      'assets/images/circlebg.png',
-                      width: 420,
-                      height: 420,
-                    ),
-                    top: -280,
-                    left: -196,
-                  ),
-                  Row(children: [
-                    Container(padding: EdgeInsets.only(left: 12,top:  11),
-                        child:
-                        Text("blast!",
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),)),
-                    Container(padding: EdgeInsets.only(left: 6,top:  12),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                          (Set<MaterialState> states) {
-                        if (states.contains(MaterialState.pressed)) {
-                          return Colors.grey[900]; // Darker grey when pressed
-                        } else if (states.contains(MaterialState.hovered)) {
-                          return Colors.grey[700]; // Lighter grey when hovered
-                        }
-                        return Colors.grey[800]; // Default grey color
-                      },
-                    ), ),child: Text("alpha",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        )))), Expanded(child: Container()),
-
-                  ],),
-
-                ],),
               SizedBox(height: 10,),
               Center(child: Text("Чарт",
                 style: TextStyle(
@@ -466,104 +639,68 @@ bottom: false,
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-        Positioned(
-        child: Image.asset(
-        'assets/images/circlebg.png',
-          width: 420,
-          height: 420,
-        ),
-      top: -280,
-      left: -196,
-      ),
-                Row(children: [
-                Container(padding: EdgeInsets.only(left: 12,top: 0),
-                    child:
-                    Text("blast!",
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),)),
-                  Container(padding: EdgeInsets.only(left: 6,top: 2),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                        (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.pressed)) {
-                        return Colors.grey[900]; // Darker grey when pressed
-                      } else if (states.contains(MaterialState.hovered)) {
-                        return Colors.grey[700]; // Lighter grey when hovered
-                      }
-                      return Colors.grey[800]; // Default grey color
-                    },
-                  ), ),child: Text("alpha",
-    style: TextStyle(
-    fontSize: 20,
-    fontFamily: 'Montserrat',
-    fontWeight: FontWeight.w800,
-    color: Colors.white,
-    )))), Expanded(child: Container()),
-                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                  Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reseti,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
-                    imageUrl: imgprofile, // Replace with your image URL
-                    imageBuilder: (context, imageProvider) => Container(
-                      margin: EdgeInsets.only(right: 3, top: 3),
-                      width: 100.0, // Set the width of the circular image
-                      height: 100.0, // Set the height of the circular image
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: imageProvider,
-                          fit: BoxFit.cover, // Adjusts the image inside the circle
-                        ),
-                      ),
-                    ),
-                    placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
-                    errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                  )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
-                ],),
-
-              ],),
-            Container(height: size.width,
+            SizedBox(height: size.width,
               child:
               PageView(
-                physics: BouncingScrollPhysics(),
+                physics: const BouncingScrollPhysics(),
                 children: [
-                Container(margin: EdgeInsets.only(left: 32,right: 32), alignment: Alignment.center, child:
-              Stack(alignment: Alignment.center,
-                children: [
-                     RotationTransition(
-                         turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
-                         child:Image.asset('assets/images/circleblast.png', width: 600,)),
-                      Container(padding: EdgeInsets.only(left: 12,top: 12),
-                      child:
-                      Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Джем",
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),)),Container(margin: EdgeInsets.only(right: 8), child:
-                        IconButton(onPressed: ()  {
-                          onCallbacki();
-                        }, iconSize: 64,
-                            icon: AnimatedSwitcher(
-                                duration: Duration(milliseconds: 300),
-                                transitionBuilder: (Widget child, Animation<double> animation) {
-                                  return RotationTransition(
-                                    turns: Tween(begin: 0.75, end: 1.0).animate(animation),
-                                    child: ScaleTransition(scale: animation, child: child),
-                                  );
+                  Container(margin: const EdgeInsets.only(left: 32,right: 32), alignment: Alignment.center, child:
+                  Stack(alignment: Alignment.center,
+                    children: [
+                      RotationTransition(
+                          turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
+                          child:Image.asset('assets/images/circleblast.png', width: 600,)),
+                      Container(padding: const EdgeInsets.only(left: 12,top: 12),
+                          child:
+                          Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: const EdgeInsets.only(right: 8), child:const Text("Джем",
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),)),Container(margin: const EdgeInsets.only(right: 8), child:
+                          IconButton(onPressed: ()  {
+                            onCallbacki();
+                          }, iconSize: 64,
+                              icon: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  transitionBuilder: (Widget child, Animation<double> animation) {
+                                    return RotationTransition(
+                                      turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+                                      child: ScaleTransition(scale: animation, child: child),
+                                    );
+                                  },
+                                  child:iconpla))),
+                            // Кнопка для "Настроить джем"
+                            Container(
+                              margin: const EdgeInsets.only(top: 16),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _showMainBottomSheet(widget.parctx);
                                 },
-                                child:iconpla)))],)
-                  ),
-                ],)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey[850]?.withOpacity(0.4),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24, vertical: 12),
+                                ),
+                                child: const Text(
+                                  "Настроить джем",
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ],)
+                      ),
+                    ],)),
                   SizedBox(width: 600, height: 600, child:
-                  Container(margin: EdgeInsets.only(left: 32,right: 32), child:   Stack(
+                  Container(margin: const EdgeInsets.only(left: 32,right: 32), child:   Stack(
                     alignment: Alignment.center,
                     children: [
-                      Container(padding: EdgeInsets.only(left: 12,right: 12), child:
+                      Container(padding: const EdgeInsets.only(left: 12,right: 12), child:
                       RotationTransition(
                           turns: Tween(begin: 0.0, end: 1.0).animate(_controllere),
                           child:Image.asset('assets/images/forclock.png', width: 600,))),
@@ -581,7 +718,7 @@ bottom: false,
                           child: Container(
                             height: 200, // Половина длины для часовой стрелки
                             width: 40,
-                            decoration: BoxDecoration(color: Colors.purpleAccent,borderRadius: BorderRadius.all(Radius.circular(200))),
+                            decoration: const BoxDecoration(color: Colors.purpleAccent,borderRadius: BorderRadius.all(Radius.circular(200))),
                           ),
                         ),
                       )),
@@ -599,24 +736,24 @@ bottom: false,
                           child: Container(
                             height: 160, // Длина минутной стрелки чуть больше
                             width: 40,
-                            decoration: BoxDecoration(color: Colors.purple,borderRadius: BorderRadius.all(Radius.circular(200))),
+                            decoration: const BoxDecoration(color: Colors.purple,borderRadius: BorderRadius.all(Radius.circular(200))),
                           ),
                         ),
                       )),
-                      Container(padding: EdgeInsets.only(left: 12,top: 12),
+                      Container(padding: const EdgeInsets.only(left: 12,top: 12),
                           child:
-                          Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: EdgeInsets.only(right: 8), child:Text("Эссенция",
+                          Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: const EdgeInsets.only(right: 8), child:const Text("Эссенция",
                             style: TextStyle(
                               fontSize: 40,
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
-                            ),)),Container(margin: EdgeInsets.only(right: 8), child:
+                            ),)),Container(margin: const EdgeInsets.only(right: 8), child:
                           IconButton(onPressed: ()  {
                             essension();
                           }, iconSize: 64,
                               icon: AnimatedSwitcher(
-                                  duration: Duration(milliseconds: 300),
+                                  duration: const Duration(milliseconds: 300),
                                   transitionBuilder: (Widget child, Animation<double> animation) {
                                     return RotationTransition(
                                       turns: Tween(begin: 0.75, end: 1.0).animate(animation),
@@ -629,16 +766,18 @@ bottom: false,
                   ),
                   ))
 
-                ],),),
-            SizedBox(height: 10,),
-            Center(child: Text("Чарт",
+                ],)
+
+              ,),
+            const SizedBox(height: 10,),
+            const Center(child: Text("Чарт",
               style: TextStyle(
                 fontSize: 30,
                 fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),),),
-            SizedBox(height: 10,),
+            const SizedBox(height: 10,),
 
           ],
         );

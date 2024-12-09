@@ -27,6 +27,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../parts/bottomsheet_about_music.dart';
+import '../parts/player_widgets.dart';
 import 'AudioManager.dart';
 import 'background_task.dart';
 import 'login.dart';
@@ -36,11 +38,13 @@ import 'package:web_socket_channel/status.dart' as status;
 import 'package:dio/dio.dart';
 
 const kBgColor = Color.fromARGB(255, 15, 15, 16);
+final GlobalKey<HomeScreenState> homa = GlobalKey<HomeScreenState>();
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 
 
 
@@ -49,11 +53,11 @@ class HomeScreen extends StatefulWidget {
 
 
 
-
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<MusicScreenState> _childKey = GlobalKey<MusicScreenState>();
 
+  
   late final videob = Player();
 
   // Create a [VideoController] to handle video output from [Player].
@@ -101,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
 
 
-  bool _isPressed = false; // Флаг для отслеживания состояния нажатия
+  bool isPressed = false; // Флаг для отслеживания состояния нажатия
   bool instalumusa = false;
 
   Future<void> playVideo(String shazidi, bool frommus) async {
@@ -111,10 +115,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       String dff = response.body.toString();
       print(dff);
       setState(() {
-        _langData[0] = jsonDecode(dff);
+        langData[0] = jsonDecode(dff);
         videoope = true;
-        vidaftermus = _langData[0]['id'];
-        videob.open(Media(_langData[0]['vidos']));
+        vidaftermus = langData[0]['id'];
+        videob.open(Media(langData[0]['vidos']));
         if (!frommus) {
           _showModalSheet();
           opacityi1 = 0;
@@ -132,29 +136,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _childKey.currentState?.updateIconese(Icon(
               Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
         }
-        if(_langData[0]["doi"] == "0"){
+        if(langData[0]["doi"] == "0"){
           isDisLiked = true;
           isLiked = false;
-        }else if(_langData[0]["doi"] == "1"){
+        }else if(langData[0]["doi"] == "1"){
           isDisLiked = false;
           isLiked = true;
-        }else if(_langData[0]["doi"] == "2"){
+        }else if(langData[0]["doi"] == "2"){
           isDisLiked = false;
           isLiked = false;
         }
-        namemus = _langData[0]["name"];
-        ispolmus = _langData[0]["message"];
-        imgmus = _langData[0]['img'];
-        idmus = _langData[0]['id'];
-        shazid = _langData[0]['idshaz'];
+        namemus = langData[0]["name"];
+        ispolmus = langData[0]["message"];
+        imgmus = langData[0]['img'];
+        idmus = langData[0]['id'];
+        shazid = langData[0]['idshaz'];
         _toogleAnimky();
       });
     } else {
       playpause();
     }
   }
-  double _scaleY = 1.0; // Начальный масштаб по оси Y (высота)
-  double _translateX = 26; // Начальное смещение по оси X (сдвиг влево)
+  double scaleY = 1.0; // Начальный масштаб по оси Y (высота)
+  double translateX = 26; // Начальное смещение по оси X (сдвиг влево)
+  double translateY = 4.0;
   late double squareScaleA = videoope ? MediaQuery.of(context).size.width > 800 ? -320 : -80 * (MediaQuery.of(context).size.width / 280) : 0;
   late double squareScaleB = videoope ? 0 : MediaQuery.of(context).size.width > 800 ? -320 : 80 * (MediaQuery.of(context).size.width / 280);
   String shazid = "0";
@@ -232,12 +237,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 }
                 if(instalumusa) {
                   print(event);
-                  _currentPosition = ((event['position'].toDouble()) ~/ 2).toDouble();
-                  _totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
+                  currentPosition = ((event['position'].toDouble()) ~/ 2).toDouble();
+                  totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
                   print(event['duration'].toString());
                 } else {
-                  _currentPosition = event['position'].toDouble();
-                  _totalDuration = event['duration'].toDouble();
+                  currentPosition = event['position'].toDouble();
+                  totalDuration = event['duration'].toDouble();
                   print(event['duration'].toString());
                 }
               });
@@ -274,12 +279,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               }
               if (instalumusa) {
                 print(event);
-                _currentPosition = ((event['position'].toDouble()) ~/ 2).toDouble();
-                _totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
+                currentPosition = ((event['position'].toDouble()) ~/ 2).toDouble();
+                totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
                 print(event['duration'].toString());
               } else {
-                _currentPosition = event['position'].toDouble();
-                _totalDuration = event['duration'].toDouble();
+                currentPosition = event['position'].toDouble();
+                totalDuration = event['duration'].toDouble();
                 print(event['duration'].toString());
               }
             }
@@ -288,9 +293,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       }else{
         setnewState(() {
           if(instalumusa) {
-            _totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
+            totalDuration = ((event['duration'].toDouble()) ~/ 2).toDouble();
           }else{
-            _totalDuration = event['duration'].toDouble();
+            totalDuration = event['duration'].toDouble();
           }
         });
       }
@@ -300,13 +305,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       setState(() {
         print("dsfxv"+videoope.toString());
         if (!videoope) {
-          if (_langData[0]['bgvideo'] == "0") {
+          if (langData[0]['bgvideo'] == "0") {
             opac = 0;
             opacityi3 = 1;
           }
           if (!state.playing) {
             setState(() {
-              if(_langData[0]['bgvideo'] != "0"){
+              if(langData[0]['bgvideo'] != "0"){
                 videoshort.pause();
               }
               iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
@@ -323,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             });
           } else {
             setState(() {
-              if(_langData[0]['bgvideo'] != "0"){
+              if(langData[0]['bgvideo'] != "0"){
                 videoshort.play();
               }
               iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
@@ -360,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             opac = 0;
             opacityi3 = 1;
           }else {
-            if (_langData[0]['bgvideo'] == "0") {
+            if (langData[0]['bgvideo'] == "0") {
               opac = 0;
               opacityi3 = 1;
             } else {
@@ -423,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       setnewState(() {
       setState(() {
         if (videoope) {
-          if(_langData[0]['bgvideo'] != "0"){
+          if(langData[0]['bgvideo'] != "0"){
             videoshort.pause();
           }
           if (!state) {
@@ -465,7 +470,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _animation = AlignmentTween(
+    animation = AlignmentTween(
       begin: Alignment.center,
       end: Alignment.centerLeft,
     ).animate(CurvedAnimation(
@@ -479,13 +484,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     print("object");
     AudioService.playMediaItem(
       MediaItem(
-        id: _langData[0]['id'],
-        artUri: Uri.parse(_langData[0]['img']),
-        artist: _langData[0]['message'],
-        title: _langData[0]['name'],
+        id: langData[0]['id'],
+        artUri: Uri.parse(langData[0]['img']),
+        artist: langData[0]['message'],
+        title: langData[0]['name'],
         extras: {
-          'idshaz': _langData[0]['idshaz'],
-          'url': _langData[0]['url'],
+          'idshaz': langData[0]['idshaz'],
+          'url': langData[0]['url'],
         },
       ),
     );
@@ -544,14 +549,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       var response = await http.get(urli);
       String dff = response.body.toString();
       print("gbfdbfvddbfvbv"+dff);
-      _langData[0] = jsonDecode(dff);
+      langData[0] = jsonDecode(dff);
       await AudioService.customAction('getskip', {});
 
-      if (_langData[0]['vidos'] != '0' && videoope) {
-        playVideo(_langData[0]['idshaz'], false);
+      if (langData[0]['vidos'] != '0' && videoope) {
+        playVideo(langData[0]['idshaz'], false);
       } else {
         print("thytfyjyju");
-        playmusamini(_langData[0]);
+        playmusamini(langData[0]);
         if (videoope) {
           videoope = false;
           _toogleAnimky();
@@ -612,10 +617,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         }
       setState(() {
         print("hyhg");
-        _langData[0] = jsonDecode(dff);
+        langData[0] = jsonDecode(dff);
 
         if(isfromochered){
-          int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
+          int dsv = ocherd.indexOf(langData[0]["idshaz"]);
           print((dsv+2).toString()+"i"+(ocherd.length).toString()+"fdsfdfd"+(dsv-1).toString());
           if(dsv+2 <= ocherd.length) {
             cannext = true;
@@ -629,16 +634,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           }
         }else {
           ocherd.clear();
-          ocherd.add(_langData[0]["idshaz"]);
+          ocherd.add(langData[0]["idshaz"]);
           ispalylistochered = false;
         }
       });
       bool fvd = false;
-      bool fvd2 = await filterValidImages(_langData[0]['url']);
+      bool fvd2 = await filterValidImages(langData[0]['url']);
       print("hjtghjgthjy"+install.toString());
       print("hjtghjgthjycsadc"+fvd2.toString());
       if(install) {
-         fvd = await filterValidImages(_langData[0]['timeurl']);
+         fvd = await filterValidImages(langData[0]['timeurl']);
       }
 
       setState(() {
@@ -652,25 +657,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           if(install){
             instalumusa = true;
             print("vfdvvfdv");
-            print(_langData[0]['timeurl']);
+            print(langData[0]['timeurl']);
             if(fvd) {
               print("haveconnect");
-              _langData[0]['url'] = _langData[0]['timeurl'];
+              langData[0]['url'] = langData[0]['timeurl'];
             }
           }else{
             if(!fvd2) {
               print("objefghngfhgbfdct");
-              installmus(_langData[0], false);
+              installmus(langData[0], false);
               instalumusa = true;
               return;
             }
             instalumusa = false;
           }
-          if (_langData[0]['vidos'] != '0' && videoope) {
-            playVideo(_langData[0]['idshaz'], false);
+          if (langData[0]['vidos'] != '0' && videoope) {
+            playVideo(langData[0]['idshaz'], false);
           } else {
             print("thytfyjyju");
-            playmusa(_langData[0], false,install, ese);
+            playmusa(langData[0], false,install, ese);
             if (videoope) {
               videoope = false;
               _toogleAnimky();
@@ -767,7 +772,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
 
   late AnimationController _controller;
-  late Animation<Alignment> _animation;
+  late Animation<Alignment> animation;
 
   //block for anim
   double imgwh = 500;
@@ -822,7 +827,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
   }
 
-  void _setvi(String dfg, bool ds, bool vid) {
+  void setvi(String dfg, bool ds, bool vid) {
     print(vidaftermus);
     setState(() {
 
@@ -837,7 +842,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           if (musaftervid == vidaftermus) {
             playpause();
           } else {
-            playmusa(_langData[0], true, false, false);
+            playmusa(langData[0], true, false, false);
           }
           AudioService.seekTo(controller.player.state.position);
           _toogleAnimky();
@@ -889,7 +894,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         // Отправляем GET-запрос
         final response = await http.get(Uri.parse(
             'https://kompot.site/reactmusic?mus=' +
-                _langData[0]['id'].toString() + '&type=' + type.toString() +
+                langData[0]['id'].toString() + '&type=' + type.toString() +
                 '&yes=' + yes.toString() + "&token="+ds!));
 
         if (response.statusCode == 200) {
@@ -1026,7 +1031,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       try {
         // Загружаем видео и сохраняем его
         await Dio().download(
-            "https://kompot.site/" + _langData[0]['bgvideo'], filePath);
+            "https://kompot.site/" + langData[0]['bgvideo'], filePath);
         print("Видео загружено и сохранено в локальном хранилище.");
         await videoshort.open(Media(filePath));
 
@@ -1042,7 +1047,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String musaftervid = "false";
 
   bool videoope = false;
-  List _langData = [
+  List langData = [
     {
       'id': '1',
       'img': 'https://kompot.site/img/music.jpg',
@@ -1054,8 +1059,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Future<void> playmusamini(dynamic listok) async {
     musaftervid = listok["id"];
-    _totalDuration = 1;
-    _currentPosition = 0;
+    totalDuration = 1;
+    currentPosition = 0;
     if(devicecon){
       List<dynamic> sdc = [
         {
@@ -1096,9 +1101,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           }
         }
       });
-      if(_langData[0]['bgvideo'] != "0") {
-        print("https://kompot.site/"+_langData[0]['bgvideo']);
-        loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
+      if(langData[0]['bgvideo'] != "0") {
+        print("https://kompot.site/"+langData[0]['bgvideo']);
+        loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
       }
 
     }else {
@@ -1143,8 +1148,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
 
           });
-          if(_langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
+          if(langData[0]['bgvideo'] != "0") {
+            loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
           }
 
     }
@@ -1154,8 +1159,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     print("object");
     print(idmus);
     musaftervid = listok["id"];
-    _totalDuration = 1;
-    _currentPosition = 0;
+    totalDuration = 1;
+    currentPosition = 0;
     print(listok["id"]);
     if(essensioni == false){
       essensionbool = false;
@@ -1194,8 +1199,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         shazid = listok['idshaz'];
       });
       });
-      if(_langData[0]['bgvideo'] != "0") {
-        loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
+      if(langData[0]['bgvideo'] != "0") {
+        loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
       }
       if (essensioni) {
         _playNewTrack(listok['short']);
@@ -1266,8 +1271,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             }
 
           });
-          if(_langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
+          if(langData[0]['bgvideo'] != "0") {
+            loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
           }
         } else {
           frstsd = true;
@@ -1278,13 +1283,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               androidNotificationColor: 0xFF2196f3,
               androidNotificationIcon: 'drawable/mus_logo_foreground',
               params: {'track': MediaItem(
-                id: _langData[0]['id'],
-                artUri: Uri.parse(_langData[0]['img']),
-                artist: _langData[0]['message'],
-                title: _langData[0]['name'],
+                id: langData[0]['id'],
+                artUri: Uri.parse(langData[0]['img']),
+                artist: langData[0]['message'],
+                title: langData[0]['name'],
                 extras: {
-                  'idshaz': _langData[0]['idshaz'],
-                  'url': _langData[0]['short'],
+                  'idshaz': langData[0]['idshaz'],
+                  'url': langData[0]['short'],
                 },
               )},
             );
@@ -1295,13 +1300,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               androidNotificationColor: 0xFF2196f3,
               androidNotificationIcon: 'drawable/mus_logo_foreground',
               params: {'track': MediaItem(
-                id: _langData[0]['id'],
-                artUri: Uri.parse(_langData[0]['img']),
-                artist: _langData[0]['message'],
-                title: _langData[0]['name'],
+                id: langData[0]['id'],
+                artUri: Uri.parse(langData[0]['img']),
+                artist: langData[0]['message'],
+                title: langData[0]['name'],
                 extras: {
-                  'idshaz': _langData[0]['idshaz'],
-                  'url': _langData[0]['url'],
+                  'idshaz': langData[0]['idshaz'],
+                  'url': langData[0]['url'],
                 },
               )},
             );
@@ -1347,8 +1352,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               shazid = listok['idshaz'];
             }
           });
-          if(_langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.site/" + _langData[0]['bgvideo']);
+          if(langData[0]['bgvideo'] != "0") {
+            loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
           }
         }
       } else {
@@ -1385,7 +1390,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         backgroundColor: const Color.fromARGB(255, 15, 15, 16),
         bottomNavigationBar: buildMyNavBar(context),
         extendBody: true,
-        body: LayoutBuilder(
+        body: Stack(children: [Positioned(
+          top: -280,
+          left: -196,
+          child: Image.asset(
+            'assets/images/circlebg.png',
+            width: 420,
+            height: 420,
+          ),
+        ), LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               // При изменении размеров экрана обновляется состояние
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1410,7 +1423,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 children: pages,
               ));
             }
-        )
+        )])
     );
   }
   final GlobalKey<NavigatorState> _playlistNavigatorKey = GlobalKey<NavigatorState>();
@@ -1432,9 +1445,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
 
-
   void _openSearchPage(BuildContext context) {
-    Navigator.of(context).push(_createSearchRoute());
+    // Navigator.of(context).push(_createSearchRoute());
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SearchScreen(onCallback: (dynamic input) {
+          getaboutmus(input, false, false, false, false);
+        }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
+          installmus(input, true);
+        }),
+      ),
+    );
   }
 
   // Анимация открытия страницы поиска
@@ -1465,8 +1487,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool _isServerRunning = false;
 
 
-  double _currentPosition = 0;
-  double _totalDuration = 1;
+  double currentPosition = 0;
+  double totalDuration = 1;
   double _currentValue = 3;
 
   bool showsearch = false;
@@ -1484,7 +1506,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
   bool _isBottomSheetOpen = false;
 
-  String _formatDuration(Duration duration) {
+  String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
     final seconds = twoDigits(duration.inSeconds.remainder(60));
@@ -1576,7 +1598,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
                         child: Container(
                           color: Colors.black.withOpacity(
-                              0.5), // Контейнер для применения размытия
+                              0.7), // Контейнер для применения размытия
                         )),
                     Container(
                         constraints: BoxConstraints(maxWidth: 800),
@@ -1725,11 +1747,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         duration: Duration(
                                             milliseconds: 0),
                                         child: AnimatedBuilder(
-                                            animation: _animation,
+                                            animation: animation,
                                             builder: (context,
                                                 child) {
                                               return Align(
-                                                  alignment: _animation
+                                                  alignment: animation
                                                       .value,
                                                   child:
                                                   AnimatedContainer(
@@ -1838,9 +1860,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           mainAxisAlignment: MainAxisAlignment
                                               .spaceBetween,
                                           children: [
-                                            AutoSizeText(_formatDuration(
+                                            AutoSizeText(formatDuration(
                                                 Duration(
-                                                    milliseconds: _currentPosition
+                                                    milliseconds: currentPosition
                                                         .toInt())),
                                               style: TextStyle(
                                                   fontSize: 16,
@@ -1853,9 +1875,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                       244,
                                                       244)
                                               ),),
-                                            AutoSizeText(_formatDuration(
+                                            AutoSizeText(formatDuration(
                                                 Duration(
-                                                    milliseconds: _totalDuration
+                                                    milliseconds: totalDuration
                                                         .toInt())),
                                               style: TextStyle(
                                                   fontSize: 16,
@@ -1891,34 +1913,34 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                   .hasData &&
                                                   !snapshot
                                                       .hasError &&
-                                                  _totalDuration >
+                                                  totalDuration >
                                                       0) {
                                                 final position = snapshot
                                                     .data as Duration;
                                                 return GestureDetector(
                                                   onTapDown: (_) {
                                                     setState(() {
-                                                      _isPressed = true; // Устанавливаем флаг нажатия
-                                                      _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                      _translateX = 12.0; // Сдвигаем слайдер влево
+                                                      isPressed = true; // Устанавливаем флаг нажатия
+                                                      scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                      translateX = 12.0; // Сдвигаем слайдер влево
                                                     });
                                                   },
                                                   onTapUp: (_) {
                                                     setState(() {
-                                                      _isPressed = false; // Сбрасываем флаг нажатия
-                                                      _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                      _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                      isPressed = false; // Сбрасываем флаг нажатия
+                                                      scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                      translateX = 26.0; // Возвращаем слайдер в исходное положение
                                                     });
                                                   },
                                                   child: AnimatedContainer(
                                                     duration: Duration(milliseconds: 200),
-                                                    padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                                    padding: EdgeInsets.symmetric(horizontal: translateX),
                                                     curve: Curves.easeInOut,
                                                     transform: Matrix4.identity()
-                                                      ..scale(1.0, _scaleY), // Применяем масштаб
+                                                      ..scale(1.0, scaleY), // Применяем масштаб
                                                     child: FlutterSlider(
-                                                      values: _isPressed ? [newposition] : [_currentPosition],
-                                                      max: _totalDuration,
+                                                      values: isPressed ? [newposition] : [currentPosition],
+                                                      max: totalDuration,
                                                       min: 0,
                                                       tooltip: FlutterSliderTooltip(
                                                         disabled: true, // Отключаем текст со значением
@@ -1939,23 +1961,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                         setState(() {
                                                           newposition = lowerValue; // Обновляем текущую позицию слайдера
                                                           setState(() {
-                                                            _isPressed = true; // Устанавливаем флаг нажатия
-                                                            _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                            _translateX = 12.0; // Сдвигаем слайдер влево
+                                                            isPressed = true; // Устанавливаем флаг нажатия
+                                                            scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                            translateX = 12.0; // Сдвигаем слайдер влево
                                                           });
                                                         });
                                                       },
                                                       onDragCompleted: (handlerIndex, lowerValue, upperValue) {
                                                         // Логика завершения перетаскивания
                                                         setState(() {
-                                                          _currentPosition = lowerValue;
+                                                          currentPosition = lowerValue;
                                                         });
                                                         Duration jda = Duration(milliseconds: lowerValue.toInt());
                                                         print("Position: ${jda.inMilliseconds} ms");
                                                         setState(() {
-                                                          _isPressed = false; // Сбрасываем флаг нажатия
-                                                          _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                          _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                          isPressed = false; // Сбрасываем флаг нажатия
+                                                          scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                          translateX = 26.0; // Возвращаем слайдер в исходное положение
                                                         });
                                                         if (devicecon) {
                                                           List<dynamic> sdc = [
@@ -1996,27 +2018,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 return GestureDetector(
                                                   onTapDown: (_) {
                                                     setState(() {
-                                                      _isPressed = true; // Устанавливаем флаг нажатия
-                                                      _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                      _translateX = 12.0; // Сдвигаем слайдер влево
+                                                      isPressed = true; // Устанавливаем флаг нажатия
+                                                      scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                      translateX = 12.0; // Сдвигаем слайдер влево
                                                     });
                                                   },
                                                   onTapUp: (_) {
                                                     setState(() {
-                                                      _isPressed = false; // Сбрасываем флаг нажатия
-                                                      _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                      _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                      isPressed = false; // Сбрасываем флаг нажатия
+                                                      scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                      translateX = 26.0; // Возвращаем слайдер в исходное положение
                                                     });
                                                   },
                                                   child: AnimatedContainer(
                                                     duration: Duration(milliseconds: 200),
-                                                    padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                                    padding: EdgeInsets.symmetric(horizontal: translateX),
                                                     curve: Curves.easeInOut,
                                                     transform: Matrix4.identity()
-                                                      ..scale(1.0, _scaleY), // Применяем масштаб
+                                                      ..scale(1.0, scaleY), // Применяем масштаб
                                                     child: FlutterSlider(
-                                                      values: _isPressed ? [newposition] : [_currentPosition],
-                                                      max: _totalDuration,
+                                                      values: isPressed ? [newposition] : [currentPosition],
+                                                      max: totalDuration,
                                                       min: 0,
                                                       tooltip: FlutterSliderTooltip(
                                                         disabled: true, // Отключаем текст со значением
@@ -2037,23 +2059,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                         setState(() {
                                                           newposition = lowerValue; // Обновляем текущую позицию слайдера
                                                           setState(() {
-                                                            _isPressed = true; // Устанавливаем флаг нажатия
-                                                            _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                            _translateX = 12.0; // Сдвигаем слайдер влево
+                                                            isPressed = true; // Устанавливаем флаг нажатия
+                                                            scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                            translateX = 12.0; // Сдвигаем слайдер влево
                                                           });
                                                         });
                                                       },
                                                       onDragCompleted: (handlerIndex, lowerValue, upperValue) {
                                                         // Логика завершения перетаскивания
                                                         setState(() {
-                                                          _currentPosition = lowerValue;
+                                                          currentPosition = lowerValue;
                                                         });
                                                         Duration jda = Duration(milliseconds: lowerValue.toInt());
                                                         print("Position: ${jda.inMilliseconds} ms");
                                                         setState(() {
-                                                          _isPressed = false; // Сбрасываем флаг нажатия
-                                                          _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                          _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                          isPressed = false; // Сбрасываем флаг нажатия
+                                                          scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                          translateX = 26.0; // Возвращаем слайдер в исходное положение
                                                         });
                                                         if (devicecon) {
                                                           List<dynamic> sdc = [
@@ -2167,7 +2189,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     SizedBox(width: 50,
                                         height: 50,
                                         child: IconButton(
-                                            onPressed: () {toggleLike(1);}, // () {installmusic(_langData[0]);},
+                                            onPressed: () {toggleLike(1);}, // () {installmusic(langData[0]);},
                                             icon: Image(
                                                 color: Color.fromARGB(255, 255, 255, 255),
                                                 image: isLiked ? AssetImage(
@@ -2230,15 +2252,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         height: 50,
                                         child: IconButton(
                                             disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                            onPressed: _langData[0]['vidos'] != "0" ? () {
+                                            onPressed: langData[0]['vidos'] != "0" ? () {
                                               setnewState(() {
-                                                _setvi(shazid,true, false);
+                                                setvi(shazid,true, false);
                                               });
                                             }: null,
                                             padding: EdgeInsets
                                                 .zero,
                                             icon: Image(
-                                              color: _langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                              color: langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
                                               image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
                                               width: 120,
                                               height: 120,
@@ -2252,7 +2274,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           );}
     );
   }
-
 
 
 
@@ -2301,7 +2322,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
           child: Container(
             color: Colors.black.withOpacity(
-                0.5), // Контейнер для применения размытия
+                0.7), // Контейнер для применения размытия
           )),
           Container(
               constraints: BoxConstraints(maxWidth: 800),
@@ -2436,541 +2457,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             ],),))
 
                   ],),
-                ]), Column(children: [
-          AnimatedOpacity(
-          opacity: opacityi3,
-          duration: Duration(
-          milliseconds: 400),
-          child: Container(
-                      constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
-                      aspectRatio: 1,
-                      // Сохранение пропорций 1:1
-                      child: AnimatedOpacity(
-                          opacity: opacityi1,
-                          duration: Duration(
-                              milliseconds: 0),
-                          child: AnimatedBuilder(
-                              animation: _animation,
-                              builder: (context,
-                                  child) {
-                                return Align(
-                                    alignment: _animation
-                                        .value,
-                                    child:
-                                    AnimatedContainer(
-                                        constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
-                                        margin: EdgeInsets
-                                            .only(
-                                            left: 30,
-                                            right: 30,
-                                            top: dsds2,),
-                                        height: imgwh,
-                                        width: imgwh,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape
-                                              .rectangle,
-                                          borderRadius: BorderRadius
-                                              .circular(
-                                              dsds),
-                                        ),
-
-                                        clipBehavior: Clip
-                                            .hardEdge,
-                                        duration: Duration(
-                                            milliseconds: 400),
-                                        child: AspectRatio(
-                                            aspectRatio: 1,
-                                            // Сохранение пропорций 1:1
-                                            child: Image
-                                                .network(
-                                              imgmus,
-                                              height: imgwh,
-                                              width: imgwh,
-                                              fit: BoxFit
-                                                  .cover, // Изображ
-                                            ))));
-                              }))))),
-                  AnimatedOpacity(opacity: opacity,
-                      duration: Duration(
-                          milliseconds: 400),
-                      onEnd: () {
-                        setnewState(() {
-                          if (videoope) {
-                            opacityi1 = 0;
-                            opacityi2 = 1;
-                          }
-                        });
-                      },
-                      child: AnimatedContainer(
-                          width: size.width,
-                          duration: Duration(
-                              milliseconds: 400),
-                          transform: Matrix4
-                              .translation(
-                              vector.Vector3(
-                                  0, squareScaleA, 0)),
-                          child: AutoSizeText(namemus,
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.fade,
-                            maxLines: 1,
-                            style: TextStyle(
-                                fontSize: 30,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight
-                                    .w500,
-                                color: Color.fromARGB(
-                                    255, 246, 244, 244)
-                            ),))),
-                  AnimatedOpacity(opacity: opacity,
-                      duration: Duration(
-                          milliseconds: 400),
-                      child: AnimatedContainer(
-                          duration: Duration(
-                              milliseconds: 400),
-                          transform: Matrix4
-                              .translation(
-                              vector.Vector3(
-                                  0, squareScaleA, 0)),
-                          child: AutoSizeText(ispolmus,
-                            overflow: TextOverflow.fade,
-                            maxLines: 1,
-
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 24,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight
-                                    .w300,
-                                color: Color.fromARGB(
-                                    255, 246, 244, 244)
-                            ),))),
-                  AnimatedOpacity(opacity: opacity,
-                      duration: Duration(
-                          milliseconds: 400),
-                      child: AnimatedContainer(
-                          duration: Duration(
-                              milliseconds: 400),
-                          transform: Matrix4
-                              .translation(
-                              vector.Vector3(
-                                  0, squareScaleA, 0)),
-                          child: Padding(
-                              padding: EdgeInsets.only(
-                                  top: 16,
-                                  left: 22,
-                                  right: 22),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment
-                                    .spaceBetween,
-                                children: [
-                                  AutoSizeText(_formatDuration(
-                                      Duration(
-                                          milliseconds: _currentPosition
-                                              .toInt())),
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontFamily: 'Montserrat',
-                                        fontWeight: FontWeight
-                                            .w400,
-                                        color: Color
-                                            .fromARGB(
-                                            255, 246,
-                                            244,
-                                            244)
-                                    ),),
-                                  AutoSizeText(_formatDuration(
-                                      Duration(
-                                          milliseconds: _totalDuration
-                                              .toInt())),
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontFamily: 'Montserrat',
-                                        fontWeight: FontWeight
-                                            .w400,
-                                        color: Color
-                                            .fromARGB(
-                                            255, 246,
-                                            244,
-                                            244)
-                                    ),),
-                                ],)))),
-                  SizedBox(height: 4,),
-                  AnimatedOpacity(opacity: opacity,
-                      duration: Duration(
-                          milliseconds: 400),
-                      child: AnimatedContainer(
-                          duration: Duration(
-                              milliseconds: 400),
-                          transform: Matrix4
-                              .translation(
-                              vector.Vector3(
-                                  0, squareScaleA, 0)),
-                          child: SizedBox(
-                              height: 8,
-                              child:  StreamBuilder(
-                                  stream: AudioService
-                                      .positionStream,
-                                  builder: (context,
-                                      snapshot) {
-                                    if (snapshot
-                                        .hasData &&
-                                        !snapshot
-                                            .hasError &&
-                                        _totalDuration >
-                                            0) {
-                                      final position = snapshot
-                                          .data as Duration;
-                                      return
-                                        GestureDetector(
-                                          onTapDown: (_) {
-                                            setState(() {
-                                              _isPressed = true; // Устанавливаем флаг нажатия
-                                              _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                              _translateX = 12.0; // Сдвигаем слайдер влево
-                                            });
-                                          },
-                                          onTapUp: (_) {
-                                            setState(() {
-                                              _isPressed = false; // Сбрасываем флаг нажатия
-                                              _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                              _translateX = 26.0; // Возвращаем слайдер в исходное положение
-                                            });
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: Duration(milliseconds: 200),
-                                            padding: EdgeInsets.symmetric(horizontal: _translateX),
-                                            curve: Curves.easeInOut,
-                                            transform: Matrix4.identity()
-                                              ..scale(1.0, _scaleY), // Применяем масштаб
-                                            child: FlutterSlider(
-                                              values: _isPressed ? [newposition] : [_currentPosition],
-                                              max: _totalDuration,
-                                              min: 0,
-                                              tooltip: FlutterSliderTooltip(
-                                                disabled: true, // Отключаем текст со значением
-                                              ),
-                                              handler: FlutterSliderHandler(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.transparent, // Делаем thumb полностью прозрачным
-                                                ),
-                                                child: SizedBox.shrink(), // Полностью скрываем thumb
-                                              ),
-                                              onDragStarted: (handlerIndex, lowerValue, upperValue) {
-                                                setState(() {
-                                                  newposition = lowerValue;
-                                                });
-                                              },
-                                              onDragging: (handlerIndex, lowerValue, upperValue) {
-                                                // Обновляем текущую позицию слайдера, но не меняем масштаб
-                                                setState(() {
-                                                  newposition = lowerValue; // Обновляем текущую позицию слайдера
-                                                  setState(() {
-                                                    _isPressed = true; // Устанавливаем флаг нажатия
-                                                    _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                    _translateX = 12.0; // Сдвигаем слайдер влево
-                                                  });
-                                                });
-                                              },
-                                              onDragCompleted: (handlerIndex, lowerValue, upperValue) {
-                                                // Логика завершения перетаскивания
-                                                setState(() {
-                                                  _currentPosition = lowerValue;
-                                                });
-                                                Duration jda = Duration(milliseconds: lowerValue.toInt());
-                                                print("Position: ${jda.inMilliseconds} ms");
-                                                setState(() {
-                                                  _isPressed = false; // Сбрасываем флаг нажатия
-                                                  _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                  _translateX = 26.0; // Возвращаем слайдер в исходное положение
-                                                });
-                                                if (devicecon) {
-                                                  List<dynamic> sdc = [
-                                                    {
-                                                      "type": "media",
-                                                      "what": "seekto",
-                                                      "timecurrent": jda.inSeconds,
-                                                      "iddevice": "2"
-                                                    }
-                                                  ];
-                                                  String jsonString = jsonEncode(sdc[0]);
-                                                  // Предполагается, что channeldev доступен и открыт для отправки
-                                                  channeldev.sink.add(jsonString);
-                                                } else {
-                                                  if (instalumusa) {
-                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
-                                                  } else {
-                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
-                                                  }
-                                                }
-                                              },
-                                              trackBar: FlutterSliderTrackBar(
-                                                activeTrackBarHeight: 8,
-                                                inactiveTrackBarHeight: 8,
-                                                activeTrackBar: BoxDecoration(
-                                                  color: Colors.blue,
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                                inactiveTrackBar: BoxDecoration(
-                                                  color: Colors.blue.withOpacity(0.3),
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                    } else {
-                                      return GestureDetector(
-                                        onTapDown: (_) {
-                                          setState(() {
-                                            _isPressed = true; // Устанавливаем флаг нажатия
-                                            _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                            _translateX = 12.0; // Сдвигаем слайдер влево
-                                          });
-                                        },
-                                        onTapUp: (_) {
-                                          setState(() {
-                                            _isPressed = false; // Сбрасываем флаг нажатия
-                                            _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                            _translateX = 26.0; // Возвращаем слайдер в исходное положение
-                                          });
-                                        },
-                                        child: AnimatedContainer(
-                                          duration: Duration(milliseconds: 200),
-                                          padding: EdgeInsets.symmetric(horizontal: _translateX),
-                                          curve: Curves.easeInOut,
-                                          transform: Matrix4.identity()
-                                            ..scale(1.0, _scaleY), // Применяем масштаб
-                                          child: FlutterSlider(
-                                            values: _isPressed ? [newposition] : [_currentPosition],
-                                            max: _totalDuration,
-                                            min: 0,
-                                            tooltip: FlutterSliderTooltip(
-                                              disabled: true, // Отключаем текст со значением
-                                            ),
-                                            handler: FlutterSliderHandler(
-                                              decoration: BoxDecoration(
-                                                color: Colors.transparent, // Делаем thumb полностью прозрачным
-                                              ),
-                                              child: SizedBox.shrink(), // Полностью скрываем thumb
-                                            ),
-                                            onDragStarted: (handlerIndex, lowerValue, upperValue) {
-                                              setState(() {
-                                                newposition = lowerValue;
-                                              });
-                                            },
-                                            onDragging: (handlerIndex, lowerValue, upperValue) {
-                                              // Обновляем текущую позицию слайдера, но не меняем масштаб
-                                              setState(() {
-                                                newposition = lowerValue; // Обновляем текущую позицию слайдера
-                                                setState(() {
-                                                  _isPressed = true; // Устанавливаем флаг нажатия
-                                                  _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                  _translateX = 12.0; // Сдвигаем слайдер влево
-                                                });
-                                              });
-                                            },
-                                            onDragCompleted: (handlerIndex, lowerValue, upperValue) {
-                                              // Логика завершения перетаскивания
-                                              setState(() {
-                                                _currentPosition = lowerValue;
-                                              });
-                                              Duration jda = Duration(milliseconds: lowerValue.toInt());
-                                              print("Position: ${jda.inMilliseconds} ms");
-                                              setState(() {
-                                                _isPressed = false; // Сбрасываем флаг нажатия
-                                                _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                _translateX = 26.0; // Возвращаем слайдер в исходное положение
-                                              });
-                                              if (devicecon) {
-                                                List<dynamic> sdc = [
-                                                  {
-                                                    "type": "media",
-                                                    "what": "seekto",
-                                                    "timecurrent": jda.inSeconds,
-                                                    "iddevice": "2"
-                                                  }
-                                                ];
-                                                String jsonString = jsonEncode(sdc[0]);
-                                                // Предполагается, что channeldev доступен и открыт для отправки
-                                                channeldev.sink.add(jsonString);
-                                              } else {
-                                                if (instalumusa) {
-                                                  AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
-                                                } else {
-                                                  AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
-                                                }
-                                              }
-                                            },
-                                            trackBar: FlutterSliderTrackBar(
-                                              activeTrackBarHeight: 8,
-                                              inactiveTrackBarHeight: 8,
-                                              activeTrackBar: BoxDecoration(
-                                                color: Colors.blue,
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              inactiveTrackBar: BoxDecoration(
-                                                color: Colors.blue.withOpacity(0.3),
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),))),
-                  SizedBox(height: 22,),
-                  AnimatedContainer(
-                      duration: Duration(
-                          milliseconds: 400),
-                      transform: Matrix4.translation(
-                          vector.Vector3(
-                              0, squareScaleA, 0)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment
-                            .spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment
-                            .center,
-                        children: [
-                          SizedBox(width: 50,
-                              height: 50,
-                              child: IconButton(
-                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: () {toggleLike(0);},
-                                  icon: Image(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      image: isDisLiked ? AssetImage(
-                                          'assets/images/unloveyes.png') : AssetImage(
-                                          'assets/images/unloveno.png'),
-                                      width: 100
-                                  ))),
-                          SizedBox(width: 50,
-                              height: 50,
-                              child: IconButton(
-                                  disabledColor: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: canrevew ? previosmusic : null,
-                                  icon: Image(
-                                      color: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                      image: AssetImage(
-                                          'assets/images/reveuws.png'),
-                                      width: 100
-                                  ))),
-                          SizedBox(height: 50,
-                              width: 50,
-                              child: loadingmus ? CircularProgressIndicator() : IconButton(
-                                  onPressed: () {
-                                    setnewState(() {
-                                      playpause();
-                                    });
-                                  },
-                                  padding: EdgeInsets
-                                      .zero,
-                                  icon: AnimatedSwitcher(
-                                      duration: Duration(milliseconds: 300),
-                                      transitionBuilder: (Widget child, Animation<double> animation) {
-                                        return RotationTransition(
-                                          turns: Tween(begin: 0.75, end: 1.0).animate(animation),
-                                          child: ScaleTransition(scale: animation, child: child),
-                                        );
-                                      }, child:  Icon(
-                                    iconpla.icon,
-                                    key: videoope ? ValueKey<bool>(controller.player.state.playing) : ValueKey<bool>(AudioService.playbackState.playing),
-                                    size: 50,
-                                    color: Colors
-                                        .white,)))),
-                          SizedBox(width: 50,
-                              height: 50,
-                              child: IconButton(
-                                  disabledColor: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: cannext ? nextmusic : null,
-                                  icon: Image(
-                                    color: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                    image: AssetImage(
-                                        'assets/images/nexts.png'),
-                                    width: 120,
-                                    height: 120,
-                                  ))),
-                          SizedBox(width: 50,
-                              height: 50,
-                              child: IconButton(
-                                  onPressed: () {toggleLike(1);}, // () {installmusic(_langData[0]);},
-                                  icon: Image(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      image: isLiked ? AssetImage(
-                                          'assets/images/loveyes.png') : AssetImage(
-                                          'assets/images/loveno.png'),
-                                      width: 100
-                                  ))),
-                        ],)),
-                  SizedBox(height: 22,),
-                  AnimatedContainer(
-                      duration: Duration(
-                          milliseconds: 400),
-                      transform: Matrix4.translation(
-                          vector.Vector3(
-                              0, squareScaleA, 0)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment
-                            .spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment
-                            .center,
-                        children: [
-                          SizedBox(width: 50,
-                              height: 50,
-                              child: IconButton(
-                                  onPressed: () {
-                                    connectToWebSocket();
-                                  },
-                                  padding: EdgeInsets
-                                      .zero,
-                                  icon: Icon(
-                                    Icons
-                                        .devices_rounded,
-                                    size: 50,
-                                    color: Colors
-                                        .white,))),
-                          SizedBox(width: 50,
-                              height: 50,
-                              child: IconButton(
-                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: null,
-                                  padding: EdgeInsets
-                                      .zero,
-                                  icon: Icon(
-                                    Icons
-                                        .queue_music_rounded,
-                                    size: 50,
-                                    color: Color.fromARGB(255, 123, 123, 124),))),
-                          SizedBox(height: 50,
-                              width: 50,
-                              child: IconButton(
-                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: null,
-                                  padding: EdgeInsets
-                                      .zero,
-                                  icon: Icon(Icons
-                                      .settings_rounded,
-                                    size: 50,
-                                    color: Color.fromARGB(255, 123, 123, 124),))),
-                          SizedBox(width: 50,
-                              height: 50,
-                              child: IconButton(
-                                  disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                  onPressed: _langData[0]['vidos'] != "0" ? () {
-                                    setnewState(() {
-                                      _setvi(shazid,true, false);
-                                    });
-                                  }: null,
-                                  padding: EdgeInsets
-                                      .zero,
-                                  icon: Image(
-                                    color: _langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                    image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
-                                    width: 120,
-                                    height: 120,
-                                  ))),
-                        ],))
-                ],)
+                ]), PlayerWidget(page: homa,)
               ],))
         ])
           );
@@ -3019,7 +2506,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
               child: Container(
                 color: Colors.black.withOpacity(
-                    0.5), // Контейнер для применения размытия
+                    0.7), // Контейнер для применения размытия
               )),
           Container(
 
@@ -3171,11 +2658,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           duration: Duration(
                               milliseconds: 0),
                           child: AnimatedBuilder(
-                              animation: _animation,
+                              animation: animation,
                               builder: (context,
                                   child) {
                                 return Align(
-                                    alignment: _animation
+                                    alignment: animation
                                         .value,
                                     child:
                                     AnimatedContainer(
@@ -3284,9 +2771,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   mainAxisAlignment: MainAxisAlignment
                                       .spaceBetween,
                                   children: [
-                                    AutoSizeText(_formatDuration(
+                                    AutoSizeText(formatDuration(
                                         Duration(
-                                            milliseconds: _currentPosition
+                                            milliseconds: currentPosition
                                                 .toInt())),
                                       style: TextStyle(
                                           fontSize: 16,
@@ -3299,9 +2786,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                               244,
                                               244)
                                       ),),
-                                    AutoSizeText(_formatDuration(
+                                    AutoSizeText(formatDuration(
                                         Duration(
-                                            milliseconds: _totalDuration
+                                            milliseconds: totalDuration
                                                 .toInt())),
                                       style: TextStyle(
                                           fontSize: 16,
@@ -3337,34 +2824,34 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           .hasData &&
                                           !snapshot
                                               .hasError &&
-                                          _totalDuration >
+                                          totalDuration >
                                               0) {
                                         final position = snapshot
                                             .data as Duration;
                                         return GestureDetector(
                                           onTapDown: (_) {
                                             setState(() {
-                                              _isPressed = true; // Устанавливаем флаг нажатия
-                                              _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                              _translateX = 12.0; // Сдвигаем слайдер влево
+                                              isPressed = true; // Устанавливаем флаг нажатия
+                                              scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                              translateX = 12.0; // Сдвигаем слайдер влево
                                             });
                                           },
                                           onTapUp: (_) {
                                             setState(() {
-                                              _isPressed = false; // Сбрасываем флаг нажатия
-                                              _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                              _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                              isPressed = false; // Сбрасываем флаг нажатия
+                                              scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                              translateX = 26.0; // Возвращаем слайдер в исходное положение
                                             });
                                           },
                                           child: AnimatedContainer(
                                             duration: Duration(milliseconds: 200),
-                                            padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                            padding: EdgeInsets.symmetric(horizontal: translateX),
                                             curve: Curves.easeInOut,
                                             transform: Matrix4.identity()
-                                              ..scale(1.0, _scaleY), // Применяем масштаб
+                                              ..scale(1.0, scaleY), // Применяем масштаб
                                             child: FlutterSlider(
-                                              values: _isPressed ? [newposition] : [_currentPosition],
-                                              max: _totalDuration,
+                                              values: isPressed ? [newposition] : [currentPosition],
+                                              max: totalDuration,
                                               min: 0,
                                               tooltip: FlutterSliderTooltip(
                                                 disabled: true, // Отключаем текст со значением
@@ -3385,23 +2872,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 setState(() {
                                                   newposition = lowerValue; // Обновляем текущую позицию слайдера
                                                   setState(() {
-                                                    _isPressed = true; // Устанавливаем флаг нажатия
-                                                    _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                    _translateX = 12.0; // Сдвигаем слайдер влево
+                                                    isPressed = true; // Устанавливаем флаг нажатия
+                                                    scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                    translateX = 12.0; // Сдвигаем слайдер влево
                                                   });
                                                 });
                                               },
                                               onDragCompleted: (handlerIndex, lowerValue, upperValue) {
                                                 // Логика завершения перетаскивания
                                                 setState(() {
-                                                  _currentPosition = lowerValue;
+                                                  currentPosition = lowerValue;
                                                 });
                                                 Duration jda = Duration(milliseconds: lowerValue.toInt());
                                                 print("Position: ${jda.inMilliseconds} ms");
                                                 setState(() {
-                                                  _isPressed = false; // Сбрасываем флаг нажатия
-                                                  _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                  _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                  isPressed = false; // Сбрасываем флаг нажатия
+                                                  scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                  translateX = 26.0; // Возвращаем слайдер в исходное положение
                                                 });
                                                 if (devicecon) {
                                                   List<dynamic> sdc = [
@@ -3442,27 +2929,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         return GestureDetector(
                                           onTapDown: (_) {
                                             setState(() {
-                                              _isPressed = true; // Устанавливаем флаг нажатия
-                                              _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                              _translateX = 12.0; // Сдвигаем слайдер влево
+                                              isPressed = true; // Устанавливаем флаг нажатия
+                                              scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                              translateX = 12.0; // Сдвигаем слайдер влево
                                             });
                                           },
                                           onTapUp: (_) {
                                             setState(() {
-                                              _isPressed = false; // Сбрасываем флаг нажатия
-                                              _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                              _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                              isPressed = false; // Сбрасываем флаг нажатия
+                                              scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                              translateX = 26.0; // Возвращаем слайдер в исходное положение
                                             });
                                           },
                                           child: AnimatedContainer(
                                             duration: Duration(milliseconds: 200),
-                                            padding: EdgeInsets.symmetric(horizontal: _translateX),
+                                            padding: EdgeInsets.symmetric(horizontal: translateX),
                                             curve: Curves.easeInOut,
                                             transform: Matrix4.identity()
-                                              ..scale(1.0, _scaleY), // Применяем масштаб
+                                              ..scale(1.0, scaleY), // Применяем масштаб
                                             child: FlutterSlider(
-                                              values: _isPressed ? [newposition] : [_currentPosition],
-                                              max: _totalDuration,
+                                              values: isPressed ? [newposition] : [currentPosition],
+                                              max: totalDuration,
                                               min: 0,
                                               tooltip: FlutterSliderTooltip(
                                                 disabled: true, // Отключаем текст со значением
@@ -3483,23 +2970,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 setState(() {
                                                   newposition = lowerValue; // Обновляем текущую позицию слайдера
                                                   setState(() {
-                                                    _isPressed = true; // Устанавливаем флаг нажатия
-                                                    _scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                    _translateX = 12.0; // Сдвигаем слайдер влево
+                                                    isPressed = true; // Устанавливаем флаг нажатия
+                                                    scaleY = 1.4; // Увеличиваем слайдер по оси Y
+                                                    translateX = 12.0; // Сдвигаем слайдер влево
                                                   });
                                                 });
                                               },
                                               onDragCompleted: (handlerIndex, lowerValue, upperValue) {
                                                 // Логика завершения перетаскивания
                                                 setState(() {
-                                                  _currentPosition = lowerValue;
+                                                  currentPosition = lowerValue;
                                                 });
                                                 Duration jda = Duration(milliseconds: lowerValue.toInt());
                                                 print("Position: ${jda.inMilliseconds} ms");
                                                 setState(() {
-                                                  _isPressed = false; // Сбрасываем флаг нажатия
-                                                  _scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                  _translateX = 26.0; // Возвращаем слайдер в исходное положение
+                                                  isPressed = false; // Сбрасываем флаг нажатия
+                                                  scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                  translateX = 26.0; // Возвращаем слайдер в исходное положение
                                                 });
                                                 if (devicecon) {
                                                   List<dynamic> sdc = [
@@ -3613,7 +3100,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             SizedBox(width: 50,
                                 height: 50,
                                 child: IconButton(
-                                    onPressed: () {toggleLike(1);}, // () {installmusic(_langData[0]);},
+                                    onPressed: () {toggleLike(1);}, // () {installmusic(langData[0]);},
                                     icon: Image(
                                         color: Color.fromARGB(255, 255, 255, 255),
                                         image: isLiked ? AssetImage(
@@ -3676,15 +3163,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 height: 50,
                                 child: IconButton(
                                     disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: _langData[0]['vidos'] != "0" ? () {
+                                    onPressed: langData[0]['vidos'] != "0" ? () {
                                       setnewState(() {
-                                        _setvi(shazid,true, false);
+                                        setvi(shazid,true, false);
                                       });
                                     }: null,
                                     padding: EdgeInsets
                                         .zero,
                                     icon: Image(
-                                      color: _langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
+                                      color: langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
                                       image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
                                       width: 120,
                                       height: 120,
@@ -3796,7 +3283,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     child:
           SafeArea(
 
-              child: Container(
+                              child: Container(
 
                 decoration: const BoxDecoration(
                     color: Color.fromARGB(0, 25, 24, 24),
@@ -3979,9 +3466,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp, onCallbackt: (dynamic input, dynamic inputi) { loadpalylisttoochered(input, inputi); },)),
     _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey,onCallback: (dynamic input) {
       getaboutmus(input, false, false, false, false);
-    }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp, essension: essension,)),
+    }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp, essension: essension, parctx: context,)),
     _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
-      _setvi(input, false, true);
+      setvi(input, false, true);
     }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, dsad: resetapp,)),
   ];
 
@@ -4228,12 +3715,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         if (sdbf[0]["status"].toString() == "true") {
           devici = sdv;
           devicecon = true;
-          Duration sc = Duration(milliseconds: _currentPosition.toInt());
+          Duration sc = Duration(milliseconds: currentPosition.toInt());
           List<dynamic> sdc = [
             {
               "type": "openmus",
-              "id": _langData[0]["id"],
-              "idshaz": _langData[0]["idshaz"],
+              "id": langData[0]["id"],
+              "idshaz": langData[0]["idshaz"],
               "vidos": videoope.toString(),
               "timecurrent": sc.inSeconds.toString(),
               "iddevice": "2"
@@ -4278,7 +3765,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         }else if (sdbf[0]["status"].toString() == "seek") {
           setnewState(() {
           Duration sdfsad = Duration(seconds:double.parse(sdbf[0]["timecur"].toString()).toInt());
-          _currentPosition = sdfsad.inMilliseconds.toDouble();
+          currentPosition = sdfsad.inMilliseconds.toDouble();
           });
           if(sdbf[0]["playing"].toString() == "false"){
             setState(() {
@@ -4314,12 +3801,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         }
         });
     }else{
-      Duration sc = Duration(milliseconds: _currentPosition.toInt());
+      Duration sc = Duration(milliseconds: currentPosition.toInt());
       List<dynamic> sdc = [
         {
           "type": "openmus",
-          "id": _langData[0]["id"],
-          "idshaz": _langData[0]["idshaz"],
+          "id": langData[0]["id"],
+          "idshaz": langData[0]["idshaz"],
           "vidos": videoope.toString(),
           "timecurrent": sc.inSeconds.toString(),
           "iddevice": "2"
@@ -4494,12 +3981,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _skipForward() async {
-    final newPosition =  Duration(milliseconds: _currentPosition.toInt()) + Duration(seconds: 5);
+    final newPosition =  Duration(milliseconds: currentPosition.toInt()) + Duration(seconds: 5);
     AudioService.seekTo(newPosition);
   }
 
   void _skipBackward() async {
-    final newPosition = Duration(milliseconds: _currentPosition.toInt()) - Duration(seconds: 5);
+    final newPosition = Duration(milliseconds: currentPosition.toInt()) - Duration(seconds: 5);
     if (newPosition < Duration.zero) {
       AudioService.seekTo(Duration.zero); // Предотвращение отрицательной позиции
     } else {
@@ -4516,7 +4003,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     List<String>? sac = prefs.getStringList("installmusid");
     if (sac != null) {
       if (sac.isNotEmpty) {
-        if (sac.contains(_langData[0]["idshaz"])) {
+        if (sac.contains(langData[0]["idshaz"])) {
 
         }else{
           ins(mus);
@@ -4669,7 +4156,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
     try {
     //   if (ispalylistochered) {
-    //     int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
+    //     int dsv = ocherd.indexOf(langData[0]["idshaz"]);
     //     if (dsv + 2 <= ocherd.length) {
     //       getaboutmus(ocherd[dsv + 1].toString(), false, false, false, true);
     //     }
@@ -4689,7 +4176,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
     try {
       //   if (ispalylistochered) {
-      //     int dsv = ocherd.indexOf(_langData[0]["idshaz"]);
+      //     int dsv = ocherd.indexOf(langData[0]["idshaz"]);
       //     if (dsv - 1 > 0) {
       //      getaboutmus(ocherd[dsv - 1].toString(), false, false, false, true);
       //   }

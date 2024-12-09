@@ -61,6 +61,7 @@ dependencies:
   path_provider: ^2.0.11
   auto_size_text: ^3.0.0
   flutter_xlider: ^3.5.0
+  marquee: ^2.0.0
 
 dev_dependencies:
   flutter_test:

@@ -264,7 +264,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
           );
         }else{
 
-          return MussicCell( _searchedLangData[idx-1], (){onCallback(_searchedLangData[idx-1]['idshaz']);});
+          return MussicCell( _searchedLangData[idx-1], (){sendpalulit(idx-1);});
         }
       },
     );
@@ -367,7 +367,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
             ],
           );
         }else{
-          return MussicCell( _searchedLangData[idx-1], (){onCallback(_searchedLangData[idx-1]['idshaz']);});
+          return MussicCell( _searchedLangData[idx-1], (){sendpalulit(idx-1);});
         }
       },
     );

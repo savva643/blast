@@ -73,7 +73,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
 
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
+    return ClipRect(child: Scaffold(
       key: _scaffoldKey,
       appBar: PreferredSize(
         preferredSize: Size.zero,
@@ -149,7 +149,7 @@ class ProfileScreenState extends State<ProfileScreen> {
         ),
 
       ),
-    );
+    ));
   }
 
 

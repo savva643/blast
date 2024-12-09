@@ -6,7 +6,7 @@ Widget MussicCellNumber(int number, dynamic list, Function sac) {
     margin: const EdgeInsets.only(bottom: 10),
     child: Material(
 
-      color: Color.fromARGB(255, 15, 15, 16),
+      color: Color.fromARGB(0, 15, 15, 16),
       borderRadius: BorderRadius.circular(5),
       child: ListTile(
         contentPadding: EdgeInsets.only(
@@ -97,7 +97,7 @@ Widget MussicCell(dynamic list, Function sac) {
     margin: const EdgeInsets.only(bottom: 10),
     child: Material(
 
-      color: Color.fromARGB(255, 15, 15, 16),
+      color: Color.fromARGB(0, 15, 15, 16),
       borderRadius: BorderRadius.circular(5),
       child: ListTile(
         contentPadding: EdgeInsets.only(
