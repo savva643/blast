@@ -10,11 +10,17 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:record/record.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 import '../api/api_service.dart';
+import '../api/record_api.dart';
+import '../parts/bottomsheet_recognize.dart';
+import '../parts/buttons.dart';
+import '../parts/music_cell.dart';
 import 'login.dart';
 
 
@@ -28,7 +34,8 @@ class SearchScreen extends StatefulWidget {
   final VoidCallback showlog;
   final VoidCallback dasd;
   final  Function(dynamic) dfsfd;
-  SearchScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.dasd, required this.dfsfd}) : super(key: key);
+  final Recorderi reci;
+  SearchScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.dasd, required this.dfsfd, required this.reci}) : super(key: key);
   @override
   State<SearchScreen> createState() => SearchScreenState((dynamic input) {onCallback(input);},onCallbacki, hie,showlog,dasd,(dynamic input) {dfsfd(input);});
 
@@ -63,6 +70,10 @@ class SearchScreenState extends State<SearchScreen> {
     installmus = fvvc;
   }
 
+
+
+
+
   final ApiService apiService = ApiService();
   void load() async {
     var usera = await apiService.getUser();
@@ -90,6 +101,7 @@ class SearchScreenState extends State<SearchScreen> {
   void initState()
   {
     load();
+    widget.reci.initializeNotifications();
     super.initState();
   }
 
@@ -187,7 +199,7 @@ class SearchScreenState extends State<SearchScreen> {
                     child:
                     Stack(alignment: Alignment.center,
                       children: [
-                        Container(width: size.width, child: !showno ? (showls ? (_searchLanguageController.text == "" ? _loadListViewhist() : _loadListView()) :  Container(child: Center(child: CircularProgressIndicator(),),)) :
+                        Container(width: size.width, child: !showno ? (showls ? (_searchLanguageController.text.isEmpty ? _loadListViewhist() : _loadListView()) :  Container(child: Center(child: CircularProgressIndicator(),),)) :
                             Column(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.center, children: [Text("История поиска пуста",
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -196,8 +208,17 @@ class SearchScreenState extends State<SearchScreen> {
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white,
                               ),),],)
-                        )
-                      ],),)
+                        ),SafeArea(child: Container(padding: EdgeInsets.all(8),child: Align(alignment: Alignment.bottomRight,child:
+    ValueListenableBuilder<String>(
+    valueListenable: widget.reci.statusNotifier,
+    builder: (context, tpik, child) {
+    return RecognitionButton(
+                          icon: tpik.contains("idle") ? Icons.mic_rounded : Icons.graphic_eq_rounded,
+                          onTap: widget.reci.startRecording,
+                          isRecognizing: tpik.contains("idle") ? false : true,
+                        );}))))
+                      ],),),
+
                 ],),
 
             ],
@@ -225,20 +246,7 @@ class SearchScreenState extends State<SearchScreen> {
       'message': 'Имполнитель',
     },
   ];
-  List _historysearch = [
-    {
-      'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-    {
-      'id': '2',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-  ];
+  List _historysearch = [];
   final _searchLanguageController = TextEditingController();
 
 
@@ -274,92 +282,22 @@ class SearchScreenState extends State<SearchScreen> {
           ],
         )
             :
+        MussicCell( _historysearch[idx-1], () async {
 
-        Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          child: Material(
+          onCallback(_historysearch[idx-1]['idshaz']);
 
-            color: Color.fromARGB(0, 15, 15, 16),
-            borderRadius: BorderRadius.circular(5),
-            child: ListTile(
-              contentPadding: EdgeInsets.only(
-                  left: 0, right: 0, bottom: 4, top: 4),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5)),
-              onTap: () async {
-                onCallback(_historysearch[idx-1]['idshaz']);
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
-                List<String>? sac = prefs.getStringList("historymusid");
-                List<String> fsaf = [];
-                if (sac != null) {
-                  fsaf = sac;
-                }
-                if(fsaf.length >= 20){
-                  fsaf.removeLast();
-                }
-                fsaf.add(_historysearch[idx-1]['idshaz']);
-                await prefs.setStringList("historymusid", fsaf);
-              },
-              leadingAndTrailingTextStyle: TextStyle(),
-              leading: SizedBox(width: 90,
-                height: 60,
-                child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [SizedBox(
-                    width: 60,
-                    height: 60,
-                    child: OverflowBox(
-                      maxWidth: double.infinity,
-                      maxHeight: double.infinity,
-                      child: CachedNetworkImage(
-                        imageUrl: _historysearch[idx-1]['img'],
-                        imageBuilder: (context, imageProvider) =>
-                            Container(
-                              padding: EdgeInsets.only(
-                                  left: 0, right: 0, bottom: 0, top: 0),
-                              width: 64.0,
-                              height: 64.0,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.rectangle,
-                                borderRadius: BorderRadius.circular(5),
-                                image: DecorationImage(
-                                    image: imageProvider),
-                              ),
-                            ),
-                        placeholder: (context, url) =>
-                            CircularProgressIndicator(),
-                        errorWidget: (context, url, error) => Icon(Icons.error),
-                      ),
-                    ),),
-                  ],),),
-              title: Text(
-                _historysearch[idx-1]['name'],
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w500,
-                    color: Color.fromARGB(255, 246, 244, 244)
-                ),
-              ),
-              subtitle: Text(
-                _historysearch[idx-1]['message'],
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w300,
-                    color: Color.fromARGB(255, 246, 244, 244)
-                ),
-              ),
-              trailing: IconButton(icon: Icon(Icons.more_vert),
-                color: Colors.white,
-                onPressed: () {},),
-            ),
-          ),
-        )
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          List<String>? sac = prefs.getStringList("historymusid");
+          List<String> fsaf = [];
+          if (sac != null) {
+            fsaf = sac;
+          }
+          if(fsaf.length >= 20){
+            fsaf.removeLast();
+          }
+          fsaf.add(_historysearch[idx-1]['idshaz']);
+          await prefs.setStringList("historymusid", fsaf);
+          }, context)
         );
       },
     );
@@ -389,96 +327,25 @@ class SearchScreenState extends State<SearchScreen> {
         )
             :
 
-        Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          child: Material(
-
-            color: Color.fromARGB(0, 15, 15, 16),
-            borderRadius: BorderRadius.circular(5),
-            child: ListTile(
-              contentPadding: EdgeInsets.only(
-                  left: 0, right: 0, bottom: 4, top: 4),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5)),
-              onTap: () async {
-                if(_searchedLangData[idx-1]["url"]!="0") {
-                  onCallback(_searchedLangData[idx - 1]['idshaz']);
-                  final SharedPreferences prefs = await SharedPreferences.getInstance();
-                  List<String>? sac = prefs.getStringList("historymusid");
-                  List<String> fsaf = [];
-                  if (sac != null) {
-                    fsaf = sac;
-                  }
-                  if(fsaf.length >= 20){
-                    fsaf.removeLast();
-                  }
-                  fsaf.add(_searchedLangData[idx-1]['idshaz']);
-                  await prefs.setStringList("historymusid", fsaf);
-                }else{
-                  installmus(_searchedLangData[idx-1]);
-                }
-
-              },
-              leadingAndTrailingTextStyle: TextStyle(),
-              leading: SizedBox(width: 90,
-                height: 60,
-                child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [SizedBox(
-                      width: 60,
-                      height: 60,
-                      child: OverflowBox(
-                        maxWidth: double.infinity,
-                        maxHeight: double.infinity,
-                        child: CachedNetworkImage(
-                          imageUrl: _searchedLangData[idx-1]['img'],
-                          imageBuilder: (context, imageProvider) =>
-                              Container(
-                                padding: EdgeInsets.only(
-                                    left: 0, right: 0, bottom: 0, top: 0),
-                                width: 64.0,
-                                height: 64.0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.circular(5),
-                                  image: DecorationImage(
-                                      image: imageProvider),
-                                ),
-                              ),
-                          placeholder: (context, url) =>
-                              CircularProgressIndicator(),
-                          errorWidget: (context, url, error) => Icon(Icons.error),
-                        ),
-                      ),),
-                  ],),),
-              title: Text(
-                _searchedLangData[idx-1]['name'],
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w500,
-                    color: Color.fromARGB(255, 246, 244, 244)
-                ),
-              ),
-              subtitle: Text(
-                _searchedLangData[idx-1]['message'],
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w300,
-                    color: Color.fromARGB(255, 246, 244, 244)
-                ),
-              ),
-              trailing: IconButton(icon: Icon(Icons.more_vert),
-                color: Colors.white,
-                onPressed: () {},),
-            ),
-          ),
-        )
+        MussicCell( _searchedLangData[idx-1], () async {
+          print("gfdfgdfg"+_searchedLangData[idx-1]['url'].toString());
+          if(_searchedLangData[idx-1]['url'].toString() != "0") {
+            onCallback(_searchedLangData[idx - 1]['idshaz']);
+          }else{
+            installmus(_searchedLangData[idx - 1]);
+          }
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          List<String>? sac = prefs.getStringList("historymusid");
+          List<String> fsaf = [];
+          if (sac != null) {
+            fsaf = sac;
+          }
+          if(fsaf.length >= 20){
+            fsaf.removeLast();
+          }
+          fsaf.add(_searchedLangData[idx-1]['idshaz']);
+          await prefs.setStringList("historymusid", fsaf);
+        }, context)
         );
       },
     );
@@ -487,20 +354,29 @@ class SearchScreenState extends State<SearchScreen> {
 
 
 
-  bool cscs = false;
 
 
   Future<void> onChencged(String text) async {
+    setState(() {
+      showls = false;
+    });
     List langData = await apiService.getSearchMusic(text);
-    if(!langData.isEmpty) {
+    setState(() {
+    if(langData.isNotEmpty) {
       _searchedLangData = langData;
       showls = true;
-      cscs = showno;
       showno = false;
     }else{
       _searchLanguageController.clear();
-      showno = cscs;
+      if(_historysearch.isEmpty) {
+        showno = false;
+        showls = false;
+      }else{
+        showno = false;
+        showls = true;
+      }
     }
+    });
   }
 
 

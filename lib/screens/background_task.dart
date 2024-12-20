@@ -2,18 +2,198 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
+import '../providers/queue_manager_provider.dart';
 import 'AudioManager.dart';
+// import '../api/smtc_windows_integration.dart' if (dart.library.html) '../api/smtc_stub.dart';
+import '../api/smtc_stub.dart';
+
+
 class AudioPlayerTask extends BackgroundAudioTask {
   final player = AudioPlayer();
+
+  late WindowsSMTC smtc;
   final AudioManager notifier = AudioManager();
+
+
+
+
+  LoopMode _repeatMode = LoopMode.off;
+  bool _isShuffleEnabled = false;
+  List<MediaItem> _shuffledQueue = [];
+
+  void toggleRepeatMode() {
+    _repeatMode = LoopMode.values[(_repeatMode.index + 1) % LoopMode.values.length];
+    // player.setLoopMode(_repeatMode);
+    print("repeatMode"+_repeatMode.name);
+    AudioServiceBackground.sendCustomEvent({
+      'repeatMode': _repeatMode.index,
+      'skip': "fgbds",
+      'canforward': canSkipToNext(),
+      'canprevious': canSkipToPrevious(),
+    });
+    _broadcastState();
+  }
+
+  void getNextTrack() {
+    // Проверяем, если очередь пуста или текущий индекс недействителен
+    if (trackQueue.isEmpty || currentTrackIndex < 0) {
+      print("No next track to send.");
+      AudioServiceBackground.sendCustomEvent({
+        'nextTrack': null,
+      });
+      return;
+    }
+
+    // Определяем очередь: перемешанная или стандартная
+    final queue = _isShuffleEnabled ? _shuffledQueue : trackQueue;
+    print("nextvid1");
+    if (_repeatMode == LoopMode.one) {
+      // Если режим повтора одного трека, следующий трек — это текущий
+      final mediaItem = queue[currentTrackIndex];
+      _sendTrackData('nextTrack', mediaItem);
+      print("Repeating current track as next track: ${mediaItem.title}");
+    } else if (_repeatMode == LoopMode.all && currentTrackIndex == queue.length - 1) {
+      // Если конец плейлиста и включён режим повтора всего списка
+      final mediaItem = queue.first;
+      _sendTrackData('nextTrack', mediaItem);
+      print("Looping to the first track: ${mediaItem.title}");
+    } else if (currentTrackIndex < queue.length - 1) {
+      // Обычный переход к следующему треку
+      final mediaItem = queue[currentTrackIndex + 1];
+      print("nextvid4");
+      _sendTrackData('nextTrack', mediaItem);
+      print("Next track sent: ${mediaItem.title}");
+    } else {
+      // Если в обычном режиме и текущий трек — последний, ничего не делаем
+      print("No next track available.");
+      AudioServiceBackground.sendCustomEvent({
+        'nextTrack': null,
+      });
+    }
+  }
+
+  void getPreviousTrack() {
+    // Проверяем, если очередь пуста или текущий индекс недействителен
+    if (trackQueue.isEmpty || currentTrackIndex <= 0) {
+      print("No previous track to send.");
+      AudioServiceBackground.sendCustomEvent({
+        'previousTrack': null,
+      });
+      return;
+    }
+
+    // Определяем индекс предыдущего трека
+    final queue = _isShuffleEnabled ? _shuffledQueue : trackQueue;
+
+    if (_repeatMode == LoopMode.one) {
+      // Если режим повтора одного трека, текущий трек считается предыдущим
+      final mediaItem = queue[currentTrackIndex];
+      _sendTrackData('previousTrack', mediaItem);
+      print("Repeating current track as previous track: ${mediaItem.title}");
+    } else if (_repeatMode == LoopMode.all && currentTrackIndex == 0) {
+      // Если начало плейлиста и включен режим повтора всего списка
+      final mediaItem = queue.last;
+      _sendTrackData('previousTrack', mediaItem);
+      print("Looping to the last track: ${mediaItem.title}");
+    } else if (currentTrackIndex > 0) {
+      // Обычный переход к предыдущему треку
+      final mediaItem = queue[currentTrackIndex - 1];
+      _sendTrackData('previousTrack', mediaItem);
+      print("Previous track sent: ${mediaItem.title}");
+    }
+  }
+
+  /// Вспомогательная функция для отправки трека через Custom Event
+  void _sendTrackData(String eventKey, MediaItem mediaItem) {
+    dynamic trackData = {
+      "id": mediaItem.id,
+      "img": mediaItem.artUri?.toString(),
+      "name": mediaItem.title,
+      "message": mediaItem.artist,
+      "url": mediaItem.extras?['url'],
+      "elir": mediaItem.extras?['elir'],
+      "idshaz": mediaItem.extras?['idshaz'],
+      "messageimg": mediaItem.extras?['messageimg'],
+      "short": mediaItem.extras?['short'],
+      "txt": mediaItem.extras?['txt'],
+      "vidos": mediaItem.extras?['vidos'],
+      "bgvideo": mediaItem.extras?['bgvideo'],
+    };
+    print("nextvid5");
+    AudioServiceBackground.sendCustomEvent({
+      eventKey: trackData,
+    });
+  }
+
+  List<Map<String, dynamic>> convertMediaItemListToJson(List<MediaItem> items) {
+    return items.map((mediaItem) {
+      return {
+        "id": mediaItem.id,
+        "img": mediaItem.artUri?.toString() ?? "",
+        "name": mediaItem.title,
+        "message": mediaItem.artist ?? "",
+        "url": mediaItem.extras?["url"],
+        "elir": mediaItem.extras?["elir"],
+        "idshaz": mediaItem.extras?["idshaz"],
+        "messageimg": mediaItem.extras?["messageimg"],
+        "short": mediaItem.extras?["short"],
+        "txt": mediaItem.extras?["txt"],
+        "vidos": mediaItem.extras?["vidos"],
+        "bgvideo": mediaItem.extras?["bgvideo"],
+      };
+    }).toList();
+  }
+
+  void toggleShuffle() {
+    _isShuffleEnabled = !_isShuffleEnabled;
+
+    if (_isShuffleEnabled) {
+      _shuffledQueue = List.from(trackQueue)..shuffle();
+      currentTrackIndex = _shuffledQueue.indexOf(trackQueue[currentTrackIndex]);
+      final shuffledJson = convertMediaItemListToJson(_shuffledQueue);
+      AudioServiceBackground.sendCustomEvent({
+        'setqueue': shuffledJson,
+      });
+    } else {
+      currentTrackIndex = trackQueue.indexOf(_shuffledQueue[currentTrackIndex]);
+      _shuffledQueue.clear();
+      final shuffledJson = convertMediaItemListToJson(trackQueue);
+      AudioServiceBackground.sendCustomEvent({
+        'setqueue': shuffledJson,
+      });
+    }
+    AudioServiceBackground.sendCustomEvent({
+      'isShuffleEnabled': _isShuffleEnabled,
+    });
+    _broadcastState();
+  }
+
+  @override
+  Future<void> onSetShuffleMode(AudioServiceShuffleMode shuffleMode) {
+    // TODO: implement onSetShuffleMode
+    return super.onSetShuffleMode(shuffleMode);
+  }
+
   @override
   Future<void> onStart(Map<String, dynamic>? params) async {
     final initialTrack = params?['track'] as MediaItem?;
     if (initialTrack != null) {
       await _playNewTrack(initialTrack, false);
-
     }
+     smtc = WindowsSMTC();
+
+     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+      smtc.initializeListeners(
+        onNext: onSkipToNext,
+        onPrevious: onSkipToPrevious,
+        onPlay: player.play,
+        onPause: player.pause,
+      );
+     }
   }
+
+
+
 
   bool newstart = false;
 
@@ -35,9 +215,13 @@ class AudioPlayerTask extends BackgroundAudioTask {
               artUri: mediaItem.artUri,
               artist: mediaItem.artist,
               title: mediaItem.title,
-              duration: player.duration
-
+              duration: player.duration,
+              extras: mediaItem.extras
           ));
+          dynamic dsa = {"id": mediaItem.id, "img": mediaItem.artUri.toString(),"name": mediaItem.title,"message": mediaItem.artist,"url": mediaItem.extras?['url'],"elir": mediaItem.extras?['elir'],"idshaz": mediaItem.extras?['idshaz'], "messageimg": mediaItem.extras?['messageimg'],"short": mediaItem.extras?['short'],"txt": mediaItem.extras?['txt'],"vidos": mediaItem.extras?['vidos'],"bgvideo": mediaItem.extras?['bgvideo'],};
+          AudioServiceBackground.sendCustomEvent({
+            'currentTracki': dsa,
+          });
           newstart = false;
           await player.positionStream.listen((position) {
             notifier.setPosition(position);
@@ -80,30 +264,48 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
 
 
-  String canSkipToNext()  {
-    print("tyfyuhjgfghj"+AudioService.currentMediaItem!.id.toString());
-    // Проверяем, если есть хотя бы 1 трек в очереди и текущая позиция не последняя
-    if (trackQueue != null && trackQueue.isNotEmpty) {
-      final currentIndex = trackQueue.indexWhere((item) => item.id == AudioService.currentMediaItem?.id);
-      return (currentIndex != -1 && currentIndex < trackQueue.length - 1).toString();
+  String canSkipToNext() {
+    // Получаем текущий трек и его индекс
+    final currentMediaItem = AudioService.currentMediaItem;
+    if (currentMediaItem == null) return "false";
+
+    final currentIndex = _isShuffleEnabled
+        ? _shuffledQueue.indexWhere((item) => item.id == currentMediaItem.id)
+        : trackQueue.indexWhere((item) => item.id == currentMediaItem.id);
+
+    // Условия перехода на следующий трек
+    final isLastTrack = currentIndex >= (trackQueue.length - 1);
+
+    if (_repeatMode == LoopMode.all) {
+      // В режиме повторения всего можно перейти (даже с последнего)
+      return "true";
+    } else {
+      // По умолчанию — если текущий трек не последний
+      return (!isLastTrack).toString();
     }
-
-    return "false";
   }
-
-
 
   String canSkipToPrevious() {
-    // Получаем текущую позицию в очереди
+    // Получаем текущий трек и его индекс
+    final currentMediaItem = AudioService.currentMediaItem;
+    if (currentMediaItem == null) return "false";
 
-    // Проверяем, если есть хотя бы 1 трек в очереди
-    if (trackQueue != null && trackQueue.isNotEmpty) {
-      final currentIndex = trackQueue.indexWhere((item) => item.id == AudioService.currentMediaItem?.id);
-      return (currentIndex != -1 && currentIndex > 0).toString();
+    final currentIndex = _isShuffleEnabled
+        ? _shuffledQueue.indexWhere((item) => item.id == currentMediaItem.id)
+        : trackQueue.indexWhere((item) => item.id == currentMediaItem.id);
+
+    // Условия перехода на предыдущий трек
+    final isFirstTrack = currentIndex <= 0;
+
+    if (_repeatMode == LoopMode.all) {
+      // Если активен режим loop 1, нельзя пропустить
+      return "true";
+    } else {
+      // Если не первый трек, можно перейти
+      return (!isFirstTrack).toString();
     }
-
-    return "false";
   }
+
 
 
 
@@ -149,21 +351,38 @@ class AudioPlayerTask extends BackgroundAudioTask {
               .map((track) => mediaItemFromJson(track as Map<String, dynamic>))
               .toList();
           trackQueue.addAll(playlist);
-
+          if(_isShuffleEnabled){
+            _shuffledQueue = List.from(trackQueue)..shuffle();
+          }
           // Обновить очередь
           onQueueChanged();
           // Если передан индекс, воспроизвести трек с этим индексом
           final int? startIndex = params['startIndex'] as int?;
           final bool? needplay = params['needplay'] as bool?;
+          final queue = _isShuffleEnabled ? _shuffledQueue : trackQueue;
           if(needplay != null && needplay) {
             if (startIndex != null && startIndex >= 0 &&
-                startIndex < trackQueue.length) {
-              _playNewTrack(trackQueue[startIndex], true);
-            } else if (trackQueue.isNotEmpty &&
+                startIndex < queue.length) {
+              _playNewTrack(queue[startIndex], true);
+            } else if (queue.isNotEmpty &&
                 player.processingState != ProcessingState.ready) {
               // Если индекс не передан, воспроизвести первый трек
-              _playNewTrack(trackQueue.first, true);
+              _playNewTrack(queue.first, true);
             }
+          }else{
+            if (startIndex != null && startIndex >= 0 &&
+                startIndex < queue.length) {
+              currentTrackIndex =
+                  queue.indexWhere((item) => item.id == queue[startIndex].id);
+            } else if (queue.isNotEmpty &&
+                player.processingState != ProcessingState.ready) {
+              // Если индекс не передан, воспроизвести первый трек
+              currentTrackIndex =
+                  queue.indexWhere((item) => item.id == queue[queue.indexOf(queue.first)].id);
+            }
+
+
+
           }
         }
         break;
@@ -175,11 +394,33 @@ class AudioPlayerTask extends BackgroundAudioTask {
         });
         break;
       case 'next':
-        await _playNextTrack();
+        await _playNextTrack(false);
         break;
 
       case 'previous':
-        await _playPreviousTrack();
+        await _playPreviousTrack(false);
+        break;
+
+      case 'setindex':
+        if (params != null && params['index'] != null) {
+          print("hjgfghf"+params.toString());
+          final int? startIndex = params['index'] as int?;
+          final bool? vid = params['video'] as bool?;
+          await _setIndex(startIndex!, vid!);
+        }
+        break;
+      case 'toggleShuffle':
+        toggleShuffle();
+        break;
+      case 'toggleRepeatMode':
+        toggleRepeatMode();
+        break;
+      case 'sendnexttrack':
+        print("nextvid2");
+        getNextTrack();
+        break;
+      case 'sendprevioustrack':
+        getPreviousTrack();
         break;
       default:
         break;
@@ -215,9 +456,23 @@ class AudioPlayerTask extends BackgroundAudioTask {
             artUri: mediaItem.artUri,
             artist: mediaItem.artist,
             title: mediaItem.title,
-            duration: player.duration
+            duration: player.duration,
+            extras: mediaItem.extras
 
         ));
+        if(!kIsWeb) {
+           smtc.updatePlayerData(
+            player,
+            mediaItem,
+            canSkipToNext,
+              canSkipToPrevious
+          );
+        }
+        dynamic dsa = {"id": mediaItem.id, "img": mediaItem.artUri.toString(),"name": mediaItem.title,"message": mediaItem.artist,"url": mediaItem.extras?['url'],"elir": mediaItem.extras?['elir'],"idshaz": mediaItem.extras?['idshaz'], "messageimg": mediaItem.extras?['messageimg'],"short": mediaItem.extras?['short'],"txt": mediaItem.extras?['txt'],"vidos": mediaItem.extras?['vidos'],"bgvideo": mediaItem.extras?['bgvideo'],};
+        AudioServiceBackground.sendCustomEvent({
+          'currentTracki': dsa,
+        });
+
         await player.positionStream.listen((position) {
           notifier.setPosition(position);
           print("fdvfvsdz"+(player.duration?.inMilliseconds ?? 0).toString());
@@ -259,29 +514,80 @@ class AudioPlayerTask extends BackgroundAudioTask {
   }
 
 
-  Future<void> _playNextTrack() async {
-    print("hgghnmghnghnhg"+currentTrackIndex.toString());
-    if (currentTrackIndex < trackQueue.length - 1) {
-      currentTrackIndex++;
-      await _playNewTrack(trackQueue[currentTrackIndex], true);
+  Future<void> _playNextTrack(bool dsa) async {
+    final queue = _isShuffleEnabled ? _shuffledQueue : trackQueue;
 
-      print("csdvfdsvvsdfv"+trackQueue.toString());
+    if (_repeatMode == LoopMode.one && dsa) {
+      await _playNewTrack(queue[currentTrackIndex], true);
+      print("hgghnmghnghnhg"+currentTrackIndex.toString());
+    } else if (currentTrackIndex < queue.length - 1) {
+      // Следующий трек
+      currentTrackIndex++;
+      await _playNewTrack(queue[currentTrackIndex], true);
+      print("Queue after advancing: $queue");
+    } else if (_repeatMode == LoopMode.all) {
+      // Повтор всего плейлиста
+      currentTrackIndex = 0;
+      await _playNewTrack(queue[currentTrackIndex], true);
+      print("Repeating playlist: $queue");
     } else {
+      // Конец очереди, останавливаем воспроизведение
       await player.stop();
       notifier.setPlaying(false);
       _broadcastState();
     }
 
-    _sendTrackChangedEvent();
+    _sendTrackChangedEvent(false);
   }
 
-  Future<void> _playPreviousTrack() async {
-    if (currentTrackIndex > 0) {
-      currentTrackIndex--;
-      await _playNewTrack(trackQueue[currentTrackIndex], true);
+  Future<void> _setIndex(int index, bool video) async {
+    final queue = _isShuffleEnabled ? _shuffledQueue : trackQueue;
+    if(video){
+      if(index == 1) {
+        currentTrackIndex =
+            queue.indexWhere((item) => item.id == queue[currentTrackIndex+1].id);
+      }else{
+        currentTrackIndex =
+            queue.indexWhere((item) => item.id == queue[currentTrackIndex-1].id);
+      }
+    }else {
+      await _playNewTrack(queue[index], true);
     }
-    _sendTrackChangedEvent();
+    _sendTrackChangedEvent(video);
+
   }
+
+
+
+
+  Future<void> _playPreviousTrack(bool dsa) async {
+    final queue = _isShuffleEnabled ? _shuffledQueue : trackQueue;
+
+    if (queue.isEmpty) return; // Если очередь пуста, ничего не делаем.
+
+    if (_repeatMode == LoopMode.one && dsa) {
+      // Повтор текущего трека
+      await _playNewTrack(queue[currentTrackIndex], true);
+      print("Repeating current track.");
+    } else if (_repeatMode == LoopMode.all && currentTrackIndex == 0) {
+      // Переход на последний трек, если это начало плейлиста
+      currentTrackIndex = queue.length - 1;
+      await _playNewTrack(queue[currentTrackIndex], true);
+      print("Looping back to the end of the playlist.");
+    } else if (currentTrackIndex > 0) {
+      // Переход на предыдущий трек
+      currentTrackIndex--;
+      await _playNewTrack(queue[currentTrackIndex], true);
+      print("Playing previous track: ${queue[currentTrackIndex].title}");
+    } else {
+      // Если в обычном режиме и текущий трек — первый, ничего не делаем.
+      print("No previous track to play.");
+    }
+
+    _sendTrackChangedEvent(false); // Отправка события об изменении трека
+  }
+
+
 
   void addTrackToQueue(Map<String, dynamic> trackData) {
     final mediaItem = _createMediaItem(trackData);
@@ -302,6 +608,12 @@ class AudioPlayerTask extends BackgroundAudioTask {
       extras: {
         'idshaz': trackData['idshaz'],
         'url': trackData['url'],
+        'messageimg': trackData['messageimg'],
+        'short': trackData['short'],
+        'txt': trackData['txt'],
+        'vidos': trackData['vidos'],
+        'bgvideo': trackData['bgvideo'],
+        'elir': trackData['elir'],
       },
     );
   }
@@ -320,8 +632,13 @@ class AudioPlayerTask extends BackgroundAudioTask {
               artUri: mediaItem.artUri,
               artist: mediaItem.artist,
               title: mediaItem.title,
-              duration: player.duration
+              duration: player.duration,
+              extras: mediaItem.extras
           ));
+          dynamic dsa = {"id": mediaItem.id, "img": mediaItem.artUri.toString(),"name": mediaItem.title,"message": mediaItem.artist,"url": mediaItem.extras?['url'],"elir": mediaItem.extras?['elir'],"idshaz": mediaItem.extras?['idshaz'], "messageimg": mediaItem.extras?['messageimg'],"short": mediaItem.extras?['short'],"txt": mediaItem.extras?['txt'],"vidos": mediaItem.extras?['vidos'],"bgvideo": mediaItem.extras?['bgvideo'],};
+          AudioServiceBackground.sendCustomEvent({
+            'currentTracki': dsa,
+          });
           await player.positionStream.listen((position) {
             notifier.setPosition(position);
             AudioServiceBackground.sendCustomEvent({
@@ -351,13 +668,22 @@ class AudioPlayerTask extends BackgroundAudioTask {
   void startListening() {
     processingStateSubscription = player.processingStateStream.listen((state) async {
       if (state == ProcessingState.completed) {
-        await _playNextTrack();
-        print("bgcfgbbgfcgbcccccccccccccccccccccccccccccchi");
+        if (_repeatMode == LoopMode.one) {
+          // Устанавливаем позицию в начало и воспроизводим текущий трек
+          await player.seek(Duration.zero);
+          await AudioService.play();
+          print("Повтор трека (loop 1)");
+        } else {
+          // Иначе переходим к следующему треку
+          await _playNextTrack(true);
+          print("Воспроизведение следующего трека");
+        }
       }
     });
   }
 
-  void _sendTrackChangedEvent() {
+
+  void _sendTrackChangedEvent(bool vid) {
     final currentTrack = trackQueue[currentTrackIndex];
     Map<String, dynamic> trackData = {
       'id': currentTrack.id,
@@ -371,24 +697,43 @@ class AudioPlayerTask extends BackgroundAudioTask {
     AudioServiceBackground.sendCustomEvent({
       'event': 'trackChanged',
       'currentTrack': trackData, // Преобразуем MediaItem в Map
+      'video': vid
     });
     print("hhghngfvhngvm"+trackData.toString());
   }
 
   Future<void> _playNewTrack(MediaItem mediaItem, bool dfs) async {
     stopListening();
+    final queue = _isShuffleEnabled ? _shuffledQueue : trackQueue;
     print("hhgm"+mediaItem.extras?['url']);
+
+
     try {
 
       await player.setUrl(mediaItem.extras?['url']);
       notifier.setDuration(player.duration ?? Duration.zero);
-      currentTrackIndex = trackQueue.indexWhere((item) => item.id == mediaItem.id);
+      currentTrackIndex = queue.indexWhere((item) => item.id == mediaItem.id);
       AudioServiceBackground.setMediaItem(mediaItem);
       player.processingStateStream.firstWhere((state) =>
       state == ProcessingState.ready).then((_) async {
+        AudioServiceBackground.setMediaItem(
+          mediaItem.copyWith(duration: player.duration),
+        );
+        if(!kIsWeb) {
+          smtc.updatePlayerData(
+              player,
+              mediaItem,
+              canSkipToNext,
+              canSkipToPrevious
+          );
+        }
+        dynamic dsa = {"id": mediaItem.id, "img": mediaItem.artUri.toString(),"name": mediaItem.title,"message": mediaItem.artist,"url": mediaItem.extras?['url'],"elir": mediaItem.extras?['elir'],"idshaz": mediaItem.extras?['idshaz'], "messageimg": mediaItem.extras?['messageimg'],"short": mediaItem.extras?['short'],"txt": mediaItem.extras?['txt'],"vidos": mediaItem.extras?['vidos'],"bgvideo": mediaItem.extras?['bgvideo'],};
+        AudioServiceBackground.sendCustomEvent({
+          'currentTracki': dsa,
+        });
         _broadcastState();
         if(dfs){
-          player.play();
+          AudioService.play();
         }
         await player.positionStream.listen((position) {
           notifier.setPosition(position);
@@ -442,7 +787,26 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
 
 
+  @override
+  Future<void> onSkipToNext() async {
+    if (canSkipToNext() == "false") {
+      // Не делаем ничего
+      return;
+    }
+    await _playNextTrack(false);
+    return super.onSkipToNext();
+  }
 
+
+  @override
+  Future<void> onSkipToPrevious() async {
+    if (canSkipToPrevious() == "false") {
+      // Не делаем ничего
+      return;
+    }
+    await _playPreviousTrack(false);
+    return super.onSkipToPrevious();
+  }
 
 
 
@@ -494,13 +858,38 @@ class AudioPlayerTask extends BackgroundAudioTask {
     _broadcastState();
   }
 
+
+  AudioServiceRepeatMode _getAudioServiceRepeatMode() {
+    switch (_repeatMode) {
+      case LoopMode.one:
+        return AudioServiceRepeatMode.one;
+      case LoopMode.all:
+        return AudioServiceRepeatMode.all;
+      case LoopMode.off:
+      default:
+        return AudioServiceRepeatMode.none;
+    }
+  }
+
+  /// Возвращает текущий режим перемешивания в формате AudioServiceShuffleMode
+  AudioServiceShuffleMode _getAudioServiceShuffleMode() {
+    return _isShuffleEnabled ? AudioServiceShuffleMode.all : AudioServiceShuffleMode.none;
+  }
+
   void _broadcastState() {
+    if(!kIsWeb) {
+      smtc.updatePlayerTime(
+          player,
+          canSkipToNext,
+          canSkipToPrevious
+      );
+    }
     AudioServiceBackground.setState(
       controls: [
         MediaControl.play,
         MediaControl.pause,
-        MediaControl.skipToNext,
-        MediaControl.skipToPrevious,
+        if (canSkipToNext() == "true") MediaControl.skipToNext,
+        if (canSkipToPrevious() == "true") MediaControl.skipToPrevious,
       ],
       systemActions: [
         MediaAction.seek,
@@ -511,6 +900,8 @@ class AudioPlayerTask extends BackgroundAudioTask {
       playing: player.playing,
       position: player.position,
       bufferedPosition: player.bufferedPosition,
+      repeatMode: _getAudioServiceRepeatMode(),
+      shuffleMode: _getAudioServiceShuffleMode(),
     );
 
 

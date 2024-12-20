@@ -24,13 +24,13 @@ const kBgColor = Color(0xFF1604E2);
 
 class PlaylistScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
-  final  Function(dynamic, dynamic) onCallbackt;
+  final  Function(dynamic, dynamic, String) onCallbackt;
   final VoidCallback hie;
   final VoidCallback showlog;
   final VoidCallback resdf;
   const PlaylistScreen({Key? key, required this.onCallback, required this.hie, required this.showlog, required this.resdf, required this.onCallbackt}) : super(key: key);
   @override
-  State<PlaylistScreen> createState() => _PlaylistScreenState((dynamic input) {onCallback(input);}, hie,showlog,resdf,(dynamic input,dynamic inputi) {onCallbackt(input, inputi);});
+  State<PlaylistScreen> createState() => _PlaylistScreenState((dynamic input) {onCallback(input);}, hie,showlog,resdf,(dynamic input,dynamic inputi, String asdsa) {onCallbackt(input, inputi, asdsa);});
 
 
 
@@ -41,10 +41,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late VoidCallback showsearch;
   late Function(dynamic) onCallback;
-  late Function(dynamic, dynamic) onCallbackrfdg;
+  late Function(dynamic, dynamic, String) onCallbackrfdg;
   late VoidCallback showlog;
   late VoidCallback reseti;
-  _PlaylistScreenState(Function(dynamic) onk, VoidCallback fg, VoidCallback dawsd, VoidCallback gbdfgb, Function(dynamic,dynamic inputi) onksd) {
+  _PlaylistScreenState(Function(dynamic) onk, VoidCallback fg, VoidCallback dawsd, VoidCallback gbdfgb, Function(dynamic,dynamic inputi, String) onksd) {
     onCallback = onk;
     showsearch = fg;
     showlog = dawsd;
@@ -201,8 +201,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
           imgnd: imgnd,
           showlog: showlog,
           resre: reseti,
-          onCallbackt: (dynamic input, dynamic inputi) =>
-              onCallbackrfdg(input, inputi),
+          onCallbackt: (dynamic input, dynamic inputi, String fds) =>
+              onCallbackrfdg(input, inputi, fds),
         ),
       ),
     );
@@ -214,8 +214,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => MusInPlaylistScreen(onCallback: (dynamic input) {
         onCallback(input);
-      }, onCallbacki: fds, hie: showsearch, name: name, img: img, imgnd:imgnd, showlog: showlog, resre: reseti, onCallbackt: (dynamic input, dynamic inputi) {
-        onCallbackrfdg(input, inputi);
+      }, onCallbacki: fds, hie: showsearch, name: name, img: img, imgnd:imgnd, showlog: showlog, resre: reseti, onCallbackt: (dynamic input, dynamic inputi, String fgd) {
+        onCallbackrfdg(input, inputi, fgd);
       }),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);

@@ -23,7 +23,7 @@ const kBgColor = Color(0xFF1604E2);
 class MusInPlaylistScreen extends StatefulWidget {
   final  Function(dynamic) onCallback;
   final String onCallbacki;
-  final  Function(dynamic, dynamic) onCallbackt;
+  final  Function(dynamic, dynamic, String) onCallbackt;
   final String name;
   final String img;
   final bool imgnd;
@@ -32,7 +32,7 @@ class MusInPlaylistScreen extends StatefulWidget {
   final VoidCallback resre;
   MusInPlaylistScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.name, required this.img, required this.imgnd, required this.showlog, required this.resre, required this.onCallbackt}) : super(key: key);
   @override
-  State<MusInPlaylistScreen> createState() => MusInPlaylistScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, name, img, imgnd,showlog,resre,(dynamic input, dynamic inputi) {onCallbackt(input, inputi);});
+  State<MusInPlaylistScreen> createState() => MusInPlaylistScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, name, img, imgnd,showlog,resre,(dynamic input, dynamic inputi, String sdazc) {onCallbackt(input, inputi, sdazc);});
 
 
 
@@ -49,7 +49,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     });
   }
   late  Function(dynamic) onCallback;
-  late  Function(dynamic,dynamic) dfv;
+  late  Function(dynamic,dynamic, String) dfv;
   late String palylsitid;
   late String palylsitname;
   late String palylsitimg;
@@ -59,7 +59,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   late VoidCallback reset;
   var player;
 
-  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad, VoidCallback dawsd, VoidCallback fgdfxg, Function(dynamic, dynamic) onkhngf){
+  MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad, VoidCallback dawsd, VoidCallback fgdfxg, Function(dynamic, dynamic, String) onkhngf){
     onCallback = onk;
     palylsitid = onki;
     showsearch = fg;
@@ -85,7 +85,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
       }
     });
     if(palylsitid != "install") {
-       langData = await apiService.getMusicInPlaylist(palylsitid);
+      langData = await apiService.getMusicInPlaylist(palylsitid);
     }else{
       langData = await apiService.getInstalledMusic();
     }
@@ -264,7 +264,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
           );
         }else{
 
-          return MussicCell( _searchedLangData[idx-1], (){sendpalulit(idx-1);});
+          return MussicCell( _searchedLangData[idx-1], (){sendpalulit(idx-1);}, context);
         }
       },
     );
@@ -367,14 +367,15 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
             ],
           );
         }else{
-          return MussicCell( _searchedLangData[idx-1], (){sendpalulit(idx-1);});
+          return MussicCell( _searchedLangData[idx-1], (){sendpalulit(idx-1);}, context);
         }
       },
     );
   }
 
   void sendpalulit(var fdsvds){
-    dfv(_searchedLangData,fdsvds);
+    print(_searchedLangData.toString() + fdsvds.toString() + palylsitname+ "ghfghnf");
+    dfv(_searchedLangData,fdsvds, palylsitname);
   }
 
 

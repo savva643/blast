@@ -3,9 +3,11 @@ import 'package:blast/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../api/api_service.dart';
 import '../parts/music_cell.dart';
+import '../providers/list_manager_provider.dart';
 
 
 
@@ -19,7 +21,8 @@ class MusicScreen extends StatefulWidget {
   final VoidCallback resre;
   final VoidCallback essension;
   final BuildContext parctx;
-  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.resre, required this.essension, required this.parctx}) : super(key: key);
+  final Function(dynamic input, dynamic inputi) onCallbackt;
+  MusicScreen({Key? key, required this.onCallback, required this.onCallbacki, required this.hie, required this.showlog, required this.resre, required this.essension, required this.parctx, required this.onCallbackt}) : super(key: key);
   @override
   State<MusicScreen> createState() => MusicScreenState((dynamic input) {onCallback(input);},onCallbacki, hie, showlog, resre,essension);
 
@@ -55,6 +58,11 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
   late VoidCallback showlog;
   late VoidCallback reseti;
   var player;
+
+
+
+
+  final String listKey = "top20";
 
   void _showSmallDialog(BuildContext context) {
     showDialog(
@@ -159,6 +167,7 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
     });
     var langData = await apiService.getTopMusic();
     setState(() {
+      context.read<ListManagerProvider>().createList('top20', langData);
       _searchedLangData = langData;
     });
   }
@@ -310,15 +319,31 @@ bottom: false,
             clipBehavior: Clip.none,
             children: [
               Row(children: [
-                Container(padding: const EdgeInsets.only(left: 12,top:  11),
-                    child:
-                    const Text("blast!",
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),)),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+
+                    // Мишура
+                    Positioned(
+                      top: -50,
+                      child: Image.asset(
+                        'assets/images/tinsel.png',
+                        width: 250,
+                      ),
+                    ),
+                    // Текст "blast!"
+                    Container(padding: EdgeInsets.only(left: 12,top: 12),
+                        child:const Text(
+                          "blast!",
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        )),
+                  ],
+                ),
                 Container(padding: const EdgeInsets.only(left: 6,top:  12),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
                       (Set<MaterialState> states) {
                     if (states.contains(MaterialState.pressed)) {
@@ -521,13 +546,33 @@ bottom: false,
               Row(children: [
                 Container(padding: const EdgeInsets.only(left: 12,top: 0),
                     child:
-                    const Text("blast!",
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),)),
+                    Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+
+                        // Мишура
+                        Positioned(
+                          left: -70,
+                          top: -64,
+                          child: Image.asset(
+                            'assets/images/tinsel.png',
+                            width: 250,
+                          ),
+                        ),
+                        // Текст "blast!"
+                        Container(padding: EdgeInsets.only(left: 0,top: 0),
+                            child:const Text(
+                              "blast!",
+                              style: TextStyle(
+                                fontSize: 40,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            )),
+                      ],
+                    )),
                 Container(padding: const EdgeInsets.only(left: 6,top: 2),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
                       (Set<MaterialState> states) {
                     if (states.contains(MaterialState.pressed)) {
@@ -600,11 +645,20 @@ bottom: false,
 
   Widget _loadListViewMore() {
     Size size = MediaQuery.of(context).size;
-    return ListView.builder(
-      itemCount: _searchedLangData.length+1,
-      itemBuilder: (BuildContext context, int idx)
-      {
-          return SizedBox(child: idx == 0 ?  const Column(
+    return Consumer<ListManagerProvider>(
+        builder: (context, listManager, child)
+    {
+      final list = listManager.getList(
+          'top20'); // Получить список из провайдера
+
+      if (list.isEmpty) {
+        return Center(child: Text('Нету треков'));
+      }
+
+      return ListView.builder(
+        itemCount: list.length + 1,
+        itemBuilder: (BuildContext context, int idx) {
+          return SizedBox(child: idx == 0 ? const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 10,),
@@ -619,173 +673,252 @@ bottom: false,
 
             ],
           )
-        :
-          MussicCellNumber(idx, _searchedLangData[idx-1], (){onCallback(_searchedLangData[idx-1]['idshaz']);})
+              :
+          MussicCellNumber(idx, list[idx - 1], () {
+            widget.onCallbackt(list, idx-1);
+          }, context)
           );
-      },
-    );
+        },
+      );
+    });
   }
 
 
    Widget _loadListView() {
      Size size = MediaQuery.of(context).size;
-    return ListView.builder(
-      itemCount: _searchedLangData.length+1,
-      itemBuilder: (BuildContext context, int idx)
-    {
-      if (idx == 0) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: size.width,
-              child:
-              PageView(
-                physics: const BouncingScrollPhysics(),
-                children: [
-                  Container(margin: const EdgeInsets.only(left: 32,right: 32), alignment: Alignment.center, child:
-                  Stack(alignment: Alignment.center,
-                    children: [
-                      RotationTransition(
-                          turns: Tween(begin: 0.0, end: 1.0).animate(controllermuscircle),
-                          child:Image.asset('assets/images/circleblast.png', width: 600,)),
-                      Container(padding: const EdgeInsets.only(left: 12,top: 12),
-                          child:
-                          Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: const EdgeInsets.only(right: 8), child:const Text("Джем",
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),)),Container(margin: const EdgeInsets.only(right: 8), child:
-                          IconButton(onPressed: ()  {
-                            onCallbacki();
-                          }, iconSize: 64,
-                              icon: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 300),
-                                  transitionBuilder: (Widget child, Animation<double> animation) {
-                                    return RotationTransition(
-                                      turns: Tween(begin: 0.75, end: 1.0).animate(animation),
-                                      child: ScaleTransition(scale: animation, child: child),
-                                    );
-                                  },
-                                  child:iconpla))),
-                            // Кнопка для "Настроить джем"
-                            Container(
-                              margin: const EdgeInsets.only(top: 16),
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  _showMainBottomSheet(widget.parctx);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[850]?.withOpacity(0.4),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 24, vertical: 12),
-                                ),
-                                child: const Text(
-                                  "Настроить джем",
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                          ],)
-                      ),
-                    ],)),
-                  SizedBox(width: 600, height: 600, child:
-                  Container(margin: const EdgeInsets.only(left: 32,right: 32), child:   Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(padding: const EdgeInsets.only(left: 12,right: 12), child:
-                      RotationTransition(
-                          turns: Tween(begin: 0.0, end: 1.0).animate(_controllere),
-                          child:Image.asset('assets/images/forclock.png', width: 600,))),
-                      // Часовая стрелка (короче)
-                      Container(height: 360, width: 360, child:
-                      RotationTransition(
-                        turns: Tween(begin: 0.0, end: 1.0).animate(
-                          CurvedAnimation(
-                            parent: _controllere,
-                            curve: Curves.linear,
-                          ),
-                        ),
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Container(
-                            height: 200, // Половина длины для часовой стрелки
-                            width: 40,
-                            decoration: const BoxDecoration(color: Colors.purpleAccent,borderRadius: BorderRadius.all(Radius.circular(200))),
-                          ),
-                        ),
-                      )),
-                      // Минутная стрелка (длиннее)
-                      Container(height: 280, width: 280, child:
-                      RotationTransition(
-                        turns: Tween(begin: 0.0, end: 12.0).animate(
-                          CurvedAnimation(
-                            parent: _controllere,
-                            curve: Curves.linear,
-                          ),
-                        ),
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Container(
-                            height: 160, // Длина минутной стрелки чуть больше
-                            width: 40,
-                            decoration: const BoxDecoration(color: Colors.purple,borderRadius: BorderRadius.all(Radius.circular(200))),
-                          ),
-                        ),
-                      )),
-                      Container(padding: const EdgeInsets.only(left: 12,top: 12),
-                          child:
-                          Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Container(margin: const EdgeInsets.only(right: 8), child:const Text("Эссенция",
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),)),Container(margin: const EdgeInsets.only(right: 8), child:
-                          IconButton(onPressed: ()  {
-                            essension();
-                          }, iconSize: 64,
-                              icon: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 300),
-                                  transitionBuilder: (Widget child, Animation<double> animation) {
-                                    return RotationTransition(
-                                      turns: Tween(begin: 0.75, end: 1.0).animate(animation),
-                                      child: ScaleTransition(scale: animation, child: child),
-                                    );
-                                  },
-                                  child:iconplaese)))],)
-                      ),
-                    ],
-                  ),
-                  ))
+    return Consumer<ListManagerProvider>(
+         builder: (context, listManager, child) {
+           final list = listManager.getList(
+               'top20'); // Получить список из провайдера
 
-                ],)
+           if (list.isEmpty) {
+             return Center(child: Text('Нету треков'));
+           }
 
-              ,),
-            const SizedBox(height: 10,),
-            const Center(child: Text("Чарт",
-              style: TextStyle(
-                fontSize: 30,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),),),
-            const SizedBox(height: 10,),
+           return ListView.builder(
+             itemCount: list.length + 1,
+             itemBuilder: (BuildContext context, int idx) {
+               if (idx == 0) {
+                 return Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   mainAxisSize: MainAxisSize.min,
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                     SizedBox(height: size.width,
+                       child:
+                       PageView(
+                         physics: const BouncingScrollPhysics(),
+                         children: [
+                           Container(margin: const EdgeInsets.only(
+                               left: 32, right: 32),
+                               alignment: Alignment.center,
+                               child:
+                               Stack(alignment: Alignment.center,
+                                 children: [
+                                   RotationTransition(
+                                       turns: Tween(begin: 0.0, end: 1.0)
+                                           .animate(controllermuscircle),
+                                       child: Image.asset(
+                                         'assets/images/circleblast.png',
+                                         width: 600,)),
+                                   Container(padding: const EdgeInsets.only(
+                                       left: 12, top: 12),
+                                       child:
+                                       Column(
+                                         mainAxisAlignment: MainAxisAlignment
+                                             .center,
+                                         children: [
+                                           Container(
+                                               margin: const EdgeInsets.only(
+                                                   right: 8),
+                                               child: const Text("Джем",
+                                                 style: TextStyle(
+                                                   fontSize: 40,
+                                                   fontFamily: 'Montserrat',
+                                                   fontWeight: FontWeight.w700,
+                                                   color: Colors.white,
+                                                 ),)),
+                                           Container(
+                                               margin: const EdgeInsets.only(
+                                                   right: 8), child:
+                                           IconButton(onPressed: () {
+                                             onCallbacki();
+                                           }, iconSize: 64,
+                                               icon: AnimatedSwitcher(
+                                                   duration: const Duration(
+                                                       milliseconds: 300),
+                                                   transitionBuilder: (
+                                                       Widget child, Animation<
+                                                           double> animation) {
+                                                     return RotationTransition(
+                                                       turns: Tween(begin: 0.75,
+                                                           end: 1.0).animate(
+                                                           animation),
+                                                       child: ScaleTransition(
+                                                           scale: animation,
+                                                           child: child),
+                                                     );
+                                                   },
+                                                   child: iconpla))),
+                                           // Кнопка для "Настроить джем"
+                                           Container(
+                                             margin: const EdgeInsets.only(
+                                                 top: 16),
+                                             child: ElevatedButton(
+                                               onPressed: () {
+                                                 _showMainBottomSheet(
+                                                     widget.parctx);
+                                               },
+                                               style: ElevatedButton.styleFrom(
+                                                 backgroundColor: Colors
+                                                     .grey[850]?.withOpacity(
+                                                     0.4),
+                                                 foregroundColor: Colors.white,
+                                                 shape: RoundedRectangleBorder(
+                                                   borderRadius: BorderRadius
+                                                       .circular(20),
+                                                 ),
+                                                 padding: const EdgeInsets
+                                                     .symmetric(
+                                                     horizontal: 24,
+                                                     vertical: 12),
+                                               ),
+                                               child: const Text(
+                                                 "Настроить джем",
+                                                 style: TextStyle(fontSize: 16,
+                                                     fontWeight: FontWeight
+                                                         .bold),
+                                               ),
+                                             ),
+                                           ),
+                                         ],)
+                                   ),
+                                 ],)),
+                           SizedBox(width: 600, height: 600, child:
+                           Container(
+                             margin: const EdgeInsets.only(left: 32, right: 32),
+                             child: Stack(
+                               alignment: Alignment.center,
+                               children: [
+                                 Container(padding: const EdgeInsets.only(
+                                     left: 12, right: 12), child:
+                                 RotationTransition(
+                                     turns: Tween(begin: 0.0, end: 1.0).animate(
+                                         _controllere),
+                                     child: Image.asset(
+                                       'assets/images/forclock.png',
+                                       width: 600,))),
+                                 // Часовая стрелка (короче)
+                                 Container(height: 360, width: 360, child:
+                                 RotationTransition(
+                                   turns: Tween(begin: 0.0, end: 1.0).animate(
+                                     CurvedAnimation(
+                                       parent: _controllere,
+                                       curve: Curves.linear,
+                                     ),
+                                   ),
+                                   child: Align(
+                                     alignment: Alignment.topCenter,
+                                     child: Container(
+                                       height: 200,
+                                       // Половина длины для часовой стрелки
+                                       width: 40,
+                                       decoration: const BoxDecoration(
+                                           color: Colors.purpleAccent,
+                                           borderRadius: BorderRadius.all(
+                                               Radius.circular(200))),
+                                     ),
+                                   ),
+                                 )),
+                                 // Минутная стрелка (длиннее)
+                                 Container(height: 280, width: 280, child:
+                                 RotationTransition(
+                                   turns: Tween(begin: 0.0, end: 12.0).animate(
+                                     CurvedAnimation(
+                                       parent: _controllere,
+                                       curve: Curves.linear,
+                                     ),
+                                   ),
+                                   child: Align(
+                                     alignment: Alignment.topCenter,
+                                     child: Container(
+                                       height: 160,
+                                       // Длина минутной стрелки чуть больше
+                                       width: 40,
+                                       decoration: const BoxDecoration(
+                                           color: Colors.purple,
+                                           borderRadius: BorderRadius.all(
+                                               Radius.circular(200))),
+                                     ),
+                                   ),
+                                 )),
+                                 Container(padding: const EdgeInsets.only(
+                                     left: 12, top: 12),
+                                     child:
+                                     Column(mainAxisAlignment: MainAxisAlignment
+                                         .center,
+                                       children: [
+                                         Container(
+                                             margin: const EdgeInsets.only(
+                                                 right: 8),
+                                             child: const Text("Эссенция",
+                                               style: TextStyle(
+                                                 fontSize: 40,
+                                                 fontFamily: 'Montserrat',
+                                                 fontWeight: FontWeight.w700,
+                                                 color: Colors.white,
+                                               ),)),
+                                         Container(
+                                             margin: const EdgeInsets.only(
+                                                 right: 8), child:
+                                         IconButton(onPressed: () {
+                                           essension();
+                                         }, iconSize: 64,
+                                             icon: AnimatedSwitcher(
+                                                 duration: const Duration(
+                                                     milliseconds: 300),
+                                                 transitionBuilder: (
+                                                     Widget child, Animation<
+                                                         double> animation) {
+                                                   return RotationTransition(
+                                                     turns: Tween(
+                                                         begin: 0.75, end: 1.0)
+                                                         .animate(animation),
+                                                     child: ScaleTransition(
+                                                         scale: animation,
+                                                         child: child),
+                                                   );
+                                                 },
+                                                 child: iconplaese)))
+                                       ],)
+                                 ),
+                               ],
+                             ),
+                           ))
 
-          ],
-        );
-      }else{
-      return MussicCellNumber(idx, _searchedLangData[idx-1], (){onCallback(_searchedLangData[idx-1]['idshaz']);});
-    }
-      },
-    );
+                         ],)
+
+                       ,),
+                     const SizedBox(height: 10,),
+                     const Center(child: Text("Чарт",
+                       style: TextStyle(
+                         fontSize: 30,
+                         fontFamily: 'Montserrat',
+                         fontWeight: FontWeight.w700,
+                         color: Colors.white,
+                       ),),),
+                     const SizedBox(height: 10,),
+
+                   ],
+                 );
+               } else {
+                 return MussicCellNumber(idx, list[idx - 1], () {
+                   widget.onCallbackt(list, idx-1);
+                 }, context);
+               }
+             },
+           );
+         });
   }
 
   String imgprofile = "";

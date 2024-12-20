@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:blast/screens/search_screen.dart';
@@ -27,8 +28,13 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../api/api_service.dart';
+import '../api/record_api.dart';
 import '../parts/bottomsheet_about_music.dart';
+import '../parts/bottomsheet_queue.dart';
+import '../parts/bottomsheet_recognize.dart';
 import '../parts/player_widgets.dart';
+import '../providers/queue_manager_provider.dart';
 import 'AudioManager.dart';
 import 'background_task.dart';
 import 'login.dart';
@@ -76,6 +82,768 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   Timer? _fadeTimer;
 
 
+  double dsadsa = 0.0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Widget playerik(BuildContext context) {
+
+    final TextStyle nameStyle = const TextStyle(
+      fontSize: 28,
+      fontFamily: 'Montserrat',
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+    );
+    final TextStyle artistStyle = const TextStyle(
+      fontSize: 20,
+      fontFamily: 'Montserrat',
+      fontWeight: FontWeight.w400,
+      color: Colors.grey,
+    );
+    return Scaffold(
+      backgroundColor: const Color(0xFF0f0f10).withOpacity(0),
+      body: SafeArea(
+        child: Container(padding: EdgeInsets.only(top: 10, bottom: 10),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double availableHeight = constraints.maxHeight;
+              final double availablew = constraints.maxWidth;
+              final double imageHeight = availablew * 0.86 <
+                  availableHeight * 0.46 ? availablew * 0.86 : availableHeight *
+                  0.46; // 40% экрана под изображение
+
+
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(padding: EdgeInsets.all(8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end, children: [
+                        SizedBox(width: 30,
+                            height: 30,
+                            child: IconButton(
+                                onPressed: () {
+                                  connectToWebSocket();
+                                },
+                                padding: EdgeInsets
+                                    .zero,
+                                icon: Icon(
+                                  Icons
+                                      .devices_rounded,
+                                  size: 30,
+                                  color: Colors
+                                      .white,))),
+                        SizedBox(width: 20,),
+                        SizedBox(width: 30,
+                            height: 30,
+                            child: IconButton(
+                                disabledColor: Color.fromARGB(
+                                    255, 123, 123, 124),
+                                onPressed: null,
+                                padding: EdgeInsets
+                                    .zero,
+                                icon: Icon(
+                                  Icons
+                                      .queue_music_rounded,
+                                  size: 30,
+                                  color: Color.fromARGB(255, 123, 123, 124),))),
+                        SizedBox(width: 10,),
+                        SizedBox(height: 30,
+                            width: 30,
+                            child: IconButton(
+                                disabledColor: Color.fromARGB(
+                                    255, 123, 123, 124),
+                                onPressed: () {
+                                  showTrackOptionsBottomSheet(context, langData[0]);
+                                },
+                                padding: EdgeInsets
+                                    .zero,
+                                icon: Icon(Icons
+                                    .more_vert_rounded,
+                                  size: 30,
+                                  color: Color.fromARGB(255, 255, 255, 255),)))
+                      ],)),
+                  // Обложка, круглая картинка исполнителя и информация о песне
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                    AnimatedOpacity(
+                    opacity: opacityi3,
+              duration: Duration(
+              milliseconds: 400),
+              child:
+                      AnimatedOpacity(
+                          opacity: opacityi1,
+                          duration: Duration(
+                              milliseconds: 0),
+                          child: AnimatedBuilder(
+                              animation: animation,
+                              builder: (context,
+                                  child) {
+                                return Align(
+                                    alignment: animation
+                                        .value,
+                                    child:
+                                    AnimatedContainer(
+                                      constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
+                                      margin: EdgeInsets
+                                          .only(
+                                        left: 30,
+                                        right: 30,),
+                                      height: imgwh == 80 ? imgwh : imageHeight,
+                                      width: imgwh == 80 ? imgwh : imageHeight,
+                                      duration: Duration(
+                                          milliseconds: 400),
+                                      child: RoundedImage(imageUrl: imgmus, size: imageHeight),
+                                    ));}))),
+
+                      const SizedBox(height: 16),
+                      AnimatedOpacity(opacity: opacity,
+                          duration: Duration(
+                              milliseconds: 400),
+                          onEnd: () {
+                            setnewState(() {
+                              if (videoope) {
+                                dsadsa = MediaQuery
+                                    .of(context)
+                                    .size.width;
+                                opacityi1 = 0;
+                              }
+                            });
+                          },
+                          child: AnimatedContainer(
+                              duration: Duration(
+                                  milliseconds: 400),
+                              transform: Matrix4
+                                  .translation(
+                                  vector.Vector3(
+                                      0, squareScaleA, 0)),
+                              child: Container(
+                                height: 50,
+                                alignment: Alignment.center,
+                                width: MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width - 32,
+                                child: buildTextOrMarquee(
+                                    namemus, nameStyle, MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width - 32),
+                              ))),
+                      AnimatedOpacity(opacity: opacity,
+                          duration: Duration(
+                              milliseconds: 400),
+                          child: AnimatedContainer(
+                            alignment: Alignment.center,
+                            duration: Duration(
+                                milliseconds: 400),
+                            transform: Matrix4
+                                .translation(
+                                vector.Vector3(
+                                    0, squareScaleA, 0)),
+                            child: Container(
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // Круглая картинка исполнителя
+                                  CircleAvatar(
+                                    radius: 24, // Размер аватара
+                                    backgroundImage: NetworkImage(
+                                      imgispol, // Ссылка на изображение исполнителя
+                                    ),
+                                    backgroundColor: Colors
+                                        .grey[800], // Цвет фона, если изображения нет
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Имя исполнителя
+                                  Container(
+                                    height: 50,
+                                    alignment: Alignment.center,
+                                    width: shouldScroll(
+                                        ispolmus, artistStyle, MediaQuery
+                                        .of(context)
+                                        .size
+                                        .width - 120) ? MediaQuery
+                                        .of(context)
+                                        .size
+                                        .width - 120 : getTextWidth(
+                                        ispolmus, artistStyle) + 16,
+                                    child: buildTextOrMarquee(
+                                      ispolmus,
+                                      artistStyle,
+                                      shouldScroll(
+                                          ispolmus, artistStyle, MediaQuery
+                                          .of(context)
+                                          .size
+                                          .width - 120) ? MediaQuery
+                                          .of(context)
+                                          .size
+                                          .width - 120 : getTextWidth(
+                                          ispolmus, artistStyle) + 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),)),
+                    ],
+                  ),
+                  // Анимированный слайдер
+                  Column(
+                    children: [
+                      AnimatedOpacity(opacity: opacity,
+                          duration: Duration(
+                              milliseconds: 400),
+                          child: AnimatedContainer(
+                              duration: Duration(
+                                  milliseconds: 400),
+                              transform: Matrix4
+                                  .translation(
+                                  vector.Vector3(
+                                      0, squareScaleA, 0)),
+                              child: SizedBox(
+                                height: 8,
+                                child: StreamBuilder(
+                                  stream: AudioService
+                                      .positionStream,
+                                  builder: (context,
+                                      snapshot) {
+                                    if (snapshot
+                                        .hasData &&
+                                        !snapshot
+                                            .hasError &&
+                                        totalDuration >
+                                            0) {
+                                      final position = snapshot
+                                          .data as Duration;
+                                      return
+                                        GestureDetector(
+                                          onTapDown: (_) {
+                                            setState(() {
+                                              isPressed =
+                                              true; // Устанавливаем флаг нажатия
+                                              scaleY =
+                                              1.4; // Увеличиваем слайдер по оси Y
+                                              translateX =
+                                              12.0; // Сдвигаем слайдер влево
+                                              translateY = 10.0;
+                                            });
+                                          },
+                                          onTapUp: (_) {
+                                            setState(() {
+                                              isPressed =
+                                              false; // Сбрасываем флаг нажатия
+                                              scaleY =
+                                              1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                              translateX =
+                                              26.0; // Возвращаем слайдер в исходное положение
+                                              translateY = 4.0;
+                                            });
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: Duration(
+                                                milliseconds: 200),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: translateX),
+                                            curve: Curves.easeInOut,
+                                            transform: Matrix4.identity()
+                                              ..scale(1.0, scaleY),
+                                            // Применяем масштаб
+                                            child: FlutterSlider(
+                                              values: isPressed
+                                                  ? [newposition]
+                                                  : [currentPosition],
+                                              max: totalDuration,
+                                              min: 0,
+                                              tooltip: FlutterSliderTooltip(
+                                                disabled: true, // Отключаем текст со значением
+                                              ),
+                                              handler: FlutterSliderHandler(
+                                                decoration: BoxDecoration(
+                                                  color: Colors
+                                                      .transparent, // Делаем thumb полностью прозрачным
+                                                ),
+                                                child: SizedBox
+                                                    .shrink(), // Полностью скрываем thumb
+                                              ),
+                                              onDragStarted: (handlerIndex,
+                                                  lowerValue, upperValue) {
+                                                setState(() {
+                                                  newposition = lowerValue;
+                                                });
+                                              },
+                                              onDragging: (handlerIndex,
+                                                  lowerValue, upperValue) {
+                                                // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                                setState(() {
+                                                  newposition =
+                                                      lowerValue; // Обновляем текущую позицию слайдера
+                                                  setState(() {
+                                                    isPressed =
+                                                    true; // Устанавливаем флаг нажатия
+                                                    scaleY =
+                                                    1.4; // Увеличиваем слайдер по оси Y
+                                                    translateX =
+                                                    12.0; // Сдвигаем слайдер влево
+                                                    translateY = 10.0;
+                                                  });
+                                                });
+                                              },
+                                              onDragCompleted: (handlerIndex,
+                                                  lowerValue, upperValue) {
+                                                // Логика завершения перетаскивания
+                                                setState(() {
+                                                  currentPosition = lowerValue;
+                                                });
+                                                Duration jda = Duration(
+                                                    milliseconds: lowerValue
+                                                        .toInt());
+                                                print("Position: ${jda
+                                                    .inMilliseconds} ms");
+                                                setState(() {
+                                                  isPressed =
+                                                  false; // Сбрасываем флаг нажатия
+                                                  scaleY =
+                                                  1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                  translateX =
+                                                  26.0; // Возвращаем слайдер в исходное положение
+                                                  translateY = 4.0;
+                                                });
+                                                if (devicecon) {
+                                                  List<dynamic> sdc = [
+                                                    {
+                                                      "type": "media",
+                                                      "what": "seekto",
+                                                      "timecurrent": jda
+                                                          .inSeconds,
+                                                      "iddevice": "2"
+                                                    }
+                                                  ];
+                                                  String jsonString = jsonEncode(sdc[0]);
+                                                  // Предполагается, что channeldev доступен и открыт для отправки
+                                                  channeldev.sink.add(jsonString);
+                                                } else {
+                                                  if (instalumusa) {
+                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+                                                  } else {
+                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+                                                  }
+                                                }
+                                              },
+                                              trackBar: FlutterSliderTrackBar(
+                                                activeTrackBarHeight: 8,
+                                                inactiveTrackBarHeight: 8,
+                                                activeTrackBar: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius: BorderRadius
+                                                      .circular(10),
+                                                ),
+                                                inactiveTrackBar: BoxDecoration(
+                                                  color: Colors.blue
+                                                      .withOpacity(0.3),
+                                                  borderRadius: BorderRadius
+                                                      .circular(10),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                    } else {
+                                      return GestureDetector(
+                                        onTapDown: (_) {
+                                          setState(() {
+                                            isPressed =
+                                            true; // Устанавливаем флаг нажатия
+                                            scaleY =
+                                            1.4; // Увеличиваем слайдер по оси Y
+                                            translateX =
+                                            12.0; // Сдвигаем слайдер влево
+                                            translateY = 10.0;
+                                          });
+                                        },
+                                        onTapUp: (_) {
+                                          setState(() {
+                                            isPressed =
+                                            false; // Сбрасываем флаг нажатия
+                                            scaleY =
+                                            1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                            translateX =
+                                            26.0; // Возвращаем слайдер в исходное положение
+                                            translateY = 4.0;
+                                          });
+                                        },
+                                        child: AnimatedContainer(
+                                          duration: Duration(milliseconds: 200),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: translateX),
+                                          curve: Curves.easeInOut,
+                                          transform: Matrix4.identity()
+                                            ..scale(1.0, scaleY),
+                                          // Применяем масштаб
+                                          child: FlutterSlider(
+                                            values: isPressed
+                                                ? [newposition]
+                                                : [currentPosition],
+                                            max: totalDuration,
+                                            min: 0,
+                                            tooltip: FlutterSliderTooltip(
+                                              disabled: true, // Отключаем текст со значением
+                                            ),
+                                            handler: FlutterSliderHandler(
+                                              decoration: BoxDecoration(
+                                                color: Colors
+                                                    .transparent, // Делаем thumb полностью прозрачным
+                                              ),
+                                              child: SizedBox
+                                                  .shrink(), // Полностью скрываем thumb
+                                            ),
+                                            onDragStarted: (handlerIndex,
+                                                lowerValue, upperValue) {
+                                              setState(() {
+                                                newposition = lowerValue;
+                                              });
+                                            },
+                                            onDragging: (handlerIndex,
+                                                lowerValue, upperValue) {
+                                              // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                              setState(() {
+                                                newposition =
+                                                    lowerValue; // Обновляем текущую позицию слайдера
+                                                setState(() {
+                                                  isPressed =
+                                                  true; // Устанавливаем флаг нажатия
+                                                  scaleY =
+                                                  1.4; // Увеличиваем слайдер по оси Y
+                                                  translateX =
+                                                  12.0; // Сдвигаем слайдер влево
+                                                  translateY = 10.0;
+                                                });
+                                              });
+                                            },
+                                            onDragCompleted: (handlerIndex,
+                                                lowerValue, upperValue) {
+                                              // Логика завершения перетаскивания
+                                              setState(() {
+                                                currentPosition = lowerValue;
+                                              });
+                                              Duration jda = Duration(
+                                                  milliseconds: lowerValue
+                                                      .toInt());
+                                              print("Position: ${jda
+                                                  .inMilliseconds} ms");
+                                              setState(() {
+                                                isPressed =
+                                                false; // Сбрасываем флаг нажатия
+                                                scaleY =
+                                                1.0; // Возвращаем слайдер к исходному размеру по оси Y
+                                                translateX =
+                                                26.0; // Возвращаем слайдер в исходное положение
+                                                translateY = 4.0;
+                                              });
+                                              if (devicecon) {
+                                                List<dynamic> sdc = [
+                                                  {
+                                                    "type": "media",
+                                                    "what": "seekto",
+                                                    "timecurrent": jda
+                                                        .inSeconds,
+                                                    "iddevice": "2"
+                                                  }
+                                                ];
+                                                String jsonString = jsonEncode(sdc[0]);
+                                                // Предполагается, что channeldev доступен и открыт для отправки
+                                                channeldev.sink.add(jsonString);
+                                              } else {
+                                                if (instalumusa) {
+                                                  AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+                                                } else {
+                                                  AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+                                                }
+                                              }
+                                            },
+                                            trackBar: FlutterSliderTrackBar(
+                                              activeTrackBarHeight: 8,
+                                              inactiveTrackBarHeight: 8,
+                                              activeTrackBar: BoxDecoration(
+                                                color: Colors.blue,
+                                                borderRadius: BorderRadius
+                                                    .circular(10),
+                                              ),
+                                              inactiveTrackBar: BoxDecoration(
+                                                color: Colors.blue.withOpacity(
+                                                    0.3),
+                                                borderRadius: BorderRadius
+                                                    .circular(10),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),))),
+              AnimatedOpacity(opacity: opacity,
+              duration: Duration(
+              milliseconds: 400),
+              child: AnimatedContainer(
+              duration: Duration(
+              milliseconds: 400),
+              transform: Matrix4
+                  .translation(
+              vector.Vector3(
+              0, squareScaleA, 0)),
+              child: AnimatedPadding(
+                        padding: EdgeInsets.only(left: 18 + translateX,
+                            right: 18 + translateX,
+                            top: translateY),
+                        duration: Duration(milliseconds: 200),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 200),
+                              // Длительность анимации
+                              style: TextStyle(
+                                fontSize: isPressed ? 16 : 14,
+                                // Увеличиваем текст при нажатии
+                                color: isPressed ? Colors.white : Colors.grey,
+                                // Меняем цвет
+                                fontWeight: FontWeight.bold,
+                              ),
+                              child: Text(
+                                formatDuration(Duration(
+                                    milliseconds: currentPosition.toInt())),
+                              ),
+                            ),
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 200),
+                              // Длительность анимации
+                              style: TextStyle(
+                                fontSize: isPressed ? 16 : 14,
+                                // Увеличиваем текст при нажатии
+                                color: isPressed ? Colors.white : Colors.grey,
+                                // Меняем цвет
+                                fontWeight: FontWeight.bold,
+                              ),
+                              child: Text(
+                                formatDuration(Duration(
+                                    milliseconds: totalDuration.toInt())),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ))),
+                    ],
+                  ),
+                  // Кнопки управления
+                  AnimatedContainer(
+                      duration: Duration(
+                          milliseconds: 400),
+                      transform: Matrix4.translation(
+                          vector.Vector3(
+                              0, squareScaleA, 0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment
+                            .center,
+                        children: [
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: () {
+                                    toggleLike(0);
+                                  },
+                                  icon: Image(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      image: isDisLiked
+                                          ? AssetImage(
+                                          'assets/images/unloveyes.png')
+                                          : AssetImage(
+                                          'assets/images/unloveno.png'),
+                                      width: 100
+                                  ))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: canrevew ? Color.fromARGB(
+                                      255, 255, 255, 255) : Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: canrevew ? previosmusic : null,
+                                  icon: Image(
+                                      color: canrevew ? Color.fromARGB(
+                                          255, 255, 255, 255) : Color.fromARGB(
+                                          255, 123, 123, 124),
+                                      image: AssetImage(
+                                          'assets/images/reveuws.png'),
+                                      width: 100
+                                  ))),
+                          SizedBox(height: 50,
+                              width: 50,
+                              child: loadingmus
+                                  ? CircularProgressIndicator()
+                                  : IconButton(
+                                  onPressed: () {
+                                    setnewState(() {
+                                      playpause();
+                                    });
+                                  },
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: AnimatedSwitcher(
+                                      duration: Duration(milliseconds: 300),
+                                      transitionBuilder: (Widget child,
+                                          Animation<double> animation) {
+                                        return RotationTransition(
+                                          turns: Tween(begin: 0.75, end: 1.0)
+                                              .animate(animation),
+                                          child: ScaleTransition(
+                                              scale: animation, child: child),
+                                        );
+                                      }, child: Icon(
+                                    iconpla.icon,
+                                    key: videoope ? ValueKey<bool>(controller.player.state.playing) : ValueKey<bool>(AudioService.playbackState.playing),
+                                    size: 50,
+                                    color: Colors
+                                        .white,)))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: cannext ? Color.fromARGB(
+                                      255, 255, 255, 255) : Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: cannext ? nextmusic : null,
+                                  icon: Image(
+                                    color: cannext ? Color.fromARGB(
+                                        255, 255, 255, 255) : Color.fromARGB(
+                                        255, 123, 123, 124),
+                                    image: AssetImage(
+                                        'assets/images/nexts.png'),
+                                    width: 120,
+                                    height: 120,
+                                  ))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  onPressed: () {
+                                    toggleLike(1);
+                                  }, // () {installmusic(_langData[0]);},
+                                  icon: Image(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      image: isLiked
+                                          ? AssetImage(
+                                          'assets/images/loveyes.png')
+                                          : AssetImage(
+                                          'assets/images/loveno.png'),
+                                      width: 100
+                                  ))),
+                        ],)),
+                  // Дополнительные кнопки
+                  AnimatedContainer(
+                      duration: Duration(
+                          milliseconds: 400),
+                      transform: Matrix4.translation(
+                          vector.Vector3(
+                              0, squareScaleA, 0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment
+                            .center,
+                        children: [
+                          SizedBox(width: 40,
+                              height: 40,
+                              child: IconButton(
+                                  onPressed: null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(
+                                    CupertinoIcons.shuffle,
+                                    size: 32,
+                                    color: Colors
+                                        .white,))),
+                          SizedBox(width: 40,
+                              height: 40,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(
+                                    Icons
+                                        .queue_music_rounded,
+                                    size: 40,
+                                    color: Color.fromARGB(
+                                        255, 123, 123, 124),))),
+
+                          SizedBox(width: 40,
+                              height: 40,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: langData[0]['vidos'] != "0" ? () {
+                                    setnewState(() {
+                                      setvi(shazid, true, false);
+                                    });
+                                  } : null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Image(
+                                    color: langData[0]['vidos'] != "0" ? Color
+                                        .fromARGB(255, 255, 255, 255) : Color
+                                        .fromARGB(255, 123, 123, 124),
+                                    image: AssetImage(videoope
+                                        ? 'assets/images/musicon.png'
+                                        : 'assets/images/video.png'),
+                                    width: 120,
+                                    height: 120,
+                                  ))),
+                          SizedBox(height: 40,
+                              width: 40,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(Icons.loop_rounded,
+                                    size: 40,
+                                    color: Color.fromARGB(
+                                        255, 123, 123, 124),))),
+                        ],))
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
+
+
+
+
+  final ApiService apiService = ApiService();
+
   bool essensionbool = false;
   Future<void> essension() async {
     if(!essensionbool){
@@ -85,14 +853,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       }else{
         AudioService.pause();
       }
-      var urli = Uri.parse("https://kompot.site/getesemus");
-
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-      print(dff);
+      var langData = await apiService.getEssensionRandom();
       setState(() {
         nestedArray.clear();
-        nestedArray.add(jsonDecode(dff));
+        nestedArray.add(langData);
         getaboutmus(nestedArray[0]["idshaz"], false, false, true, false);
       });
     }else{
@@ -110,19 +874,20 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
   Future<void> playVideo(String shazidi, bool frommus) async {
     if (shazid != shazidi || frommus) {
-      var urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazidi);
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-      print(dff);
+      var aboutmus = await apiService.getAboutMusic(shazidi);
       setState(() {
-        langData[0] = jsonDecode(dff);
+        langData[0] = aboutmus;
         videoope = true;
         vidaftermus = langData[0]['id'];
         videob.open(Media(langData[0]['vidos']));
         if (!frommus) {
           _showModalSheet();
+          dsadsa = MediaQuery
+              .of(context)
+              .size.width;
           opacityi1 = 0;
-          opacityi2 = 1;
+          videoopacity = 1;
+
         }
 
         iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(AudioService.playbackState.playing));
@@ -136,6 +901,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           _childKey.currentState?.updateIconese(Icon(
               Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
         }
+        print("dsfvdfvs"+langData[0]["doi"].toString());
         if(langData[0]["doi"] == "0"){
           isDisLiked = true;
           isLiked = false;
@@ -151,12 +917,140 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         imgmus = langData[0]['img'];
         idmus = langData[0]['id'];
         shazid = langData[0]['idshaz'];
+        imgispol = langData[0]['messageimg'];
         _toogleAnimky();
+        Future.delayed(Duration(milliseconds: 400), opaka);
       });
     } else {
       playpause();
     }
   }
+
+  void dragStarted1(double lowerValue){
+    setState(() {
+      newposition = lowerValue;
+    });
+  }
+
+  void dragCompleted1(double lowerValue){
+    setState(() {
+      currentPosition = lowerValue;
+    });
+    Duration jda = Duration(
+        milliseconds: lowerValue
+            .toInt());
+    print("Position: ${jda
+        .inMilliseconds} ms");
+    setState(() {
+      isPressed =
+      false; // Сбрасываем флаг нажатия
+      scaleY =
+      1.0; // Возвращаем слайдер к исходному размеру по оси Y
+      translateX =
+      26.0; // Возвращаем слайдер в исходное положение
+      translateY = 4.0;
+    });
+    if (devicecon) {
+      List<dynamic> sdc = [
+        {
+          "type": "media",
+          "what": "seekto",
+          "timecurrent": jda
+              .inSeconds,
+          "iddevice": "2"
+        }
+      ];
+      String jsonString = jsonEncode(sdc[0]);
+      // Предполагается, что channeldev доступен и открыт для отправки
+      channeldev.sink.add(jsonString);
+    } else {
+      if (instalumusa) {
+        AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
+      } else {
+        AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
+      }
+    }
+  }
+
+  void tapdown1(){
+    setState(() {
+      isPressed =
+      true; // Устанавливаем флаг нажатия
+      scaleY =
+      1.4; // Увеличиваем слайдер по оси Y
+      translateX =
+      12.0; // Сдвигаем слайдер влево
+      translateY = 10.0;
+    });
+  }
+
+  void tapup1(){
+    setState(() {
+      isPressed =
+      false; // Сбрасываем флаг нажатия
+      scaleY =
+      1.0; // Возвращаем слайдер к исходному размеру по оси Y
+      translateX =
+      26.0; // Возвращаем слайдер в исходное положение
+      translateY = 4.0;
+    });
+  }
+
+  void opaka(){
+    print("dushnila"+videoope.toString());
+    if(_isBottomSheetOpen) {
+      setState(() {
+        setnewState(() {
+          if (videoope) {
+            opacityi1 = 0;
+            videoopacity = 1;
+            dsadsa = MediaQuery
+                .of(context)
+                .size
+                .width;
+            opacity = 0;
+          } else {
+            opacityi1 = 1;
+            opacity = 1;
+            videoopacity = 0;
+            dsadsa = 0;
+          }
+        });
+      });
+    }else{
+      setState(() {
+        if (videoope) {
+          opacityi1 = 0;
+          videoopacity = 1;
+          dsadsa = MediaQuery
+              .of(context)
+              .size
+              .width;
+          opacity = 0;
+        } else {
+          opacityi1 = 1;
+          opacity = 1;
+          videoopacity = 0;
+          dsadsa = 0;
+        }
+      });
+    }
+    print("dushnila1"+dsadsa.toString());
+  }
+
+  void opaka2(){
+    print("dushnilaoff"+videoope.toString());
+    setState(() {
+      setnewState((){
+        if (!videoope) {
+          opacityi1 = 1;
+          videoopacity = 0;
+          dsadsa = 0;
+        }
+      });
+    });
+  }
+
   double scaleY = 1.0; // Начальный масштаб по оси Y (высота)
   double translateX = 26; // Начальное смещение по оси X (сдвиг влево)
   double translateY = 4.0;
@@ -167,7 +1061,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   String namemus = "Название";
   String ispolmus = "Исполнитель";
   String imgmus = "https://kompot.site/img/music.jpg";
-
+  String imgispol = "https://kompot.site/img/music.jpg";
   bool _isMuted = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS); // Состояние звука
   bool _isWeb = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS); // Проверка для iOS на вебе
 
@@ -201,6 +1095,66 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
         print("hyffyj");
         if (event != null) {
+          if (event is Map && event.containsKey('currentTracki')) {
+            final currentTrack = event['currentTracki'];
+            if (currentTrack != null) {
+              context.read<QueueManagerProvider>().setCurrentTrack(currentTrack);
+            }
+          }
+          if (event is Map && event.containsKey('nextTrack')) {
+            final currentTrack = event['nextTrack'];
+            if (currentTrack != null) {
+              print("nextvid6");
+              if(currentTrack['vidos'] != '0'){
+                print("nextvid7");
+                playVideo(currentTrack['idshaz'], false);
+                setMusicInQueue(1, currentTrack['idshaz'], true);
+              }
+              else{
+                print("nextvidno2");
+                AudioService.customAction('next', {});
+              }
+            }
+          }
+          if (event is Map && event.containsKey('previousTrack')) {
+            final currentTrack = event['previousTrack'];
+            if (currentTrack != null) {
+              if(currentTrack['vidos'] != '0'){
+                playVideo(currentTrack['idshaz'], false);
+                setMusicInQueue(0, currentTrack['idshaz'], true);
+              }
+              else{
+                AudioService.customAction('previous', {});
+              }
+            }
+          }
+          if (event is Map && event.containsKey('setqueue')) {
+            final queue = event['setqueue'];
+            if (queue != null) {
+              context.read<QueueManagerProvider>().setQueue(queue);
+            }
+          }
+          if(_isBottomSheetOpen){
+            setnewState(() {
+              setState(() {
+                if (event.containsKey('isShuffleEnabled')) {
+                  _isShuffleEnabled = event['isShuffleEnabled'];
+                }
+                if (event.containsKey('repeatMode')) {
+                  _repeatMode = LoopMode.values[event['repeatMode']];
+                }
+              });
+            });
+          }else{
+            setState(() {
+              if (event.containsKey('isShuffleEnabled')) {
+                _isShuffleEnabled = event['isShuffleEnabled'];
+              }
+              if (event.containsKey('repeatMode')) {
+                _repeatMode = LoopMode.values[event['repeatMode']];
+              }
+            });
+            }
           setState(() {
             if(_isBottomSheetOpen){
               setnewState(() {
@@ -229,10 +1183,19 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                     extras: {
                       'idshaz': trackData['extras']['idshaz'],
                       'url': trackData['extras']['url'],
+                      'messageimg': trackData['extras']['messageimg'],
+                      'short': trackData['extras']['short'],
+                      'txt': trackData['extras']['txt'],
+                      'vidos': trackData['extras']['vidos'],
+                      'bgvideo': trackData['extras']['bgvideo'],
+                      'elir': trackData['extras']['elir'],
                     },
                   );
+                  final dwa = event['video'] as bool;
                   print("fvdsgvv"+currentTrack.toString());
-                  getaboutmusmini(currentTrack);
+                  if(dwa == false) {
+                    getaboutmusmini(currentTrack);
+                  }
                   print("fvdsfgdfgdt"+trackData.toString());
                 }
                 if(instalumusa) {
@@ -271,10 +1234,20 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                   extras: {
                     'idshaz': trackData['extras']['idshaz'],
                     'url': trackData['extras']['url'],
+                    'messageimg': trackData['extras']['messageimg'],
+                    'short': trackData['extras']['short'],
+                    'txt': trackData['extras']['txt'],
+                    'vidos': trackData['extras']['vidos'],
+                    'bgvideo': trackData['extras']['bgvideo'],
+                    'elir': trackData['extras']['elir'],
                   },
                 );
                 print("fvdsgvv");
-                getaboutmusmini(currentTrack);
+                final dwa = event['video'] as bool;
+                print("fvdsgvv"+currentTrack.toString());
+                if(dwa == false) {
+                  getaboutmusmini(currentTrack);
+                }
                 print("fvdsfgdfgdt"+trackData.toString());
               }
               if (instalumusa) {
@@ -491,6 +1464,12 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         extras: {
           'idshaz': langData[0]['idshaz'],
           'url': langData[0]['url'],
+          'messageimg': langData[0]['messageimg'],
+          'short': langData[0]['short'],
+          'txt': langData[0]['txt'],
+          'vidos': langData[0]['vidos'],
+          'bgvideo': langData[0]['bgvideo'],
+          'elir': langData[0]['elir'],
         },
       ),
     );
@@ -506,7 +1485,6 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     print(shazik);
     if (shazik != shazid) {
       instalumusa = false;
-      var urli;
       if(_isBottomSheetOpen) {
         print("vfdvbsxb");
         setState(() {
@@ -515,6 +1493,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
             namemus = item.title;
             ispolmus = item.artist!;
             imgmus = item.artUri.toString();
+            imgispol = item.extras!['messageimg'].toString();
             idmus = item.id;
             shazid = item.extras!['idshaz'].toString();
           });
@@ -524,42 +1503,28 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           namemus = item.title;
           ispolmus = item.artist!;
           imgmus = item.artUri.toString();
+          imgispol = item.extras!['messageimg'].toString();
           idmus = item.id;
           shazid = item.extras!['idshaz'].toString();
         });
       }
-      AudioService.play();
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? ds = prefs.getString("token");
-      if(ds != null) {
-        if (ds != "") {
-          print("mghj,"+shazik!);
-          print("dcsv,"+item.toString());
-          print("https://kompot.site/getaboutmus?sidi=" + shazik! + "&tokeni=" + ds!);
-          urli = Uri.parse(
-              "https://kompot.site/getaboutmus?sidi=" + shazik! + "&tokeni=" + ds!);
-        } else {
-          print("vcvf,");
-          urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazik!);
-        }
-      }else{
-        print("loghj,");
-        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazik!);
+      if(!videoope){
+        AudioService.play();
       }
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-      print("gbfdbfvddbfvbv"+dff);
-      langData[0] = jsonDecode(dff);
+      var aboutmus = await apiService.getAboutMusic(shazik!);
+      langData[0] = aboutmus;
       await AudioService.customAction('getskip', {});
 
       if (langData[0]['vidos'] != '0' && videoope) {
-        playVideo(langData[0]['idshaz'], false);
+        playVideo(langData[0]['idshaz'], true);
       } else {
         print("thytfyjyju");
         playmusamini(langData[0]);
+
         if (videoope) {
           videoope = false;
           _toogleAnimky();
+          Future.delayed(Duration(milliseconds: 400), opaka);
           controller.player.pause();
         }
       }
@@ -586,22 +1551,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           _childKey.currentState?.updateIcon(
               Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white));
         }
-      var urli;
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? ds = prefs.getString("token");
-      if(ds != null) {
-        if (ds != "") {
-          urli = Uri.parse(
-              "https://kompot.site/getaboutmus?sidi=" + shazid + "&tokeni=" + ds!);
-        } else {
-          urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid);
-        }
-      }else{
-        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + shazid);
-      }
-        var response = await http.get(urli);
-        String dff = response.body.toString();
-        print(dff);
+        var aboutmus = await apiService.getAboutMusic(shazid);
         if(install){
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           List<String>? sac = prefs.getStringList("historymusid");
@@ -612,12 +1562,12 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           if(fsaf.length >= 20){
             fsaf.removeLast();
           }
-          fsaf.add(jsonDecode(dff)["id"]);
+          fsaf.add(aboutmus["id"]);
           await prefs.setStringList("historymusid", fsaf);
         }
       setState(() {
         print("hyhg");
-        langData[0] = jsonDecode(dff);
+        langData[0] = aboutmus;
 
         if(isfromochered){
           int dsv = ocherd.indexOf(langData[0]["idshaz"]);
@@ -679,6 +1629,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
             if (videoope) {
               videoope = false;
               _toogleAnimky();
+              Future.delayed(Duration(milliseconds: 400), opaka);
               controller.player.pause();
             }
           }
@@ -687,6 +1638,19 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       playpause();
     }
   }
+
+  void setvi2() {
+    setnewState(() {
+      setvi(shazid, true, false);
+    });
+  }
+  void playpause2() {
+    setnewState(() {
+      playpause();
+    });
+  }
+
+
 
   void playpause() {
     if(devicecon) {
@@ -717,9 +1681,35 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                   Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
             }
           });
+          setnewStatesxa(() {
+            iconpla = Icon(Icons.play_arrow_rounded, size: 40,key: ValueKey<bool>(controller.player.state.playing));
+            if (isjemnow) {
+              _childKey.currentState?.toggleAnimation(false);
+              _childKey.currentState?.updateIcon(Icon(
+                  Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
+            }
+            if (essensionbool) {
+              _childKey.currentState?.toggleAnimationese(false);
+              _childKey.currentState?.updateIconese(Icon(
+                  Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+            }
+          });
         } else {
           controller.player.play();
           setState(() {
+            iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(controller.player.state.playing));
+            if (isjemnow) {
+              _childKey.currentState?.toggleAnimation(true);
+              _childKey.currentState?.updateIcon(
+                  Icon(Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(controller.player.state.playing)));
+            }
+            if (essensionbool) {
+              _childKey.currentState?.toggleAnimationese(true);
+              _childKey.currentState?.updateIconese(Icon(
+                  Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+            }
+          });
+          setnewStatesxa(() {
             iconpla = Icon(Icons.pause_rounded, size: 40,key: ValueKey<bool>(controller.player.state.playing));
             if (isjemnow) {
               _childKey.currentState?.toggleAnimation(true);
@@ -750,6 +1740,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                   Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
             }
           });
+
         } else {
           AudioService.play();
           setState(() {
@@ -765,6 +1756,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                   Icons.pause_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
             }
           });
+
         }
       }
     }
@@ -782,7 +1774,6 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   double opacity = 1;
   double opacityi3 = 1;
   double opacityi1 = 1;
-  double opacityi2 = 0;
   Alignment ali = Alignment.center;
 
   void _toogleAnimky() {
@@ -798,32 +1789,32 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         dsds2 = videoope ? ((640 / 16) * 9) + 80 : 60;
       }
 
-      opacity = videoope ? 0 : 1;
-      videoopacity = videoope ? 1 : 0;
       ali = videoope ? Alignment.centerLeft : Alignment.center;
       videoope ? _controller.forward() : _controller.reverse();
-      if (videoope == false) {
-        opacityi1 = 1;
-        opacityi2 = 0;
-      }
-      setnewState(() {
-        imgwh = videoope ? 80 : 500;
-        dsds = videoope ? 8 : 20;
-        if (size.width <= 640) {
-          dsds2 = videoope ? ((size.width / 16) * 9) + 80 : 60;
-        } else {
-          dsds2 = videoope ? ((640 / 16) * 9) + 80 : 60;
-        }
 
-        opacity = videoope ? 0 : 1;
-        videoopacity = videoope ? 1 : 0;
-        ali = videoope ? Alignment.centerLeft : Alignment.center;
-        videoope ? _controller.forward() : _controller.reverse();
-        if (videoope == false) {
-          opacityi1 = 1;
-          opacityi2 = 0;
-        }
-      });
+      if(_isBottomSheetOpen) {
+        setnewState(() {
+          if (videoope) {
+            opacityi1 = 0;
+            opacity = 0;
+          }else{
+            opacityi1 = 1;
+            opacity = 1;
+            videoopacity = 0;
+            dsadsa = 0;
+          }
+          imgwh = videoope ? 80 : 500;
+          dsds = videoope ? 8 : 20;
+          if (size.width <= 640) {
+            dsds2 = videoope ? ((size.width / 16) * 9) + 80 : 60;
+          } else {
+            dsds2 = videoope ? ((640 / 16) * 9) + 80 : 60;
+          }
+
+          ali = videoope ? Alignment.centerLeft : Alignment.center;
+          videoope ? _controller.forward() : _controller.reverse();
+        });
+      }
     });
   }
 
@@ -832,9 +1823,11 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     setState(() {
 
       videoope = !videoope;
+      Future.delayed(Duration(milliseconds: 400), opaka);
       if (vid){
         AudioService.pause();
         videoope = vid;
+        _toogleAnimky();
         playVideo(dfg, ds);
       }else {
         if (!videoope) {
@@ -867,6 +1860,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   bool isDisLiked = false;
   bool isLoading = false;
 
+
   Future<void> toggleLike(int type) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
@@ -875,48 +1869,23 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       setState(() {
         isLoading = true;
       });
-
       try {
-        var yes = "0";
-        if (type == 1) {
-          if (isLiked) {
-            yes = "0";
-          } else {
-            yes = "1";
-          }
-        } else if (type == 0) {
-          if (isDisLiked) {
-            yes = "0";
-          } else {
-            yes = "1";
-          }
-        }
-        // Отправляем GET-запрос
-        final response = await http.get(Uri.parse(
-            'https://kompot.site/reactmusic?mus=' +
-                langData[0]['id'].toString() + '&type=' + type.toString() +
-                '&yes=' + yes.toString() + "&token="+ds!));
-
-        if (response.statusCode == 200) {
-          // Успешный ответ, меняем состояние лайка
-          String dff = response.body.toString();
-          var _fdsb = jsonDecode(dff);
-          if (_fdsb['status'] == "true") {
-            setState(() {
-              setnewState(() {
-                if (type == 1) {
-                  isLiked = !isLiked;
-                } else if (type == 0) {
-                  isDisLiked = !isDisLiked;
-                }
-              });
+        String reaction = await apiService.setMusicReaction(langData[0]['id'].toString(), type);
+          setState(() {
+            setnewState(() {
+              if (reaction == "1") {
+                isLiked = true;
+                isDisLiked = false;
+              } else if (reaction == "0") {
+                isDisLiked = true;
+                isLiked = false;
+              } else if (reaction == "2") {
+                isDisLiked = false;
+                isLiked = false;
+              }
             });
-          }
-        } else {
-          // Обработка ошибок
-          print('Ошибка: ${response.statusCode}');
-        }
-      } catch (e) {
+          });
+            } catch (e) {
         print('Ошибка запроса: $e');
       } finally {
         setState(() {
@@ -937,6 +1906,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     if(videoope){
       videoope = false;
       _toogleAnimky();
+      Future.delayed(Duration(milliseconds: 400), opaka);
       controller.player.pause();
     }else{
       AudioService.pause();
@@ -958,23 +1928,29 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           namemus = sdcv["name"];
           ispolmus = sdcv["message"];
           imgmus = sdcv['img'];
+          imgispol = sdcv['messageimg'];
           idmus = "0";
           shazid = sdcv['idshaz'];
         });
       }else{
-        if (sdcv["doi"] == "0") {
+        if (sdcv["doi"].toString() == "0") {
           isDisLiked = true;
           isLiked = false;
-        } else if (sdcv["doi"] == "1") {
+        } else if (sdcv["doi"].toString() == "1") {
           isDisLiked = false;
           isLiked = true;
-        } else if (sdcv["doi"] == "2") {
+        } else if (sdcv["doi"].toString() == "2") {
           isDisLiked = false;
           isLiked = false;
         }
         namemus = sdcv["name"];
         ispolmus = sdcv["message"];
         imgmus = sdcv['img'];
+        try {
+          imgispol = sdcv['messageimg'];
+        }catch(e){
+          print(e);
+        }
         idmus = "0";
         shazid = sdcv['idshaz'];
       }
@@ -989,11 +1965,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     });
     bool fvd2 = await filterValidImages(getCacheBustedUrl(sdcv['url']));
     if(search || !fvd2) {
-      var urli = Uri.parse(
-          "https://kompot.site/installmusapple?nice=" + sdcv['idshaz']);
-      var response = await http.get(urli);
-      String dff = response.body.toString();
-      print("jhghjgz");
+      String dff = await apiService.installMusic(sdcv['idshaz']);
       print(dff);
       getaboutmus(dff, false, true, false, false);
     }else{
@@ -1194,6 +2166,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         ispolmus = listok["message"];
         if(!install) {
           imgmus = listok['img'];
+          imgispol = listok['messageimg'];
         }
         idmus = listok['id'];
         shazid = listok['idshaz'];
@@ -1247,6 +2220,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
             ispolmus = listok["message"];
             if(!install) {
               imgmus = listok['img'];
+              imgispol = listok['messageimg'];
             }
             idmus = listok['id'];
             shazid = listok['idshaz'];
@@ -1265,6 +2239,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               ispolmus = listok["message"];
               if(!install) {
                 imgmus = listok['img'];
+                imgispol = listok['messageimg'];
               }
               idmus = listok['id'];
               shazid = listok['idshaz'];
@@ -1290,6 +2265,12 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                 extras: {
                   'idshaz': langData[0]['idshaz'],
                   'url': langData[0]['short'],
+                  'messageimg': langData[0]['messageimg'],
+                  'short': langData[0]['short'],
+                  'txt': langData[0]['txt'],
+                  'vidos': langData[0]['vidos'],
+                  'bgvideo': langData[0]['bgvideo'],
+                  'elir': langData[0]['elir'],
                 },
               )},
             );
@@ -1307,6 +2288,12 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                 extras: {
                   'idshaz': langData[0]['idshaz'],
                   'url': langData[0]['url'],
+                  'messageimg': langData[0]['messageimg'],
+                  'short': langData[0]['short'],
+                  'txt': langData[0]['txt'],
+                  'vidos': langData[0]['vidos'],
+                  'bgvideo': langData[0]['bgvideo'],
+                  'elir': langData[0]['elir'],
                 },
               )},
             );
@@ -1328,6 +2315,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                 ispolmus = listok["message"];
                 if (!install) {
                   imgmus = listok['img'];
+                  imgispol = listok['messageimg'];
                 }
                 idmus = listok['id'];
                 shazid = listok['idshaz'];
@@ -1347,6 +2335,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               ispolmus = listok["message"];
               if (!install) {
                 imgmus = listok['img'];
+                imgispol = listok['messageimg'];
               }
               idmus = listok['id'];
               shazid = listok['idshaz'];
@@ -1364,9 +2353,49 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
   String musicUrl = ""; // Insert your music URL
   String thumbnailImgUrl = "";
+  late PlayerWidget playerwis;
+  late QueueWidget queuewidget;
+
+  late StateSetter setnewStatesxa;
+
+  void showQueueBottomSheets(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: const Color.fromARGB(255, 15, 15, 16),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (context) =>
+            DraggableScrollableSheet(
+                initialChildSize: 0.6,
+                minChildSize: 0.4,
+                maxChildSize: 0.9,
+                expand: false,
+                builder: (context, scrollController) =>
+                    StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState) {
+
+                          setnewStatesxa = setState;
+                          return queuewidget.queueWidget(context, scrollController, setnewStatesxa, setMusicInQueue);
+                        }),
+            ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    queuewidget = QueueWidget(playpause, loadingmus, iconpla, videoope, controller);
+    playerwis = PlayerWidget(
+      connectToWebSocket: connectToWebSocket,
+      langData: langData,
+      opacityi3: opacityi3, opacityi1: opacityi1, animation: animation, imgwh: imgwh, imgmus: imgmus, opacity: opacity, videoope: videoope, opacityi2: videoopacity,
+      squareScaleA: squareScaleA, scaleY: scaleY, translateX: translateX, translateY: translateY, shazid: shazid, namemus: namemus, opka: opaka, imgispol: imgispol, 
+      ispolmus: ispolmus, totalDuration: totalDuration, tapdown1: tapdown1, tapup1: tapup1, isPressed: isPressed, newposition: newposition, currentPosition: currentPosition, dragStarted1: dragStarted1, dragCompleted1: dragCompleted1,
+      toggleLike: toggleLike, isDisLiked: isDisLiked, canrevew: canrevew, previosmusic: previosmusic, loadingmus: loadingmus, playpause: playpause2, iconpla: iconpla, nextmusic: nextmusic, cannext: cannext, setvi: setvi2,
+      controller: controller, isLiked: isLiked, squareScaleB: squareScaleB, videoopacity: videoopacity, toggleMute: _toggleMute, borderRadius: borderRadius, tap2: opaka2, queuewidget: (){showQueueBottomSheets(context);}, isShuffleEnabled: _isShuffleEnabled, repeatMode: _repeatMode, controllershort: controllershort,
+    );
+
     Size size = MediaQuery
         .of(context)
         .size;
@@ -1417,7 +2446,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                 getaboutmus(input, false, false, false, false);
               }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
                 installmus(input, true);
-              } ) : Container(
+              }, reci: reci,) : Container(
                   height: size.height, child: IndexedStack(
                 index: pageIndex, // Отображение выбранного экрана
                 children: pages,
@@ -1454,33 +2483,33 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           getaboutmus(input, false, false, false, false);
         }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
           installmus(input, true);
-        }),
+        }, reci: reci, ),
       ),
     );
   }
 
-  // Анимация открытия страницы поиска
-  Route _createSearchRoute() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(onCallback: (dynamic input) {
-        getaboutmus(input, false, false, false, false);
-      }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
-        installmus(input, true);
-      }),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset(0.0, 0.0);
-        const curve = Curves.easeInOut;
+  bool _isShuffleEnabled = false;
+  LoopMode _repeatMode = LoopMode.off;
 
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
-      },
-    );
+
+  Future<void> setMusicInQueue(int index, String idshaz, bool video) async {
+    if(video){
+      await AudioService.customAction(
+          'setindex', {'index': index, 'video': video});
+    }else {
+      if (shazid != idshaz) {
+        await AudioService.customAction(
+            'setindex', {'index': index, 'video': false});
+      } else {
+        playpause();
+      }
+    }
   }
+
+
+
+
 
   HttpServer? _server;
   List<WebSocket> _clients = [];
@@ -1548,10 +2577,15 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   }
 
 
-
+  late Recorderi reci = Recorderi(
+    context: context,
+    getaboutmus: getaboutmus,
+    installmus: installmus,
+  );
 
 
   Widget smallscreenesensionbottomshet() {
+
     Size size = MediaQuery
         .of(context)
         .size;
@@ -1598,7 +2632,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                     AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
                         child: Container(
                           color: Colors.black.withOpacity(
-                              0.7), // Контейнер для применения размытия
+                              0.3), // Контейнер для применения размытия
                         )),
                     Container(
                         constraints: BoxConstraints(maxWidth: 800),
@@ -1652,7 +2686,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                                           ),
                                         ),)))),
                             Row(children: [
-                              AnimatedOpacity(opacity: opacityi2,
+                              AnimatedOpacity(opacity: videoopacity,
                                   duration: Duration(seconds: 0),
                                   child: AnimatedContainer(
                                       alignment: Alignment
@@ -1793,8 +2827,11 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                                 onEnd: () {
                                   setnewState(() {
                                     if (videoope) {
+                                      dsadsa = MediaQuery
+                                          .of(context)
+                                          .size.width;
                                       opacityi1 = 0;
-                                      opacityi2 = 1;
+                                      videoopacity = 1;
                                     }
                                   });
                                 },
@@ -2284,6 +3321,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     Size size = MediaQuery
         .of(context)
         .size;
+
     return StreamBuilder(
         stream: AudioService.positionStream,
         builder: (context, snapshot) {
@@ -2313,151 +3351,24 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
             ),
             blendMode: BlendMode.srcATop,
           ),
-          AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+          AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: controllershort.player.state.playing ? opac : 0,
               child: Video(
                 fit: BoxFit.cover,
                 controls: null,
                 controller: controllershort,
               )),),
-          AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+          AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: controllershort.player.state.playing ? opac : 0,
           child: Container(
             color: Colors.black.withOpacity(
-                0.7), // Контейнер для применения размытия
+                0.3), // Контейнер для применения размытия
           )),
           Container(
               constraints: BoxConstraints(maxWidth: 800),
               height: size.height,
               child: Stack(children: [
-                Column(children: [
-                  AnimatedOpacity(opacity: videoopacity,
-                      duration: Duration(
-                          milliseconds: 400),
-                      child: Container(
-
-                          constraints: BoxConstraints(maxWidth: 800, maxHeight: 450),
-                          margin: EdgeInsets.only(
-                              top: 60),
-                          child: AspectRatio(
-                              aspectRatio: 16 / 9,
-                              child: Container(child: MaterialDesktopVideoControlsTheme(
-                                normal: MaterialDesktopVideoControlsThemeData(
-                                  // Modify theme options:
-                                  seekBarThumbColor: Colors
-                                      .blue,
-                                  seekBarPositionColor: Colors
-                                      .blue,
-                                  toggleFullscreenOnDoublePress: false,
-                                ),
-                                fullscreen: const MaterialDesktopVideoControlsThemeData(
-                                  seekBarThumbColor: Colors
-                                      .blue,
-                                  topButtonBarMargin: EdgeInsets
-                                      .only(
-                                      top: 20, left: 30),
-                                  topButtonBar: [
-                                    Text("blast!",
-                                      style: TextStyle(
-                                        fontSize: 40,
-                                        fontFamily: 'Montserrat',
-                                        fontWeight: FontWeight
-                                            .w900,
-                                        color: Colors.white,
-                                      ),)
-                                  ],
-                                  seekBarPositionColor: Colors
-                                      .blue,),
-                                child:ClipRRect(
-                                  borderRadius: borderRadius, // Make the border round
-                                  child: GestureDetector(
-                                      onTap: _toggleMute, // Обработчик клика на видео
-                                      child: Video(
-                                        controller: controller,
-                                      )),
-                                ),
-                              ),)))),
-                  Row(children: [
-                    AnimatedOpacity(opacity: opacityi2,
-                        duration: Duration(seconds: 0),
-                        child: AnimatedContainer(
-                            alignment: Alignment
-                                .centerLeft,
-                            margin: EdgeInsets.only(
-                                left: 20,
-                                right: 20,
-                                top: 20),
-                            height: 80,
-                            width: 80,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius
-                                  .circular(8),
-                            ),
-                            clipBehavior: Clip
-                                .antiAliasWithSaveLayer,
-                            duration: Duration(
-                                milliseconds: 0),
-                            child: AspectRatio(
-                                aspectRatio: 1,
-                                // Сохранение пропорций 1:1
-                                child: Image.network(
-                                  imgmus,
-                                  height: imgwh,
-                                  width: imgwh,
-                                  fit: BoxFit
-                                      .contain, // Изображ
-                                )))),
-                    AnimatedOpacity(
-                        opacity: videoopacity,
-                        duration: Duration(
-                            milliseconds: 400),
-                        child: AnimatedContainer(
-                          margin: EdgeInsets.only(
-                              top: 20),
-                          transform: Matrix4
-                              .translation(
-                              vector.Vector3(
-                                  0, squareScaleB, 0)),
-                          duration: Duration(
-                              milliseconds: 400),
-                          child:
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment
-                                .start,
-                            children: [AutoSizeText(namemus,
-                              textAlign: TextAlign
-                                  .start,
-                              overflow: TextOverflow
-                                  .ellipsis,
-                              maxLines: 1,
-                              style: TextStyle(
-                                  fontSize: 30,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight
-                                      .w500,
-                                  color: Color.fromARGB(
-                                      255, 246, 244,
-                                      244)
-                              ),),
-                              AutoSizeText(ispolmus,
-                                overflow: TextOverflow
-                                    .ellipsis,
-                                maxLines: 1,
-                                textAlign: TextAlign
-                                    .start,
-                                style: TextStyle(
-                                    fontSize: 24,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight
-                                        .w300,
-                                    color: Color
-                                        .fromARGB(
-                                        255, 246, 244,
-                                        244)
-                                ),)
-                            ],),))
-
-                  ],),
-                ]), PlayerWidget(page: homa,)
+                playerwis.playersmallmusic(context),
+                Container(width: videoope ? size.width : dsadsa, child:
+                playerwis.playersmallvideo(context)),  // playerik(context)
               ],))
         ])
           );
@@ -2506,7 +3417,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
               child: Container(
                 color: Colors.black.withOpacity(
-                    0.7), // Контейнер для применения размытия
+                    0.3), // Контейнер для применения размытия
               )),
           Container(
 
@@ -2565,7 +3476,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           0, -60, 0)), alignment: Alignment.center,
                         constraints: BoxConstraints(maxWidth: size.width/2.5),
                         child:  Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
-                  AnimatedOpacity(opacity: opacityi2,
+                  AnimatedOpacity(opacity: videoopacity,
                       duration: Duration(seconds: 0),
                       child: AnimatedContainer(
                           alignment: Alignment
@@ -2644,6 +3555,9 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                           ],),))
 
                 ],))))],),
+
+
+
                   Row( mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [Container(
           width: size.width/2, child: AnimatedOpacity(
           opacity: opacityi3,
@@ -2704,8 +3618,11 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                       onEnd: () {
                         setnewState(() {
                           if (videoope) {
+                            dsadsa = MediaQuery
+                                .of(context)
+                                .size.width;
                             opacityi1 = 0;
-                            opacityi2 = 1;
+                            videoopacity = 1;
                           }
                         });
                       },
@@ -3206,7 +4123,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                   double screenhfg = MediaQuery.of(context).size.height;
                   setState(() {
                   // Determine the border radius based on screen width
-                  squareScaleA = videoope ? screenWidth > 800 ? -320 : -80 * (screenWidth / 280) : 0;
+                  squareScaleA = videoope ? screenWidth > 800 ? -320 : -60 * (screenWidth / 280) : 0;
                   squareScaleB = videoope ? 0 : screenWidth > 800 ? -320 : 80 * (screenWidth / 280);
                   });
                   borderRadius = screenWidth >= 800
@@ -3463,8 +4380,8 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   late List<Widget> pages = [
     _buildNavigator(_playlistNavigatorKey, PlaylistScreen(onCallback: (dynamic input) {
       getaboutmus(input, false, false, false, false);
-    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp, onCallbackt: (dynamic input, dynamic inputi) { loadpalylisttoochered(input, inputi); },)),
-    _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey,onCallback: (dynamic input) {
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp, onCallbackt: (dynamic input, dynamic inputi, String asdsa) { loadpalylisttoochered(input, inputi, asdsa); },)),
+    _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey, onCallbackt: (dynamic input, dynamic inputi) { loadpalylisttoochered(input, inputi, "Джем"); }, onCallback: (dynamic input) {
       getaboutmus(input, false, false, false, false);
     }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp, essension: essension, parctx: context,)),
     _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
@@ -3569,12 +4486,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     super.dispose();
   }
   String _jemData = "132";
+
   Future<void> postRequesty () async {
     if(!isjemnow) {
-      var urli = Uri.parse("https://kompot.site/getjemmus");
-
-      var response = await http.get(urli);
-      String dff = response.body.toString();
+      String dff = await apiService.getJemRandom();
       print(dff);
       setState(() {
         _jemData = dff;
@@ -4052,14 +4967,13 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
   bool ispalylistochered = false;
 
-  void loadpalylisttoochered(var listokd, var index){
+  void loadpalylisttoochered(var listokd, var index, String asdsa){
     // ocherd.clear();
     // for (var num in listokd) {
     //  ocherd.add(num["idshaz"]);
     //}
     // getaboutmus(ocherd[index], false, false, false, true);
     // ispalylistochered = true;
-
 
     List<MediaItem> playlist = [];
     for (var num in listokd) {
@@ -4071,10 +4985,20 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         extras: {
           'idshaz': num['idshaz'],
           'url': num['url'],
+          'messageimg': num['messageimg'],
+          'short': num['short'],
+          'txt': num['txt'],
+          'vidos': num['vidos'],
+          'bgvideo': num['bgvideo'],
+          'elir': num['elir'],
         },
       ));
     }
     setQueue(playlist, index);
+    print("objectqueue");
+    context.read<QueueManagerProvider>().setQueue(listokd);
+    context.read<QueueManagerProvider>().setCurrentAlbum(asdsa);
+    print("objectqueue");
   }
 
 
@@ -4116,7 +5040,16 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
 
     if(shazid != playlist[inx].extras?['idshaz']) {
-      await AudioService.customAction('setQueue', {'playlist': tracks, 'startIndex': inx, 'needplay': true});
+      print("fdvsvsv1"+playlist[inx].extras!['vidos'].toString());
+      if(playlist[inx].extras?['vidos'] != "0" && videoope == true) {
+        print("fdvsvsv2");
+        await AudioService.customAction('setQueue',
+            {'playlist': tracks, 'startIndex': inx, 'needplay': false});
+      }else{
+        print("fdvsvsv");
+        await AudioService.customAction('setQueue',
+            {'playlist': tracks, 'startIndex': inx, 'needplay': true});
+      }
       await getaboutmusmini(playlist[inx]);
     }else{
       await AudioService.customAction('setQueue', {'playlist': tracks, 'startIndex': inx, 'needplay': false});
@@ -4162,7 +5095,12 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     //     }
     //   } else {
      //  }
-      await AudioService.customAction('next', {});
+      if(videoope){
+        print("nextvid1");
+        await AudioService.customAction('sendnexttrack', {});
+      }else {
+        await AudioService.customAction('next', {});
+      }
      }finally{
        isLoading = false;
      }
@@ -4182,7 +5120,11 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       //   }
       // } else {
       // }
-      await AudioService.customAction('previous', {});
+      if(videoope){
+        await AudioService.customAction('sendprevioustrack', {});
+      }else {
+        await AudioService.customAction('previous', {});
+      }
     }finally{
       isLoading = false;
     }

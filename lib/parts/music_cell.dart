@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-Widget MussicCellNumber(int number, dynamic list, Function sac) {
+import 'bottomsheet_about_music.dart';
+
+Widget MussicCellNumber(int number, dynamic list, Function sac, BuildContext context) {
   return Container(
     margin: const EdgeInsets.only(bottom: 10),
     child: Material(
@@ -85,14 +87,14 @@ Widget MussicCellNumber(int number, dynamic list, Function sac) {
         trailing: Container(padding: EdgeInsets.only(right: 4), child:  Row( mainAxisSize: MainAxisSize.min, // This ensures Row takes minimal width
           mainAxisAlignment: MainAxisAlignment.end,  children: [list['install'] == "1" ? Icon(Icons.file_download_outlined, color: Colors.green,) : Container(), list['install'] == "1" ? SizedBox(width: 4,) :  Container(), IconButton(icon: Icon(Icons.more_vert),
             color: Colors.white,
-            onPressed: () {},)],)) ,
+            onPressed: () {showTrackOptionsBottomSheet(context, list);},)],)) ,
       ),
     ),
   );
 }
 
 
-Widget MussicCell(dynamic list, Function sac) {
+Widget MussicCell(dynamic list, Function sac, BuildContext context) {
   return Container(
     margin: const EdgeInsets.only(bottom: 10),
     child: Material(
@@ -165,7 +167,7 @@ Widget MussicCell(dynamic list, Function sac) {
         trailing: Container(padding: EdgeInsets.only(right: 4), child:  Row( mainAxisSize: MainAxisSize.min, // This ensures Row takes minimal width
           mainAxisAlignment: MainAxisAlignment.end,  children: [list['install'] == "1" ? Icon(Icons.file_download_outlined, color: Colors.green,) : Container(), list['install'] == "1" ? SizedBox(width: 4,) :  Container(), IconButton(icon: Icon(Icons.more_vert),
             color: Colors.white,
-            onPressed: () {},)],)) ,
+            onPressed: () {showTrackOptionsBottomSheet(context, list);},)],)) ,
       ),
     ),
   );

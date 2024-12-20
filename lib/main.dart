@@ -1,17 +1,32 @@
 import 'dart:ui';
 
+import 'package:blast/providers/list_manager_provider.dart';
+import 'package:blast/providers/queue_manager_provider.dart';
 import 'package:blast/screens/AudioManager.dart';
 import 'package:blast/screens/splash_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_session/audio_session.dart';
+// import 'package:smtc_windows/smtc_windows.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  //await SMTCWindows.initialize(); // для винды
+  final listManager = ListManagerProvider();
+  await listManager.loadData();
+  final queueManager = QueueManagerProvider();
+  await queueManager.loadFromCache();
   MediaKit.ensureInitialized();
-  runApp(ChangeNotifierProvider(create: (_) => AudioManager(),
+  runApp(
+      MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => listManager),
+            ChangeNotifierProvider(create: (_) => queueManager),
+            ChangeNotifierProvider(create: (_) => AudioManager())
+          ],
   child: EasyLocalization(
     supportedLocales: [
       Locale('en', 'US'),

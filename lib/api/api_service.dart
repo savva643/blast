@@ -14,7 +14,7 @@ class ApiService {
   Future getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
-    if (ds != "") {
+    if (ds != null && ds != "") {
       if (user['token'] != ds || user == null) {
         print("object" + ds!);
         var urli = Uri.parse("https://kompot.site/getabout?token=" + ds);
@@ -90,7 +90,7 @@ class ApiService {
   Future<List> getPlayLists() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
-    if(ds != "") {
+    if(ds != null && ds != "") {
       var urli = Uri.parse("https://kompot.site/getmusicplaylist?tokeni="+ds!);
 
       var response = await http.get(urli);
@@ -128,15 +128,17 @@ class ApiService {
   }
 
   Future<List> getSearchMusic(String text) async {
+    print("searchikngh "+text);
     if(text != '') {
       var urli = Uri.parse("https://kompot.site/getmusshazandr?token=1&nice=" + text);
       var response = await http.get(urli);
       String dff = response.body.toString();
+      print("searchikngh"+dff);
       List langData = jsonDecode(dff);
       langData = await showStatusInstall(langData);
       return langData;
     }else{
-      return [];
+      return List.empty();
     }
   }
 
@@ -147,6 +149,78 @@ class ApiService {
     List langData = jsonDecode(dff);
     return langData;
   }
+
+  Future<dynamic> getEssensionRandom() async {
+    var urli = Uri.parse("https://kompot.site/getesemus");
+    var response = await http.get(urli);
+    String dff = response.body.toString();
+    return jsonDecode(dff);
+  }
+
+  Future<String> getJemRandom() async {
+    var urli = Uri.parse("https://kompot.site/getjemmus");
+    var response = await http.get(urli);
+    String dff = response.body.toString();
+    return dff;
+  }
+
+
+  Future<dynamic> getAboutMusic(String idshaz) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ds = prefs.getString("token");
+    Uri urli;
+    if(ds != null) {
+      if (ds != "") {
+        print("https://kompot.site/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
+        urli = Uri.parse(
+            "https://kompot.site/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
+      } else {
+        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + idshaz!);
+      }
+    }else{
+      urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + idshaz!);
+    }
+    var response = await http.get(urli);
+    String dff = response.body.toString();
+    return jsonDecode(dff);
+  }
+
+
+  Future<String> setMusicReaction(String id, int type) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ds = prefs.getString("token");
+    if(ds != "") {
+      final response = await http.get(Uri.parse(
+          'https://kompot.site/reactmusic?mus=' +id + '&type=' + type.toString() + "&token="+ds!));
+      if (response.statusCode == 200) {
+        // Успешный ответ, меняем состояние лайка
+        String dff = response.body.toString();
+        var _fdsb = jsonDecode(dff);
+
+        if (_fdsb['status'].toString() == "true") {
+          return _fdsb['type'].toString();
+        }else{
+          return "3";
+        }
+      }else{
+        return "3";
+      }
+    }else{
+      return "3";
+    }
+  }
+
+
+
+  Future<String> installMusic(String idshaz) async {
+    var urli = Uri.parse("https://kompot.site/installmusapple?nice=" + idshaz);
+    var response = await http.get(urli);
+    String dff = response.body.toString();
+    print("dvsxv"+dff);
+    return dff;
+  }
+
+
 
 }
 
