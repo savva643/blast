@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 import '../api/api_service.dart';
+import '../parts/buttons.dart';
 import 'login.dart';
 
 
@@ -66,7 +67,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         useri = false;
       }
     });
-    var langData = await apiService.getPlayLists();
+    var langData = await apiService.getPlayLists(0);
     setState(() {
       _searchedLangData = langData;
     });
@@ -79,6 +80,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     load();
     super.initState();
   }
+
+  
   String musicUrl = ""; // Insert your music URL
   String thumbnailImgUrl = "";
   var player = AudioPlayer();
@@ -156,7 +159,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               ),
               placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
               errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-            )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
+            )) : buttonlogin(showlog )),)
           ],),
           Container(height: size.height, padding: EdgeInsets.only(top: 60), child: size.width > 800 ? _loadGridView() : _loadListView()),
         ],),

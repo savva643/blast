@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:app_links/app_links.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:blast/screens/library_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:path_provider/path_provider.dart';
@@ -37,11 +39,14 @@ import '../parts/player_widgets.dart';
 import '../providers/queue_manager_provider.dart';
 import 'AudioManager.dart';
 import 'background_task.dart';
+import 'history_screen.dart';
 import 'login.dart';
 import 'music_screen.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:dio/dio.dart';
+
+import 'need_login.dart';
 
 const kBgColor = Color.fromARGB(255, 15, 15, 16);
 final GlobalKey<HomeScreenState> homa = GlobalKey<HomeScreenState>();
@@ -1086,6 +1091,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   @override
   void initState() {
     super.initState();
+    initUniLinks();
     getnamedevice();
     _startServer();
     _getLocalIp();
@@ -1474,6 +1480,25 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       ),
     );
   }
+  final appLinks = AppLinks();
+
+  void initUniLinks() {
+    appLinks.uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        final path = uri.path;
+        final id = uri.queryParameters['id'];
+        // Обработайте маршрут
+        if (path.contains('music')) {
+          // Открыть экран трека
+          print('Open Music with ID: $id');
+        } else if (path.contains('video')) {
+          // Открыть экран видео
+          print('Open Video with ID: $id');
+        }
+      }
+    });
+  }
+
 
 
 
@@ -1864,7 +1889,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   Future<void> toggleLike(int type) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
-    if(ds != "") {
+    if(ds != "" && ds != null) {
       if (isLoading) return; // Блокируем повторное нажатие во время запроса
       setState(() {
         isLoading = true;
@@ -1882,6 +1907,11 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               } else if (reaction == "2") {
                 isDisLiked = false;
                 isLiked = false;
+              } else if(reaction == "3"){
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => NeedLoginScreen(type: LoginType.likes,)
+                  )
+                );
               }
             });
           });
@@ -1893,7 +1923,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         });
       }
     }else{
-
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => NeedLoginScreen(type: LoginType.likes,)
+        )
+      );
     }
   }
 
@@ -2477,15 +2510,43 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   void _openSearchPage(BuildContext context) {
     // Navigator.of(context).push(_createSearchRoute());
 
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              SearchScreen(onCallback: (dynamic input) {
+                getaboutmus(input, false, false, false, false);
+              },
+                onCallbacki: postRequesty,
+                hie: closeserch,
+                showlog: showlogin,
+                dasd: resetapp,
+                dfsfd: (dynamic input) {
+                  installmus(input, true);
+                },
+                reci: reci,),
+        ),
+      );
+
+  }
+
+  void _openHistroryPage(BuildContext context) {
+    // Navigator.of(context).push(_createSearchRoute());
+
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => SearchScreen(onCallback: (dynamic input) {
-          getaboutmus(input, false, false, false, false);
-        }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp, dfsfd: (dynamic input) {
-          installmus(input, true);
-        }, reci: reci, ),
+        builder: (context) =>
+            HistoryScreen(
+              onCallback: (dynamic input) {
+                getaboutmus(input, false, false, false, false);
+              },
+              hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);},
+              showlog: showlogin,
+              resdf: resetapp,
+              onCallbackt: (dynamic input, dynamic inputi, String asdsa) { loadpalylisttoochered(input, inputi, asdsa); }, parctx: context,
+            ),
       ),
     );
+
   }
 
   bool _isShuffleEnabled = false;
@@ -3229,8 +3290,8 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                                             onPressed: () {toggleLike(1);}, // () {installmusic(langData[0]);},
                                             icon: Image(
                                                 color: Color.fromARGB(255, 255, 255, 255),
-                                                image: isLiked ? AssetImage(
-                                                    'assets/images/loveyes.png') : AssetImage(
+                                                image: isLiked ? const AssetImage(
+                                                    'assets/images/loveyes.png') : const AssetImage(
                                                     'assets/images/loveno.png'),
                                                 width: 100
                                             ))),
@@ -3408,7 +3469,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
             ),
             blendMode: BlendMode.srcATop,
           ),
-          AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: opac,
+          AnimatedContainer(duration: Duration(milliseconds: 400), child: AnimatedOpacity(duration: Duration(milliseconds: 400), opacity: controllershort.player.state.playing ? opac : 0,
               child: Video(
                 fit: BoxFit.cover,
                 controls: null,
@@ -3423,678 +3484,9 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
               height: size.height,
               child: Stack(children: [
-                  Row(children: [
-                    Container(width: size.width / 2, child:
-                    AnimatedOpacity(opacity: videoopacity,
-          duration: Duration(
-          milliseconds: 400),
-          child: Container(
-
-          margin: EdgeInsets.only(
-          top: 30,bottom: 30, left: 20, right: 20),
-          child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: Container(child: MaterialDesktopVideoControlsTheme(
-          normal: MaterialDesktopVideoControlsThemeData(
-          // Modify theme options:
-          seekBarThumbColor: Colors
-              .blue,
-          seekBarPositionColor: Colors
-              .blue,
-          toggleFullscreenOnDoublePress: false,
-          ),
-          fullscreen: const MaterialDesktopVideoControlsThemeData(
-          seekBarThumbColor: Colors
-              .blue,
-          topButtonBarMargin: EdgeInsets
-              .only(
-          top: 20, left: 30),
-          topButtonBar: [
-          Text("blast!",
-          style: TextStyle(
-          fontSize: 40,
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight
-              .w900,
-          color: Colors.white,
-          ),)
-          ],
-          seekBarPositionColor: Colors
-              .blue,),
-          child:ClipRRect(
-          borderRadius: borderRadius, // Make the border round
-          child: GestureDetector(
-              onTap: _toggleMute, // Обработчик клика на видео
-              child: Video(
-                controller: controller,
-              )),
-          ),
-          ),))))), Container(width: size.width / 2.5, child: Center(child: AnimatedContainer(duration: Duration(milliseconds: 400),
-          transform: Matrix4
-              .translation(
-          vector.Vector3(
-          0, -60, 0)), alignment: Alignment.center,
-                        constraints: BoxConstraints(maxWidth: size.width/2.5),
-                        child:  Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
-                  AnimatedOpacity(opacity: videoopacity,
-                      duration: Duration(seconds: 0),
-                      child: AnimatedContainer(
-                          alignment: Alignment
-                              .centerLeft,
-                          margin: EdgeInsets.only(
-                              left: 20,
-                              right: 20,
-                              top: 20),
-                          height: 80,
-                          width: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius
-                                .circular(8),
-                          ),
-                          clipBehavior: Clip
-                              .antiAliasWithSaveLayer,
-                          duration: Duration(
-                              milliseconds: 0),
-                          child: AspectRatio(
-                              aspectRatio: 1,
-                              // Сохранение пропорций 1:1
-                              child: Image.network(
-                                imgmus,
-                                height: imgwh,
-                                width: imgwh,
-                                fit: BoxFit
-                                    .contain, // Изображ
-                              )))),
-                  AnimatedOpacity(
-                      opacity: videoopacity,
-                      duration: Duration(
-                          milliseconds: 400),
-                      child: AnimatedContainer(
-                        margin: EdgeInsets.only(
-                            top: 20),
-                        duration: Duration(
-                            milliseconds: 400),
-                        child:
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            AutoSizeText(namemus,
-                              textAlign: TextAlign
-                                  .start,
-                              overflow: TextOverflow
-                                  .ellipsis,
-                              maxLines: 1,
-                              style: TextStyle(
-                                  fontSize: 30,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight
-                                      .w500,
-                                  color: Color.fromARGB(
-                                      255, 246, 244,
-                                      244)
-                              ),),
-                            AutoSizeText(ispolmus,
-                              overflow: TextOverflow
-                                  .ellipsis,
-                              maxLines: 1,
-                              textAlign: TextAlign
-                                  .start,
-                              style: TextStyle(
-                                  fontSize: 24,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight
-                                      .w300,
-                                  color: Color
-                                      .fromARGB(
-                                      255, 246, 244,
-                                      244)
-                              ),)
-                          ],),))
-
-                ],))))],),
-
-
-
-                  Row( mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [Container(
-          width: size.width/2, child: AnimatedOpacity(
-          opacity: opacityi3,
-          duration: Duration(
-          milliseconds: 400),
-          child:  Container(
-                      constraints: BoxConstraints(maxWidth: 800, maxHeight: 800), child: AspectRatio(
-                      aspectRatio: 1,
-                      // Сохранение пропорций 1:1
-                      child: AnimatedOpacity(
-                          opacity: opacityi1,
-                          duration: Duration(
-                              milliseconds: 0),
-                          child: AnimatedBuilder(
-                              animation: animation,
-                              builder: (context,
-                                  child) {
-                                return Align(
-                                    alignment: animation
-                                        .value,
-                                    child:
-                                    AnimatedContainer(
-                                        constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
-                                        margin: EdgeInsets
-                                            .only(
-                                            left: 30,
-                                            right: 30,
-                                            top: 30, bottom: 30),
-                                        height: imgwh,
-                                        width: imgwh,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape
-                                              .rectangle,
-                                          borderRadius: BorderRadius
-                                              .circular(
-                                              dsds),
-                                        ),
-
-                                        clipBehavior: Clip
-                                            .hardEdge,
-                                        duration: Duration(
-                                            milliseconds: 400),
-                                        child: AspectRatio(
-                                            aspectRatio: 1,
-                                            // Сохранение пропорций 1:1
-                                            child: Image
-                                                .network(
-                                              imgmus,
-                                              height: imgwh,
-                                              width: imgwh,
-                                              fit: BoxFit
-                                                  .cover, // Изображ
-                                            ))));
-                              })))))), Container(
-          width: size.width/3, child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [AnimatedOpacity(opacity: opacity,
-                      duration: Duration(
-                          milliseconds: 400),
-                      onEnd: () {
-                        setnewState(() {
-                          if (videoope) {
-                            dsadsa = MediaQuery
-                                .of(context)
-                                .size.width;
-                            opacityi1 = 0;
-                            videoopacity = 1;
-                          }
-                        });
-                      },
-                      child: AnimatedContainer(
-                          width: size.width,
-                          duration: Duration(
-                              milliseconds: 400),
-                          transform: Matrix4
-                              .translation(
-                              vector.Vector3(
-                                  0, 0, 0)),
-                          child: AutoSizeText(namemus,
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.fade,
-                            maxLines: 1,
-                            style: TextStyle(
-                                fontSize: 30,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight
-                                    .w500,
-                                color: Color.fromARGB(
-                                    255, 246, 244, 244)
-                            ),))),
-                    AnimatedOpacity(opacity: opacity,
-                        duration: Duration(
-                            milliseconds: 400),
-                        child: AnimatedContainer(
-                            duration: Duration(
-                                milliseconds: 400),
-                            transform: Matrix4
-                                .translation(
-                                vector.Vector3(
-                                    0, 0, 0)),
-                            child: AutoSizeText(ispolmus,
-                              overflow: TextOverflow.fade,
-                              maxLines: 1,
-
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 24,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight
-                                      .w300,
-                                  color: Color.fromARGB(
-                                      255, 246, 244, 244)
-                              ),))),
-                    AnimatedOpacity(opacity: opacity,
-                        duration: Duration(
-                            milliseconds: 400),
-                        child: AnimatedContainer(
-                            duration: Duration(
-                                milliseconds: 400),
-                            transform: Matrix4
-                                .translation(
-                                vector.Vector3(
-                                    0, 0, 0)),
-                            child: Padding(
-                                padding: EdgeInsets.only(
-                                    top: 16,
-                                    left: 22,
-                                    right: 22),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment
-                                      .spaceBetween,
-                                  children: [
-                                    AutoSizeText(formatDuration(
-                                        Duration(
-                                            milliseconds: currentPosition
-                                                .toInt())),
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontFamily: 'Montserrat',
-                                          fontWeight: FontWeight
-                                              .w400,
-                                          color: Color
-                                              .fromARGB(
-                                              255, 246,
-                                              244,
-                                              244)
-                                      ),),
-                                    AutoSizeText(formatDuration(
-                                        Duration(
-                                            milliseconds: totalDuration
-                                                .toInt())),
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontFamily: 'Montserrat',
-                                          fontWeight: FontWeight
-                                              .w400,
-                                          color: Color
-                                              .fromARGB(
-                                              255, 246,
-                                              244,
-                                              244)
-                                      ),),
-                                  ],)))),
-                    SizedBox(height: 4,),
-                    AnimatedOpacity(opacity: opacity,
-                        duration: Duration(
-                            milliseconds: 400),
-                        child: AnimatedContainer(
-                            duration: Duration(
-                                milliseconds: 400),
-                            transform: Matrix4
-                                .translation(
-                                vector.Vector3(
-                                    0, 0, 0)),
-                            child: SizedBox(
-                                height: 8,
-                                child:  StreamBuilder(
-                                    stream: AudioService
-                                        .positionStream,
-                                    builder: (context,
-                                        snapshot) {
-                                      if (snapshot
-                                          .hasData &&
-                                          !snapshot
-                                              .hasError &&
-                                          totalDuration >
-                                              0) {
-                                        final position = snapshot
-                                            .data as Duration;
-                                        return GestureDetector(
-                                          onTapDown: (_) {
-                                            setState(() {
-                                              isPressed = true; // Устанавливаем флаг нажатия
-                                              scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                              translateX = 12.0; // Сдвигаем слайдер влево
-                                            });
-                                          },
-                                          onTapUp: (_) {
-                                            setState(() {
-                                              isPressed = false; // Сбрасываем флаг нажатия
-                                              scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                              translateX = 26.0; // Возвращаем слайдер в исходное положение
-                                            });
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: Duration(milliseconds: 200),
-                                            padding: EdgeInsets.symmetric(horizontal: translateX),
-                                            curve: Curves.easeInOut,
-                                            transform: Matrix4.identity()
-                                              ..scale(1.0, scaleY), // Применяем масштаб
-                                            child: FlutterSlider(
-                                              values: isPressed ? [newposition] : [currentPosition],
-                                              max: totalDuration,
-                                              min: 0,
-                                              tooltip: FlutterSliderTooltip(
-                                                disabled: true, // Отключаем текст со значением
-                                              ),
-                                              handler: FlutterSliderHandler(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.transparent, // Делаем thumb полностью прозрачным
-                                                ),
-                                                child: SizedBox.shrink(), // Полностью скрываем thumb
-                                              ),
-                                              onDragStarted: (handlerIndex, lowerValue, upperValue) {
-                                                setState(() {
-                                                  newposition = lowerValue;
-                                                });
-                                              },
-                                              onDragging: (handlerIndex, lowerValue, upperValue) {
-                                                // Обновляем текущую позицию слайдера, но не меняем масштаб
-                                                setState(() {
-                                                  newposition = lowerValue; // Обновляем текущую позицию слайдера
-                                                  setState(() {
-                                                    isPressed = true; // Устанавливаем флаг нажатия
-                                                    scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                    translateX = 12.0; // Сдвигаем слайдер влево
-                                                  });
-                                                });
-                                              },
-                                              onDragCompleted: (handlerIndex, lowerValue, upperValue) {
-                                                // Логика завершения перетаскивания
-                                                setState(() {
-                                                  currentPosition = lowerValue;
-                                                });
-                                                Duration jda = Duration(milliseconds: lowerValue.toInt());
-                                                print("Position: ${jda.inMilliseconds} ms");
-                                                setState(() {
-                                                  isPressed = false; // Сбрасываем флаг нажатия
-                                                  scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                  translateX = 26.0; // Возвращаем слайдер в исходное положение
-                                                });
-                                                if (devicecon) {
-                                                  List<dynamic> sdc = [
-                                                    {
-                                                      "type": "media",
-                                                      "what": "seekto",
-                                                      "timecurrent": jda.inSeconds,
-                                                      "iddevice": "2"
-                                                    }
-                                                  ];
-                                                  String jsonString = jsonEncode(sdc[0]);
-                                                  // Предполагается, что channeldev доступен и открыт для отправки
-                                                  channeldev.sink.add(jsonString);
-                                                } else {
-                                                  if (instalumusa) {
-                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
-                                                  } else {
-                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
-                                                  }
-                                                }
-                                              },
-                                              trackBar: FlutterSliderTrackBar(
-                                                activeTrackBarHeight: 8,
-                                                inactiveTrackBarHeight: 8,
-                                                activeTrackBar: BoxDecoration(
-                                                  color: Colors.blue,
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                                inactiveTrackBar: BoxDecoration(
-                                                  color: Colors.blue.withOpacity(0.3),
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      } else {
-                                        return GestureDetector(
-                                          onTapDown: (_) {
-                                            setState(() {
-                                              isPressed = true; // Устанавливаем флаг нажатия
-                                              scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                              translateX = 12.0; // Сдвигаем слайдер влево
-                                            });
-                                          },
-                                          onTapUp: (_) {
-                                            setState(() {
-                                              isPressed = false; // Сбрасываем флаг нажатия
-                                              scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                              translateX = 26.0; // Возвращаем слайдер в исходное положение
-                                            });
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: Duration(milliseconds: 200),
-                                            padding: EdgeInsets.symmetric(horizontal: translateX),
-                                            curve: Curves.easeInOut,
-                                            transform: Matrix4.identity()
-                                              ..scale(1.0, scaleY), // Применяем масштаб
-                                            child: FlutterSlider(
-                                              values: isPressed ? [newposition] : [currentPosition],
-                                              max: totalDuration,
-                                              min: 0,
-                                              tooltip: FlutterSliderTooltip(
-                                                disabled: true, // Отключаем текст со значением
-                                              ),
-                                              handler: FlutterSliderHandler(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.transparent, // Делаем thumb полностью прозрачным
-                                                ),
-                                                child: SizedBox.shrink(), // Полностью скрываем thumb
-                                              ),
-                                              onDragStarted: (handlerIndex, lowerValue, upperValue) {
-                                                setState(() {
-                                                  newposition = lowerValue;
-                                                });
-                                              },
-                                              onDragging: (handlerIndex, lowerValue, upperValue) {
-                                                // Обновляем текущую позицию слайдера, но не меняем масштаб
-                                                setState(() {
-                                                  newposition = lowerValue; // Обновляем текущую позицию слайдера
-                                                  setState(() {
-                                                    isPressed = true; // Устанавливаем флаг нажатия
-                                                    scaleY = 1.4; // Увеличиваем слайдер по оси Y
-                                                    translateX = 12.0; // Сдвигаем слайдер влево
-                                                  });
-                                                });
-                                              },
-                                              onDragCompleted: (handlerIndex, lowerValue, upperValue) {
-                                                // Логика завершения перетаскивания
-                                                setState(() {
-                                                  currentPosition = lowerValue;
-                                                });
-                                                Duration jda = Duration(milliseconds: lowerValue.toInt());
-                                                print("Position: ${jda.inMilliseconds} ms");
-                                                setState(() {
-                                                  isPressed = false; // Сбрасываем флаг нажатия
-                                                  scaleY = 1.0; // Возвращаем слайдер к исходному размеру по оси Y
-                                                  translateX = 26.0; // Возвращаем слайдер в исходное положение
-                                                });
-                                                if (devicecon) {
-                                                  List<dynamic> sdc = [
-                                                    {
-                                                      "type": "media",
-                                                      "what": "seekto",
-                                                      "timecurrent": jda.inSeconds,
-                                                      "iddevice": "2"
-                                                    }
-                                                  ];
-                                                  String jsonString = jsonEncode(sdc[0]);
-                                                  // Предполагается, что channeldev доступен и открыт для отправки
-                                                  channeldev.sink.add(jsonString);
-                                                } else {
-                                                  if (instalumusa) {
-                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt() * 2));
-                                                  } else {
-                                                    AudioService.seekTo(Duration(milliseconds: lowerValue.toInt()));
-                                                  }
-                                                }
-                                              },
-                                              trackBar: FlutterSliderTrackBar(
-                                                activeTrackBarHeight: 8,
-                                                inactiveTrackBarHeight: 8,
-                                                activeTrackBar: BoxDecoration(
-                                                  color: Colors.blue,
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                                inactiveTrackBar: BoxDecoration(
-                                                  color: Colors.blue.withOpacity(0.3),
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  ),))),
-                    SizedBox(height: 22,),
-                    AnimatedContainer(
-                        duration: Duration(
-                            milliseconds: 400),
-                        transform: Matrix4.translation(
-                            vector.Vector3(
-                                0, 0, 0)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment
-                              .center,
-                          children: [
-                            SizedBox(width: 50,
-                                height: 50,
-                                child: IconButton(
-                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: () {toggleLike(0);},
-                                    icon: Image(
-                                        color: Color.fromARGB(255, 255, 255, 255),
-                                        image: isDisLiked ? AssetImage(
-                                            'assets/images/unloveyes.png') : AssetImage(
-                                            'assets/images/unloveno.png'),
-                                        width: 100
-                                    ))),
-                            SizedBox(width: 50,
-                                height: 50,
-                                child: IconButton(
-                                    disabledColor: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: canrevew ? previosmusic : null,
-                                    icon: Image(
-                                        color: canrevew ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                        image: AssetImage(
-                                            'assets/images/reveuws.png'),
-                                        width: 100
-                                    ))),
-                            SizedBox(height: 50,
-                                width: 50,
-                                child: loadingmus ? CircularProgressIndicator() : IconButton(
-                                    onPressed: () {
-                                      setnewState(() {
-                                        playpause();
-                                      });
-                                    },
-                                    padding: EdgeInsets
-                                        .zero,
-                                    icon: AnimatedSwitcher(
-                                        duration: Duration(milliseconds: 300),
-                                        transitionBuilder: (Widget child, Animation<double> animation) {
-                                          return RotationTransition(
-                                            turns: Tween(begin: 0.75, end: 1.0).animate(animation),
-                                            child: ScaleTransition(scale: animation, child: child),
-                                          );
-                                        }, child:  Icon(
-                                      key: videoope ? ValueKey<bool>(controller.player.state.playing) : ValueKey<bool>(AudioService.playbackState.playing),
-                                      iconpla.icon,
-                                      size: 50,
-                                      color: Colors
-                                          .white,)))),
-                            SizedBox(width: 50,
-                                height: 50,
-                                child: IconButton(
-                                    disabledColor: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: cannext ? nextmusic : null,
-                                    icon: Image(
-                                      color: cannext ? Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                      image: AssetImage(
-                                          'assets/images/nexts.png'),
-                                      width: 120,
-                                      height: 120,
-                                    ))),
-                            SizedBox(width: 50,
-                                height: 50,
-                                child: IconButton(
-                                    onPressed: () {toggleLike(1);}, // () {installmusic(langData[0]);},
-                                    icon: Image(
-                                        color: Color.fromARGB(255, 255, 255, 255),
-                                        image: isLiked ? AssetImage(
-                                            'assets/images/loveyes.png') : AssetImage(
-                                            'assets/images/loveno.png'),
-                                        width: 100
-                                    ))),
-                          ],)),
-                    SizedBox(height: 22,),
-                    AnimatedContainer(
-                        duration: Duration(
-                            milliseconds: 400),
-                        transform: Matrix4.translation(
-                            vector.Vector3(
-                                0, 0, 0)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment
-                              .center,
-                          children: [
-                            SizedBox(width: 50,
-                                height: 50,
-                                child: IconButton(
-                                    onPressed: () {
-                                      connectToWebSocket();
-                                    },
-                                    padding: EdgeInsets
-                                        .zero,
-                                    icon: Icon(
-                                      Icons
-                                          .devices_rounded,
-                                      size: 50,
-                                      color: Colors
-                                          .white,))),
-                            SizedBox(width: 50,
-                                height: 50,
-                                child: IconButton(
-                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: null,
-                                    padding: EdgeInsets
-                                        .zero,
-                                    icon: Icon(
-                                      Icons
-                                          .queue_music_rounded,
-                                      size: 50,
-                                      color: Color.fromARGB(255, 123, 123, 124),))),
-                            SizedBox(height: 50,
-                                width: 50,
-                                child: IconButton(
-                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: null,
-                                    padding: EdgeInsets
-                                        .zero,
-                                    icon: Icon(Icons
-                                        .settings_rounded,
-                                      size: 50,
-                                      color: Color.fromARGB(255, 123, 123, 124),))),
-                            SizedBox(width: 50,
-                                height: 50,
-                                child: IconButton(
-                                    disabledColor: Color.fromARGB(255, 123, 123, 124),
-                                    onPressed: langData[0]['vidos'] != "0" ? () {
-                                      setnewState(() {
-                                        setvi(shazid,true, false);
-                                      });
-                                    }: null,
-                                    padding: EdgeInsets
-                                        .zero,
-                                    icon: Image(
-                                      color: langData[0]['vidos'] != "0" ? Color.fromARGB( 255, 255, 255, 255) : Color.fromARGB(255, 123, 123, 124),
-                                      image: AssetImage(videoope ? 'assets/images/musicon.png' : 'assets/images/video.png'),
-                                      width: 120,
-                                      height: 120,
-                                    ))),
-                          ],))],)), Container(width: size.width/10,) ],),
-
+                playerwis.playerbigmusic(context),
+                Container(width: videoope ? size.width : dsadsa, child:
+                playerwis.playerbigvideo(context))
               ],))
         ])
           );}
@@ -4194,8 +3586,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               borderRadius: BorderRadius.vertical(top: Radius.circular(15))
           ),
           child:
-          ClipRect(
-          child: BackdropFilter(
+          ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+
+              child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), // Настройка степени размытия
     child:
           SafeArea(
@@ -4276,8 +3670,8 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                                     color: Color.fromARGB(255, 246, 244, 244)
                                 ),
                               ),
-
-                              trailing: Container(              padding: EdgeInsets.only(right: 10, top: 8),
+                              trailing: Container(
+                                padding: EdgeInsets.only(right: 10, top: 8),
                                 child: loadingmus ? CircularProgressIndicator() : IconButton(
                                   icon: AnimatedSwitcher(
                                     duration: Duration(milliseconds: 300),
@@ -4378,9 +3772,9 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   }
 
   late List<Widget> pages = [
-    _buildNavigator(_playlistNavigatorKey, PlaylistScreen(onCallback: (dynamic input) {
+    _buildNavigator(_playlistNavigatorKey, LibraryScreen(onCallback: (dynamic input) {
       getaboutmus(input, false, false, false, false);
-    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp, onCallbackt: (dynamic input, dynamic inputi, String asdsa) { loadpalylisttoochered(input, inputi, asdsa); },)),
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp, onCallbackt: (dynamic input, dynamic inputi, String asdsa) { loadpalylisttoochered(input, inputi, asdsa); }, parctx: context, hie2: () { _openHistroryPage(_getNavigatorKey(pageIndex).currentContext!); },)),
     _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey, onCallbackt: (dynamic input, dynamic inputi) { loadpalylisttoochered(input, inputi, "Джем"); }, onCallback: (dynamic input) {
       getaboutmus(input, false, false, false, false);
     }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp, essension: essension, parctx: context,)),

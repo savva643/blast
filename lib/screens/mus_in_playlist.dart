@@ -10,11 +10,14 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 import '../api/api_service.dart';
+import '../parts/buttons.dart';
 import '../parts/music_cell.dart';
+import '../providers/list_manager_provider.dart';
 
 
 
@@ -74,6 +77,10 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
 
   final ApiService apiService = ApiService();
   void load() async {
+    setState(() {
+      isRefreshing = true;
+      showRefreshButton = true;
+    });
     late var langData;
     var usera = await apiService.getUser();
     setState(() {
@@ -85,19 +92,30 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
       }
     });
     if(palylsitid != "install") {
-      langData = await apiService.getMusicInPlaylist(palylsitid);
+      langData = await apiService.getMusicInPlaylist(palylsitid, 0);
+      setState(() {
+        showRefreshButton = false;
+        context.read<ListManagerProvider>().createList('playlistid'+palylsitid.toString(), langData);
+      });
     }else{
       langData = await apiService.getInstalledMusic();
+      setState(() {
+        showRefreshButton = false;
+        context.read<ListManagerProvider>().createList('installedmusic', langData);
+      });
     }
-    print(usera.toString()+'kighj');
+    await Future.delayed(Duration(milliseconds: 301));
     setState(() {
-      _searchedLangData = langData;
+      isRefreshing = false;
+      isDragging = false;
     });
+    print(usera.toString()+'kighj');
   }
 
   @override
   void initState()
   {
+    _scrollController.addListener(_checkScrollPosition);
     load();
     super.initState();
   }
@@ -144,33 +162,54 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   }
 
 
-  List _searchedLangData = [
-    {
-      'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-    {
-      'id': '2',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-  ];
 
+
+  void _checkScrollPosition() {
+    if (_scrollController.offset <= 0 && !isRefreshing) {
+      load();
+    }
+  }
+  bool showRefreshButton = false;
+  bool isRefreshing = false;
 
   @override
   void dispose() {
+    _scrollController.dispose();
     super.dispose();
   }
-
-
+  bool isDragging = false;
+  final ScrollController _scrollController = ScrollController();
 
   Widget _loadListViewmore() {
     Size size = MediaQuery.of(context).size;
-    return ListView.builder(
-      itemCount: _searchedLangData.length+1,
+    return Consumer<ListManagerProvider>(
+        builder: (context, listManager, child)
+        {
+          late var list;
+          if(palylsitid != "install") {
+            list = listManager.getList(
+                'playlistid'+palylsitid.toString()); // Получить список из провайдера
+          }else{
+            list = listManager.getList(
+                'installedmusic');
+          }
+          if (list.isEmpty) {
+            return Center(child: Text('Нету треков', style: TextStyle(color: Colors.white, fontSize: 28),));
+          }
+
+          return NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+            if (notification is OverscrollNotification && !isRefreshing) {
+              setState(() => isDragging = true);
+            }
+            if (notification is ScrollEndNotification && isDragging) {
+              load();
+            }
+            return false;
+          },
+          child: ListView.builder(
+      controller: _scrollController,
+      itemCount: list.length+1,
       itemBuilder: (BuildContext context, int idx)
       {
         if (idx == 0) {
@@ -247,7 +286,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                       ),
                       placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
                       errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                    )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                    )) : buttonlogin(showlog )),)
                   ],),
                   Container(margin: EdgeInsets.only(left: size.width/3 + 10, top: 20), child:
                   Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),
@@ -264,17 +303,45 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
           );
         }else{
 
-          return MussicCell( _searchedLangData[idx-1], (){sendpalulit(idx-1);}, context);
+          return MussicCell( list[idx-1], (){sendpalulit(idx-1, list);}, context);
         }
       },
-    );
+    ));
+        });
   }
 
 
   Widget _loadListView() {
     Size size = MediaQuery.of(context).size;
-    return ListView.builder(
-      itemCount: _searchedLangData.length+1,
+    return Consumer<ListManagerProvider>(
+        builder: (context, listManager, child)
+        {
+          late var list;
+          if(palylsitid != "install") {
+            list = listManager.getList(
+                'playlistid'+palylsitid.toString()); // Получить список из провайдера
+          }else{
+            list = listManager.getList(
+                'installedmusic');
+          }
+
+          if (list.isEmpty) {
+            return Center(child: Text('Нету треков', style: TextStyle(color: Colors.white, fontSize: 28),));
+          }
+
+          return NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+            if (notification is OverscrollNotification && !isRefreshing) {
+              setState(() => isDragging = true);
+            }
+            if (notification is ScrollEndNotification && isDragging) {
+              load();
+            }
+            return false;
+          },
+          child: ListView.builder(
+            controller: _scrollController,
+      itemCount: list.length+1,
       itemBuilder: (BuildContext context, int idx)
       {
         if (idx == 0) {
@@ -352,7 +419,7 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                       ),
                       placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
                       errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                    )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                    )) : buttonlogin(showlog )),)
                   ],),
                 ],),
               Container(margin: EdgeInsets.only(left: 10), child:
@@ -367,15 +434,17 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
             ],
           );
         }else{
-          return MussicCell( _searchedLangData[idx-1], (){sendpalulit(idx-1);}, context);
+          return MussicCell( list[idx-1], (){sendpalulit(idx-1, list);}, context);
         }
       },
-    );
+    )
+          );
+        });
   }
 
-  void sendpalulit(var fdsvds){
-    print(_searchedLangData.toString() + fdsvds.toString() + palylsitname+ "ghfghnf");
-    dfv(_searchedLangData,fdsvds, palylsitname);
+  void sendpalulit(var fdsvds, dynamic list){
+    print(list.toString() + fdsvds.toString() + palylsitname+ "ghfghnf");
+    dfv(list,fdsvds, palylsitname);
   }
 
 

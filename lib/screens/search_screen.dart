@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:provider/provider.dart';
 import 'package:record/record.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -21,6 +22,7 @@ import '../api/record_api.dart';
 import '../parts/bottomsheet_recognize.dart';
 import '../parts/buttons.dart';
 import '../parts/music_cell.dart';
+import '../providers/list_manager_provider.dart';
 import 'login.dart';
 
 
@@ -87,13 +89,7 @@ class SearchScreenState extends State<SearchScreen> {
     });
     var langData = await apiService.getSearchHistory();
     setState(() {
-      _historysearch.clear();
-      if(!langData.isEmpty) {
-        _historysearch = langData;
-        showls = true;
-      }else{
-        showno = true;
-      }
+      context.read<ListManagerProvider>().createList('historySearch', langData);
     });
   }
 
@@ -182,7 +178,7 @@ class SearchScreenState extends State<SearchScreen> {
                       ),
                       placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
                       errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                    )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                    )) : buttonlogin(showlog )),)
                   ],),
           Container(margin: EdgeInsets.only(top: 60), width: size.width, child: Row(children: [Container(margin: EdgeInsets.only(top: 16), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),Container(margin: EdgeInsets.only(top: 18), width: size.width-60, height: 40, child: SearchBar(hintText: 'Навзвание трека',  onChanged: onChencged, controller: _searchLanguageController, shadowColor: WidgetStatePropertyAll(Colors.transparent), side: WidgetStatePropertyAll(const BorderSide(color: Colors.white10, width: 2)), overlayColor: WidgetStatePropertyAll(Colors.white10), hintStyle: WidgetStatePropertyAll(TextStyle(
                     fontSize: 16,
@@ -199,15 +195,8 @@ class SearchScreenState extends State<SearchScreen> {
                     child:
                     Stack(alignment: Alignment.center,
                       children: [
-                        Container(width: size.width, child: !showno ? (showls ? (_searchLanguageController.text.isEmpty ? _loadListViewhist() : _loadListView()) :  Container(child: Center(child: CircularProgressIndicator(),),)) :
-                            Column(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.center, children: [Text("История поиска пуста",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),),],)
+                        Container(width: size.width, child:  (showls ? (_searchLanguageController.text.isEmpty ? _loadListViewhist() : _loadListView()) :  Container(child: Center(child: CircularProgressIndicator(),),))
+
                         ),SafeArea(child: Container(padding: EdgeInsets.all(8),child: Align(alignment: Alignment.bottomRight,child:
     ValueListenableBuilder<String>(
     valueListenable: widget.reci.statusNotifier,
@@ -230,7 +219,6 @@ class SearchScreenState extends State<SearchScreen> {
   }
 
   bool showls = false;
-  bool showno = false;
 
   List _searchedLangData = [
     {
@@ -246,7 +234,6 @@ class SearchScreenState extends State<SearchScreen> {
       'message': 'Имполнитель',
     },
   ];
-  List _historysearch = [];
   final _searchLanguageController = TextEditingController();
 
 
@@ -261,8 +248,25 @@ class SearchScreenState extends State<SearchScreen> {
 
   Widget _loadListViewhist() {
     Size size = MediaQuery.of(context).size;
-    return ListView.builder(
-      itemCount: _historysearch.length+1,
+    return Consumer<ListManagerProvider>(
+        builder: (context, listManager, child)
+        {
+          final list = listManager.getList(
+              'historySearch'); // Получить список из провайдера
+
+          if (list.isEmpty) {
+            return Column(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.center, children: [Text("История поиска пуста",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 30,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),),],);
+          }
+
+          return ListView.builder(
+      itemCount: list.length+1,
       itemBuilder: (BuildContext context, int idx)
       {
         return SizedBox(child: idx == 0 ?  Column(
@@ -282,9 +286,9 @@ class SearchScreenState extends State<SearchScreen> {
           ],
         )
             :
-        MussicCell( _historysearch[idx-1], () async {
+        MussicCell( list[idx-1], () async {
 
-          onCallback(_historysearch[idx-1]['idshaz']);
+          onCallback(list[idx-1]['idshaz']);
 
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           List<String>? sac = prefs.getStringList("historymusid");
@@ -295,12 +299,13 @@ class SearchScreenState extends State<SearchScreen> {
           if(fsaf.length >= 20){
             fsaf.removeLast();
           }
-          fsaf.add(_historysearch[idx-1]['idshaz']);
+          fsaf.add(list[idx-1]['idshaz']);
           await prefs.setStringList("historymusid", fsaf);
           }, context)
         );
       },
     );
+        });
   }
 
   Widget _loadListView() {
@@ -365,16 +370,9 @@ class SearchScreenState extends State<SearchScreen> {
     if(langData.isNotEmpty) {
       _searchedLangData = langData;
       showls = true;
-      showno = false;
     }else{
       _searchLanguageController.clear();
-      if(_historysearch.isEmpty) {
-        showno = false;
-        showls = false;
-      }else{
-        showno = false;
-        showls = true;
-      }
+      showls = false;
     }
     });
   }

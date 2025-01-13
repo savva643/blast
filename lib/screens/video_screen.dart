@@ -5,18 +5,14 @@ import 'dart:io';
 
 import 'package:blast/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import '../api/api_service.dart';
-import 'login.dart';
-
+import '../parts/buttons.dart';
+import '../providers/list_manager_provider.dart';
 
 
 const kBgColor = Color(0xFF1604E2);
@@ -52,8 +48,9 @@ class _VideoScreenState extends State<VideoScreen> {
       }
     });
     var langData = await apiService.getVideosTop();
+
     setState(() {
-      _searchedLangData = langData;
+      context.read<ListManagerProvider>().createList('videosLast', langData);
     });
   }
 
@@ -64,9 +61,7 @@ class _VideoScreenState extends State<VideoScreen> {
     load();
     super.initState();
   }
-  String musicUrl = ""; // Insert your music URL
-  String thumbnailImgUrl = "";
-  var player = AudioPlayer();
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -142,7 +137,7 @@ class _VideoScreenState extends State<VideoScreen> {
               ),
               placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
               errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-            )) : Icon(Icons.circle, size: 46, color: Colors.white,)),)
+            )) : buttonlogin(showlog )),)
           ],),
           Container(padding: EdgeInsets.only(top: 80), height: size.height,
             child:size.width > 1200 ? _loadGridView() : size.width > 800 ? _loadGridView2() : _loadListView()
@@ -159,7 +154,6 @@ class _VideoScreenState extends State<VideoScreen> {
   }
 
 
-  List _searchedLangData = [];
 
 
   _VideoScreenState(Function(dynamic) onk, VoidCallback fg, VoidCallback dawsd, VoidCallback gbdfgb) {
@@ -172,73 +166,106 @@ class _VideoScreenState extends State<VideoScreen> {
 
   @override
   void dispose() {
-    player.dispose();
     super.dispose();
   }
 
 
   Widget _loadGridView2() {
     Size size = MediaQuery.of(context).size;
-    return GridView(
+    return Consumer<ListManagerProvider>(
+        builder: (context, listManager, child)
+        {
+          final list = listManager.getList(
+              'videosLast'); // Получить список из провайдера
+
+          if (list.isEmpty) {
+            return Center(child: Text('Нету видео'));
+          }
+
+          return GridView(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         mainAxisExtent: ((size.width/16)*4.1),
         crossAxisSpacing: 20,
         mainAxisSpacing: 10,
       ),
-      children: List.generate(_searchedLangData.length, (idx) {
+      children:  List.generate(list.length, (idx) {
         return CustomTile(
-          title: _searchedLangData[idx]['name'],
-          subtitle: _searchedLangData[idx]['message'],
-          imageUrl: _searchedLangData[idx]['imgvidos'],
+          title: list[idx]['name'],
+          subtitle: list[idx]['message'],
+          imageUrl: list[idx]['imgvidos'],
           wih: size.width,
-          urlo: _searchedLangData[idx]['idshaz'],
+          urlo: list[idx]['idshaz'],
           onCallback: (dynamic input) {onCallback(input);},
         );
       }),
     );
+        });
   }
 
   Widget _loadGridView() {
     Size size = MediaQuery.of(context).size;
-    return GridView(
+    return Consumer<ListManagerProvider>(
+        builder: (context, listManager, child)
+        {
+          final list = listManager.getList(
+              'videosLast'); // Получить список из провайдера
+
+          if (list.isEmpty) {
+            return Center(child: Text('Нету видео'));
+          }
+
+          return GridView(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
         mainAxisExtent: ((size.width/16)*3),
         crossAxisSpacing: 20,
         mainAxisSpacing: 10,
       ),
-      children: List.generate(_searchedLangData.length, (idx) {
+      children: List.generate(list.length, (idx) {
         return CustomTile(
-          title: _searchedLangData[idx]['name'],
-          subtitle: _searchedLangData[idx]['message'],
-          imageUrl: _searchedLangData[idx]['imgvidos'],
+          title: list[idx]['name'],
+          subtitle: list[idx]['message'],
+          imageUrl: list[idx]['imgvidos'],
           wih: size.width,
-          urlo: _searchedLangData[idx]['idshaz'],
+          urlo: list[idx]['idshaz'],
           onCallback: (dynamic input) {onCallback(input);},
         );
       }),
     );
+        });
   }
 
 
 
   Widget _loadListView() {
     Size size = MediaQuery.of(context).size;
-    return Container(height: size.height, child: ListView.builder(
-      itemCount: _searchedLangData.length,
+    return Container(height: size.height, child:
+    Consumer<ListManagerProvider>(
+        builder: (context, listManager, child)
+    {
+      final list = listManager.getList(
+          'videosLast'); // Получить список из провайдера
+
+      if (list.isEmpty) {
+        return Center(child: Text('Нету видео'));
+      }
+
+      return ListView.builder(
+      itemCount: list.length,
       itemBuilder: (BuildContext context, int idx)
       {
           return CustomTile(
-            title: _searchedLangData[idx]['name'],
-            subtitle: _searchedLangData[idx]['message'],
-            imageUrl: _searchedLangData[idx]['imgvidos'],
+            title: list[idx]['name'],
+            subtitle: list[idx]['message'],
+            imageUrl: list[idx]['imgvidos'],
             wih: size.width,
-            urlo: _searchedLangData[idx]['idshaz'],
+            urlo: list[idx]['idshaz'],
             onCallback: (dynamic input) {onCallback(input);},
           );
       },
-    )
+    );
+    })
     );
   }
 

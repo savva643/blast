@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../api/api_service.dart';
+import '../parts/buttons.dart';
 import '../parts/music_cell.dart';
 import '../providers/list_manager_provider.dart';
 
@@ -51,6 +52,11 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
       iconplaese = newIcon;
     });
   }
+
+
+  bool showRefreshButton = false;
+  bool isRefreshing = false;
+
   late  Function(dynamic) onCallback;
   late VoidCallback onCallbacki;
   late VoidCallback essension;
@@ -156,6 +162,10 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
   }
   final ApiService apiService = ApiService();
   void load() async {
+    setState(() {
+      isRefreshing = true;
+      showRefreshButton = true;
+    });
     var usera = await apiService.getUser();
     setState(() {
       if(usera['status'] != 'false') {
@@ -167,10 +177,17 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
     });
     var langData = await apiService.getTopMusic();
     setState(() {
+      showRefreshButton = false;
       context.read<ListManagerProvider>().createList('top20', langData);
-      _searchedLangData = langData;
+    });
+    await Future.delayed(Duration(milliseconds: 301));
+    setState(() {
+      isRefreshing = false;
+      isDragging = false;
     });
   }
+
+  bool isDragging = false;
 
   void _showMainBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -249,6 +266,7 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
   void initState()
   {
     load();
+    _scrollController.addListener(_checkScrollPosition);
     controllermuscircle = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 50),
@@ -270,6 +288,17 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
     );
     super.initState();
   }
+  void _handleMouseEnterFromOutside() {
+    setState(() => showRefreshButton = true);
+  }
+
+  void _handleMouseExitFromInside() {
+    setState(() {
+      showRefreshButton = false;
+
+    });
+  }
+
 
   String musicUrl = ""; // Insert your music URL
   String thumbnailImgUrl = "";
@@ -301,7 +330,12 @@ class MusicScreenState extends State<MusicScreen> with TickerProviderStateMixin{
           width: 420,
           height: 420,
         ),
-      ), SafeArea(
+      ),
+
+
+
+
+        SafeArea(
         top: false,
 bottom: false,
         child:
@@ -318,33 +352,47 @@ bottom: false,
           child: size.width > 800 ? SizedBox(width: size.width, height: size.height, child: SizedBox(width: size.width, height: size.height, child: Row(children: [ SizedBox(height: size.height, width: size.width/2, child: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.max, children: [Stack(
             clipBehavior: Clip.none,
             children: [
-              Row(children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
 
-                    // Мишура
-                    Positioned(
-                      top: -50,
-                      child: Image.asset(
-                        'assets/images/tinsel.png',
-                        width: 250,
-                      ),
-                    ),
-                    // Текст "blast!"
-                    Container(padding: EdgeInsets.only(left: 12,top: 12),
-                        child:const Text(
-                          "blast!",
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        )),
-                  ],
+              Positioned(
+                top: -280,
+                left: -196,
+                child: Image.asset(
+                  'assets/images/circlebg.png',
+                  width: 420,
+                  height: 420,
                 ),
-                Container(padding: const EdgeInsets.only(left: 6,top:  12),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+              ),
+              Row(children: [
+                Container(padding: const EdgeInsets.only(left: 12,top: 12),
+                  child:
+                  Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+
+                      // Мишура
+                      Positioned(
+                        left: -70,
+                        top: -64.4,
+                        child: Image.asset(
+                          'assets/images/tinsel.png',
+                          width: 250,
+                        ),
+                      ),
+                      // Текст "blast!"
+                      Container(padding: EdgeInsets.only(left: 0,top: 0),
+                          child:const Text(
+                            "blast!",
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          )),
+                    ],
+                  )),
+                Container(padding: const EdgeInsets.only(left: 6,top:  13),child:  TextButton(onPressed: () {_showSmallDialog(context);}, style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color?>(
                       (Set<MaterialState> states) {
                     if (states.contains(MaterialState.pressed)) {
                       return Colors.grey[900]; // Darker grey when pressed
@@ -530,7 +578,7 @@ bottom: false,
                   ),
                   placeholder: (context, url) => const CircularProgressIndicator(), // Placeholder while loading
                   errorWidget: (context, url, error) => const Icon(Icons.error), // Error icon if image fails to load
-                )) : const Icon(Icons.circle, size: 46, color: Colors.white,)),)],),)
+                )) : buttonlogin(showlog )),)],),)
               ],),)],)),],),))  : Column(children: [Stack(
             clipBehavior: Clip.none,
             children: [
@@ -606,42 +654,77 @@ bottom: false,
                   ),
                   placeholder: (context, url) => const CircularProgressIndicator(), // Placeholder while loading
                   errorWidget: (context, url, error) => const Icon(Icons.error), // Error icon if image fails to load
-                )) : const Icon(Icons.circle, size: 46, color: Colors.white,)),)
+                )) : buttonlogin(showlog )),)
               ],),
 
             ],),
             Expanded(child: _loadListView())],),
       ),
 
-      ),],)
+      ),
+
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 10,
+          child: MouseRegion(
+            onEnter: (_) => _handleMouseEnterFromOutside(),
+          ),
+        ),
+        // Кнопка обновления
+        AnimatedPositioned(
+          duration: Duration(milliseconds: 300),
+          top: showRefreshButton ? 0 : -60,
+          left: 0,
+          right: 0,
+          child: MouseRegion(
+            onExit: (_) => _handleMouseExitFromInside(),
+            child: Container(
+
+              color: Colors.black.withOpacity(0),
+              height: 60,
+              child: Center(
+                child: (isDragging || isRefreshing)
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : ElevatedButton(
+                  onPressed: load,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  ),
+                  child: Text(
+                    'Обновить',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+
+      ],)
     );
   }
 
-
-  List _searchedLangData = [
-    {
-      'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-    {
-      'id': '2',
-      'img': 'https://kompot.site/img/music.jpg',
-      'name': 'Название',
-      'message': 'Имполнитель',
-    },
-  ];
+  void _checkScrollPosition() {
+    if (_scrollController.offset <= 0 && !isRefreshing) {
+      load();
+    }
+  }
 
 
   @override
   void dispose() {
     controllermuscircle.dispose();
+    _scrollController.dispose();
     _controllere.dispose();
     super.dispose();
   }
 
 
+  final ScrollController _scrollController = ScrollController();
 
   Widget _loadListViewMore() {
     Size size = MediaQuery.of(context).size;
@@ -655,7 +738,18 @@ bottom: false,
         return Center(child: Text('Нету треков'));
       }
 
-      return ListView.builder(
+      return NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+        if (notification is OverscrollNotification && !isRefreshing) {
+          setState(() => isDragging = true);
+        }
+        if (notification is ScrollEndNotification && isDragging) {
+          load();
+        }
+        return false;
+      },
+      child: ListView.builder(
+        controller: _scrollController,
         itemCount: list.length + 1,
         itemBuilder: (BuildContext context, int idx) {
           return SizedBox(child: idx == 0 ? const Column(
@@ -676,9 +770,10 @@ bottom: false,
               :
           MussicCellNumber(idx, list[idx - 1], () {
             widget.onCallbackt(list, idx-1);
-          }, context)
+          }, widget.parctx)
           );
         },
+      ),
       );
     });
   }
@@ -696,6 +791,7 @@ bottom: false,
            }
 
            return ListView.builder(
+             controller: _scrollController,
              itemCount: list.length + 1,
              itemBuilder: (BuildContext context, int idx) {
                if (idx == 0) {
@@ -914,7 +1010,7 @@ bottom: false,
                } else {
                  return MussicCellNumber(idx, list[idx - 1], () {
                    widget.onCallbackt(list, idx-1);
-                 }, context);
+                 }, widget.parctx);
                }
              },
            );

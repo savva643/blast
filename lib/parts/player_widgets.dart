@@ -1197,6 +1197,1054 @@ class PlayerWidget {
   }
 
 
+  Widget playerbigmusic(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+
+    final TextStyle nameStyle = const TextStyle(
+      fontSize: 28,
+      fontFamily: 'Montserrat',
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+    );
+    final TextStyle artistStyle = const TextStyle(
+      fontSize: 20,
+      fontFamily: 'Montserrat',
+      fontWeight: FontWeight.w400,
+      color: Colors.grey,
+    );
+    return Scaffold(
+      backgroundColor: const Color(0xFF0f0f10).withOpacity(0),
+      body: SafeArea(
+        child: Container(padding: EdgeInsets.only(top: 10, bottom: 18),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double availableHeight = constraints.maxHeight;
+              final double availablew = constraints.maxWidth;
+              final double imageHeight = availablew * 0.86 <
+                  availableHeight * 0.46 ? availablew * 0.86 : availableHeight *
+                  0.46; // 40% экрана под изображение
+              return Stack(
+                alignment: AlignmentDirectional.topStart,
+
+                children: [
+                  Container(padding: EdgeInsets.all(8), alignment: Alignment.topLeft,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                        Container(padding: EdgeInsets.only(left: 4),child:
+                        SizedBox(width: 40,
+                            height: 40,
+                            child: IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                padding: EdgeInsets
+                                    .zero,
+                                icon: Icon(
+                                  Icons
+                                      .keyboard_arrow_down_rounded,
+                                  size: 40,
+                                  color: Colors
+                                      .white,))),),
+
+                        Expanded(child: Container()),
+                        Container(padding: EdgeInsets.only(top: 5),child:
+                        SizedBox(width: 30,
+                            height: 30,
+                            child: IconButton(
+                                onPressed: () {
+                                  connectToWebSocket();
+                                },
+                                padding: EdgeInsets
+                                    .zero,
+                                icon: Icon(
+                                  Icons
+                                      .devices_rounded,
+                                  size: 30,
+                                  color: Colors
+                                      .white,))),),
+                        SizedBox(width: 20,),
+                        Container(padding: EdgeInsets.only(top: 5),child:
+                        SizedBox(width: 30,
+                            height: 30,
+                            child: IconButton(
+                                disabledColor: Color.fromARGB(
+                                    255, 123, 123, 124),
+                                onPressed: (){queuewidget();},
+                                padding: EdgeInsets
+                                    .zero,
+                                icon: Icon(
+                                  Icons
+                                      .queue_music_rounded,
+                                  size: 30,
+                                  color: Color.fromARGB(255, 255, 255, 255),))),),
+                        SizedBox(width: 10,),
+                        Container(padding: EdgeInsets.only(top: 5, right: 6),child:
+                        SizedBox(height: 30,
+                            width: 30,
+                            child: IconButton(
+                                disabledColor: Color.fromARGB(
+                                    255, 123, 123, 124),
+                                onPressed: () {
+                                  showTrackOptionsBottomSheet(context, langData[0]);
+                                },
+                                padding: EdgeInsets
+                                    .zero,
+                                icon: Icon(Icons
+                                    .more_vert_rounded,
+                                  size: 30,
+                                  color: Color.fromARGB(255, 255, 255, 255),))),),
+                      ],)),
+
+
+
+                Container(alignment: Alignment.center,child:
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(width: size.width/2, height: size.height, child:
+                  AnimatedOpacity(
+                      opacity: controllershort.player.state.playing ? opacityi3 : 1,
+                      duration: Duration(
+                          milliseconds: 400),
+                      child:
+                      AnimatedOpacity(
+                          opacity: opacityi1,
+                          duration: Duration(
+                              milliseconds: 400),
+                          child: AnimatedBuilder(
+                              animation: animation,
+                              builder: (context,
+                                  child) {
+                                return Align(
+                                    alignment: animation
+                                        .value,
+                                    child:
+                                    AnimatedContainer(
+                                      constraints: BoxConstraints(maxWidth: 800, maxHeight: 800),
+                                      margin: EdgeInsets
+                                          .only(
+                                        left: 30,
+                                        right: 30,),
+                                      height: imgwh == 80 ? imgwh : imageHeight,
+                                      width: imgwh == 80 ? imgwh : imageHeight,
+                                      duration: Duration(
+                                          milliseconds: 400),
+                                      child: RoundedImage(imageUrl: imgmus, size: imageHeight),
+                                    ));})))),
+                Container(width: size.width/3, height: size.height, child:
+                    Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+
+                  // Обложка, круглая картинка исполнителя и информация о песне
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+
+
+                      const SizedBox(height: 16),
+                      AnimatedOpacity(opacity: opacity,
+                          duration: Duration(
+                              milliseconds: 400),
+                          onEnd: () {
+                            print("hjjhgjg");
+                            //opka();
+                          },
+                          child: AnimatedContainer(
+                              duration: Duration(
+                                  milliseconds: 400),
+                              transform: Matrix4
+                                  .translation(
+                                  vector.Vector3(
+                                      0, 0, 0)),
+                              child: Container(
+                                height: 50,
+                                alignment: Alignment.center,
+                                width: MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width - 32,
+                                child: buildTextOrMarquee(
+                                    namemus, nameStyle, MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width - 32),
+                              ))),
+                      AnimatedOpacity(opacity: opacity,
+                          duration: Duration(
+                              milliseconds: 400),
+                          child: AnimatedContainer(
+                            alignment: Alignment.center,
+                            duration: Duration(
+                                milliseconds: 400),
+                            transform: Matrix4
+                                .translation(
+                                vector.Vector3(
+                                    0, 0, 0)),
+                            child: Container(
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // Круглая картинка исполнителя
+                                  CircleAvatar(
+                                    radius: 24, // Размер аватара
+                                    backgroundImage: NetworkImage(
+                                      imgispol, // Ссылка на изображение исполнителя
+                                    ),
+                                    backgroundColor: Colors
+                                        .grey[800], // Цвет фона, если изображения нет
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Имя исполнителя
+                                  Container(
+                                    height: 50,
+                                    alignment: Alignment.center,
+                                    width: shouldScroll(
+                                        ispolmus, artistStyle, MediaQuery
+                                        .of(context)
+                                        .size
+                                        .width - 120) ? MediaQuery
+                                        .of(context)
+                                        .size
+                                        .width - 120 : getTextWidth(
+                                        ispolmus, artistStyle) + 16,
+                                    child: buildTextOrMarquee(
+                                      ispolmus,
+                                      artistStyle,
+                                      shouldScroll(
+                                          ispolmus, artistStyle, MediaQuery
+                                          .of(context)
+                                          .size
+                                          .width - 120) ? MediaQuery
+                                          .of(context)
+                                          .size
+                                          .width - 120 : getTextWidth(
+                                          ispolmus, artistStyle) + 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),)),
+                    ],
+                  ),
+                  SizedBox(height: 10,),
+                  // Анимированный слайдер
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      AnimatedOpacity(opacity: opacity,
+                          duration: Duration(
+                              milliseconds: 400),
+                          child: AnimatedContainer(
+                              duration: Duration(
+                                  milliseconds: 400),
+                              transform: Matrix4
+                                  .translation(
+                                  vector.Vector3(
+                                      0, 0, 0)),
+                              child: SizedBox(
+                                height: 8,
+                                child: StreamBuilder(
+                                  stream: AudioService
+                                      .positionStream,
+                                  builder: (context,
+                                      snapshot) {
+                                    if (snapshot
+                                        .hasData &&
+                                        !snapshot
+                                            .hasError &&
+                                        totalDuration >
+                                            0) {
+                                      final position = snapshot
+                                          .data as Duration;
+                                      return
+                                        GestureDetector(
+                                          onTapDown: (_) {
+                                            tapdown1();
+                                          },
+                                          onTapUp: (_) {
+                                            tapup1();
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: Duration(
+                                                milliseconds: 200),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: translateX),
+                                            curve: Curves.easeInOut,
+                                            transform: Matrix4.identity()
+                                              ..scale(1.0, scaleY),
+                                            // Применяем масштаб
+                                            child: FlutterSlider(
+                                              values: isPressed
+                                                  ? [newposition]
+                                                  : [currentPosition],
+                                              max: totalDuration,
+                                              min: 0,
+                                              tooltip: FlutterSliderTooltip(
+                                                disabled: true, // Отключаем текст со значением
+                                              ),
+                                              handler: FlutterSliderHandler(
+                                                decoration: BoxDecoration(
+                                                  color: Colors
+                                                      .transparent, // Делаем thumb полностью прозрачным
+                                                ),
+                                                child: SizedBox
+                                                    .shrink(), // Полностью скрываем thumb
+                                              ),
+                                              onDragStarted: (handlerIndex,
+                                                  lowerValue, upperValue) {
+                                                dragStarted1(lowerValue);
+                                              },
+                                              onDragging: (handlerIndex,
+                                                  lowerValue, upperValue) {
+                                                dragStarted1(lowerValue);
+                                                tapdown1();
+                                              },
+                                              onDragCompleted: (handlerIndex,
+                                                  lowerValue, upperValue) {
+                                                // Логика завершения перетаскивания
+                                                dragCompleted1(lowerValue);
+                                              },
+                                              trackBar: FlutterSliderTrackBar(
+                                                activeTrackBarHeight: 8,
+                                                inactiveTrackBarHeight: 8,
+                                                activeTrackBar: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius: BorderRadius
+                                                      .circular(10),
+                                                ),
+                                                inactiveTrackBar: BoxDecoration(
+                                                  color: Colors.blue
+                                                      .withOpacity(0.3),
+                                                  borderRadius: BorderRadius
+                                                      .circular(10),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                    } else {
+                                      return GestureDetector(
+                                        onTapDown: (_) {
+                                          tapdown1();
+                                        },
+                                        onTapUp: (_) {
+                                          tapup1();
+                                        },
+                                        child: AnimatedContainer(
+                                          duration: Duration(milliseconds: 200),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: translateX),
+                                          curve: Curves.easeInOut,
+                                          transform: Matrix4.identity()
+                                            ..scale(1.0, scaleY),
+                                          // Применяем масштаб
+                                          child: FlutterSlider(
+                                            values: isPressed
+                                                ? [newposition]
+                                                : [currentPosition],
+                                            max: totalDuration,
+                                            min: 0,
+                                            tooltip: FlutterSliderTooltip(
+                                              disabled: true, // Отключаем текст со значением
+                                            ),
+                                            handler: FlutterSliderHandler(
+                                              decoration: BoxDecoration(
+                                                color: Colors
+                                                    .transparent, // Делаем thumb полностью прозрачным
+                                              ),
+                                              child: SizedBox
+                                                  .shrink(), // Полностью скрываем thumb
+                                            ),
+                                            onDragStarted: (handlerIndex,
+                                                lowerValue, upperValue) {
+                                              dragStarted1(lowerValue);
+                                            },
+                                            onDragging: (handlerIndex,
+                                                lowerValue, upperValue) {
+                                              // Обновляем текущую позицию слайдера, но не меняем масштаб
+                                              dragStarted1(lowerValue);
+                                              tapdown1();
+                                            },
+                                            onDragCompleted: (handlerIndex,
+                                                lowerValue, upperValue) {
+                                              // Логика завершения перетаскивания
+                                              dragCompleted1(lowerValue);
+                                            },
+                                            trackBar: FlutterSliderTrackBar(
+                                              activeTrackBarHeight: 8,
+                                              inactiveTrackBarHeight: 8,
+                                              activeTrackBar: BoxDecoration(
+                                                color: Colors.blue,
+                                                borderRadius: BorderRadius
+                                                    .circular(10),
+                                              ),
+                                              inactiveTrackBar: BoxDecoration(
+                                                color: Colors.blue.withOpacity(
+                                                    0.3),
+                                                borderRadius: BorderRadius
+                                                    .circular(10),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),))),
+                      AnimatedOpacity(opacity: opacity,
+                          duration: Duration(
+                              milliseconds: 400),
+                          child: AnimatedContainer(
+                              duration: Duration(
+                                  milliseconds: 400),
+                              transform: Matrix4
+                                  .translation(
+                                  vector.Vector3(
+                                      0, 0, 0)),
+                              child: AnimatedPadding(
+                                padding: EdgeInsets.only(left: 18 + translateX,
+                                    right: 18 + translateX,
+                                    top: translateY),
+                                duration: Duration(milliseconds: 200),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    AnimatedDefaultTextStyle(
+                                      duration: const Duration(milliseconds: 200),
+                                      // Длительность анимации
+                                      style: TextStyle(
+                                        fontSize: isPressed ? 16 : 14,
+                                        // Увеличиваем текст при нажатии
+                                        color: isPressed ? Colors.white : Colors.grey,
+                                        // Меняем цвет
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      child: Text(
+                                        formatDuration(Duration(
+                                            milliseconds: currentPosition.toInt())),
+                                      ),
+                                    ),
+                                    AnimatedDefaultTextStyle(
+                                      duration: const Duration(milliseconds: 200),
+                                      // Длительность анимации
+                                      style: TextStyle(
+                                        fontSize: isPressed ? 16 : 14,
+                                        // Увеличиваем текст при нажатии
+                                        color: isPressed ? Colors.white : Colors.grey,
+                                        // Меняем цвет
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      child: Text(
+                                        formatDuration(Duration(
+                                            milliseconds: totalDuration.toInt())),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ))),
+                    ],
+                  ),
+                  // Кнопки управления
+                  AnimatedOpacity(opacity: opacity, duration: Duration(
+                      milliseconds: 400), child:
+                  AnimatedContainer(
+                      duration: Duration(
+                          milliseconds: 400),
+                      transform: Matrix4.translation(
+                          vector.Vector3(
+                              0, 0, 0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment
+                            .center,
+                        children: [
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: () {
+                                    toggleLike(0);
+                                  },
+                                  icon: Image(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      image: isDisLiked
+                                          ? AssetImage(
+                                          'assets/images/unloveyes.png')
+                                          : AssetImage(
+                                          'assets/images/unloveno.png'),
+                                      width: 100
+                                  ))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: canrevew ? Color.fromARGB(
+                                      255, 255, 255, 255) : Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: canrevew ? previosmusic : null,
+                                  icon: Image(
+                                      color: canrevew ? Color.fromARGB(
+                                          255, 255, 255, 255) : Color.fromARGB(
+                                          255, 123, 123, 124),
+                                      image: AssetImage(
+                                          'assets/images/reveuws.png'),
+                                      width: 100
+                                  ))),
+                          SizedBox(height: 50,
+                              width: 50,
+                              child: loadingmus
+                                  ? CircularProgressIndicator()
+                                  : IconButton(
+                                  onPressed: () {
+                                    playpause();
+                                  },
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: AnimatedSwitcher(
+                                      duration: Duration(milliseconds: 300),
+                                      transitionBuilder: (Widget child,
+                                          Animation<double> animation) {
+                                        return RotationTransition(
+                                          turns: Tween(begin: 0.75, end: 1.0)
+                                              .animate(animation),
+                                          child: ScaleTransition(
+                                              scale: animation, child: child),
+                                        );
+                                      }, child: Icon(
+                                    iconpla.icon,
+                                    key: videoope ? ValueKey<bool>(controller.player.state.playing) : ValueKey<bool>(AudioService.playbackState.playing),
+                                    size: 50,
+                                    color: Colors
+                                        .white,)))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  disabledColor: cannext ? Color.fromARGB(
+                                      255, 255, 255, 255) : Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: cannext ? nextmusic : null,
+                                  icon: Image(
+                                    color: cannext ? Color.fromARGB(
+                                        255, 255, 255, 255) : Color.fromARGB(
+                                        255, 123, 123, 124),
+                                    image: AssetImage(
+                                        'assets/images/nexts.png'),
+                                    width: 120,
+                                    height: 120,
+                                  ))),
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: IconButton(
+                                  onPressed: () {
+                                    toggleLike(1);
+                                  }, // () {installmusic(_langData[0]);},
+                                  icon: Image(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      image: isLiked
+                                          ? AssetImage(
+                                          'assets/images/loveyes.png')
+                                          : AssetImage(
+                                          'assets/images/loveno.png'),
+                                      width: 100
+                                  ))),
+                        ],))),
+
+                  // Дополнительные кнопки
+                  AnimatedOpacity(opacity: opacity, duration: Duration(
+                      milliseconds: 400), child:
+                  AnimatedContainer(
+                      duration: Duration(
+                          milliseconds: 400),
+                      transform: Matrix4.translation(
+                          vector.Vector3(
+                              0, 0, 0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment
+                            .center,
+                        children: [
+                          SizedBox(width: 40,
+                              height: 40,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: () => AudioService.customAction('toggleShuffle', {}),
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(
+                                    isShuffleEnabled ? CupertinoIcons.shuffle : CupertinoIcons.shuffle_thick,
+                                    size: 32,
+                                    color: isShuffleEnabled ? Colors.white: Colors.grey,))),
+                          SizedBox(width: 40,
+                              height: 40,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(
+                                    Icons
+                                        .queue_music_rounded,
+                                    size: 40,
+                                    color: Color.fromARGB(
+                                        255, 123, 123, 124),))),
+
+                          SizedBox(width: 40,
+                              height: 40,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: langData[0]['vidos'] != "0" ? () {
+                                    setvi();
+                                  } : null,
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Image(
+                                    color: langData[0]['vidos'] != "0" ? Color
+                                        .fromARGB(255, 255, 255, 255) : Color
+                                        .fromARGB(255, 123, 123, 124),
+                                    image: AssetImage(videoope
+                                        ? 'assets/images/musicon.png'
+                                        : 'assets/images/video.png'),
+                                    width: 120,
+                                    height: 120,
+                                  ))),
+                          SizedBox(height: 40,
+                              width: 40,
+                              child: IconButton(
+                                  disabledColor: Color.fromARGB(
+                                      255, 123, 123, 124),
+                                  onPressed: () => AudioService.customAction('toggleRepeatMode', {}),
+                                  padding: EdgeInsets
+                                      .zero,
+                                  icon: Icon(
+                                    repeatMode == LoopMode.one
+                                        ? CupertinoIcons.repeat_1
+                                        : repeatMode == LoopMode.all
+                                        ? CupertinoIcons.repeat
+                                        : CupertinoIcons.repeat,
+                                    size: 32,
+                                    color: repeatMode != LoopMode.off ? Colors.white: Colors.grey,))),
+                        ],)))
+                ],
+              )),
+                    Container(width: size.width /12,)
+
+                  ],)),
+                  ],);
+
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget playerbigvideo(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+
+    final TextStyle nameStyle = const TextStyle(
+      fontSize: 28,
+      fontFamily: 'Montserrat',
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+    );
+    final TextStyle artistStyle = const TextStyle(
+      fontSize: 20,
+      fontFamily: 'Montserrat',
+      fontWeight: FontWeight.w400,
+      color: Colors.grey,
+    );
+    return Scaffold(
+      backgroundColor: const Color(0xFF0f0f10).withOpacity(0),
+      body: SafeArea(
+        child: Container(padding: EdgeInsets.only(top: 10, bottom: 18),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double availableHeight = constraints.maxHeight;
+              final double availablew = constraints.maxWidth;
+              final double imageHeight = availablew * 0.86 <
+                  availableHeight * 0.46 ? availablew * 0.86 : availableHeight *
+                  0.46; // 40% экрана под изображение
+              return Stack(
+                alignment: AlignmentDirectional.topStart,
+
+                children: [
+
+
+
+
+                  Container(alignment: Alignment.center,child:
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(width: size.width/2,  child:
+                      AnimatedOpacity(opacity: videoopacity,
+                          duration: Duration(
+                              milliseconds: 400),
+                          child: Container(
+
+                              margin: EdgeInsets.only(
+                                  top: 30,bottom: 30, left: 20, right: 20),
+                              child: AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: Container(child: MaterialDesktopVideoControlsTheme(
+                                    normal: MaterialDesktopVideoControlsThemeData(
+                                      // Modify theme options:
+                                      seekBarThumbColor: Colors
+                                          .blue,
+                                      seekBarPositionColor: Colors
+                                          .blue,
+                                      toggleFullscreenOnDoublePress: false,
+                                    ),
+                                    fullscreen: const MaterialDesktopVideoControlsThemeData(
+                                      seekBarThumbColor: Colors
+                                          .blue,
+                                      topButtonBarMargin: EdgeInsets
+                                          .only(
+                                          top: 20, left: 30),
+                                      topButtonBar: [
+                                        Text("blast!",
+                                          style: TextStyle(
+                                            fontSize: 40,
+                                            fontFamily: 'Montserrat',
+                                            fontWeight: FontWeight
+                                                .w900,
+                                            color: Colors.white,
+                                          ),)
+                                      ],
+                                      seekBarPositionColor: Colors
+                                          .blue,),
+                                    child:ClipRRect(
+                                      borderRadius: borderRadius, // Make the border round
+                                      child: GestureDetector(
+                                          onTap: toggleMute, // Обработчик клика на видео
+                                          child: Video(
+                                            controller: controller,
+                                          )),
+                                    ),
+                                  ),))))),
+                      Container(width: size.width/3, alignment: Alignment.center, child:
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+
+                          // Обложка, круглая картинка исполнителя и информация о песне
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+
+
+                              const SizedBox(height: 16),
+                              AnimatedOpacity(opacity: videoopacity,
+                                  duration: Duration(
+                                      milliseconds: 400),
+                                  onEnd: () {
+                                    print("hjjhgjg");
+                                    //opka();
+                                  },
+                                  child: AnimatedContainer(
+                                      duration: Duration(
+                                          milliseconds: 400),
+                                      transform: Matrix4
+                                          .translation(
+                                          vector.Vector3(
+                                              0, 0, 0)),
+                                      child: Container(
+                                        height: 50,
+                                        alignment: Alignment.center,
+                                        width: MediaQuery
+                                            .of(context)
+                                            .size
+                                            .width - 32,
+                                        child: buildTextOrMarquee(
+                                            namemus, nameStyle, MediaQuery
+                                            .of(context)
+                                            .size
+                                            .width - 32),
+                                      ))),
+                              AnimatedOpacity(opacity: videoopacity,
+                                  duration: Duration(
+                                      milliseconds: 400),
+                                  child: AnimatedContainer(
+                                    alignment: Alignment.center,
+                                    duration: Duration(
+                                        milliseconds: 400),
+                                    transform: Matrix4
+                                        .translation(
+                                        vector.Vector3(
+                                            0, 0, 0)),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          // Круглая картинка исполнителя
+                                          CircleAvatar(
+                                            radius: 24, // Размер аватара
+                                            backgroundImage: NetworkImage(
+                                              imgispol, // Ссылка на изображение исполнителя
+                                            ),
+                                            backgroundColor: Colors
+                                                .grey[800], // Цвет фона, если изображения нет
+                                          ),
+                                          const SizedBox(width: 8),
+                                          // Имя исполнителя
+                                          Container(
+                                            height: 50,
+                                            alignment: Alignment.center,
+                                            width: shouldScroll(
+                                                ispolmus, artistStyle, MediaQuery
+                                                .of(context)
+                                                .size
+                                                .width - 120) ? MediaQuery
+                                                .of(context)
+                                                .size
+                                                .width - 120 : getTextWidth(
+                                                ispolmus, artistStyle) + 16,
+                                            child: buildTextOrMarquee(
+                                              ispolmus,
+                                              artistStyle,
+                                              shouldScroll(
+                                                  ispolmus, artistStyle, MediaQuery
+                                                  .of(context)
+                                                  .size
+                                                  .width - 120) ? MediaQuery
+                                                  .of(context)
+                                                  .size
+                                                  .width - 120 : getTextWidth(
+                                                  ispolmus, artistStyle) + 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),)),
+                            ],
+                          ),
+                          SizedBox(height: 10,),
+                          // Кнопки управления
+                          AnimatedOpacity(opacity: videoopacity, duration: Duration(
+                              milliseconds: 400), child:
+                          AnimatedContainer(
+                              duration: Duration(
+                                  milliseconds: 400),
+                              transform: Matrix4.translation(
+                                  vector.Vector3(
+                                      0, 0, 0)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceAround,
+                                crossAxisAlignment: CrossAxisAlignment
+                                    .center,
+                                children: [
+                                  SizedBox(width: 50,
+                                      height: 50,
+                                      child: IconButton(
+                                          disabledColor: Color.fromARGB(
+                                              255, 123, 123, 124),
+                                          onPressed: () {
+                                            toggleLike(0);
+                                          },
+                                          icon: Image(
+                                              color: Color.fromARGB(255, 255, 255, 255),
+                                              image: isDisLiked
+                                                  ? AssetImage(
+                                                  'assets/images/unloveyes.png')
+                                                  : AssetImage(
+                                                  'assets/images/unloveno.png'),
+                                              width: 100
+                                          ))),
+                                  SizedBox(width: 50,
+                                      height: 50,
+                                      child: IconButton(
+                                          disabledColor: canrevew ? Color.fromARGB(
+                                              255, 255, 255, 255) : Color.fromARGB(
+                                              255, 123, 123, 124),
+                                          onPressed: canrevew ? previosmusic : null,
+                                          icon: Image(
+                                              color: canrevew ? Color.fromARGB(
+                                                  255, 255, 255, 255) : Color.fromARGB(
+                                                  255, 123, 123, 124),
+                                              image: AssetImage(
+                                                  'assets/images/reveuws.png'),
+                                              width: 100
+                                          ))),
+                                  SizedBox(height: 50,
+                                      width: 50,
+                                      child: loadingmus
+                                          ? CircularProgressIndicator()
+                                          : IconButton(
+                                          onPressed: () {
+                                            playpause();
+                                          },
+                                          padding: EdgeInsets
+                                              .zero,
+                                          icon: AnimatedSwitcher(
+                                              duration: Duration(milliseconds: 300),
+                                              transitionBuilder: (Widget child,
+                                                  Animation<double> animation) {
+                                                return RotationTransition(
+                                                  turns: Tween(begin: 0.75, end: 1.0)
+                                                      .animate(animation),
+                                                  child: ScaleTransition(
+                                                      scale: animation, child: child),
+                                                );
+                                              }, child: Icon(
+                                            iconpla.icon,
+                                            key: videoope ? ValueKey<bool>(controller.player.state.playing) : ValueKey<bool>(AudioService.playbackState.playing),
+                                            size: 50,
+                                            color: Colors
+                                                .white,)))),
+                                  SizedBox(width: 50,
+                                      height: 50,
+                                      child: IconButton(
+                                          disabledColor: cannext ? Color.fromARGB(
+                                              255, 255, 255, 255) : Color.fromARGB(
+                                              255, 123, 123, 124),
+                                          onPressed: cannext ? nextmusic : null,
+                                          icon: Image(
+                                            color: cannext ? Color.fromARGB(
+                                                255, 255, 255, 255) : Color.fromARGB(
+                                                255, 123, 123, 124),
+                                            image: AssetImage(
+                                                'assets/images/nexts.png'),
+                                            width: 120,
+                                            height: 120,
+                                          ))),
+                                  SizedBox(width: 50,
+                                      height: 50,
+                                      child: IconButton(
+                                          onPressed: () {
+                                            toggleLike(1);
+                                          }, // () {installmusic(_langData[0]);},
+                                          icon: Image(
+                                              color: Color.fromARGB(255, 255, 255, 255),
+                                              image: isLiked
+                                                  ? AssetImage(
+                                                  'assets/images/loveyes.png')
+                                                  : AssetImage(
+                                                  'assets/images/loveno.png'),
+                                              width: 100
+                                          ))),
+                                ],))),
+
+                          // Дополнительные кнопки
+                          AnimatedOpacity(opacity: videoopacity, duration: Duration(
+                              milliseconds: 400), child:
+                          AnimatedContainer(
+                              duration: Duration(
+                                  milliseconds: 400),
+                              transform: Matrix4.translation(
+                                  vector.Vector3(
+                                      0, 0, 0)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceAround,
+                                crossAxisAlignment: CrossAxisAlignment
+                                    .center,
+                                children: [
+                                  SizedBox(width: 40,
+                                      height: 40,
+                                      child: IconButton(
+                                          disabledColor: Color.fromARGB(
+                                              255, 123, 123, 124),
+                                          onPressed: () => AudioService.customAction('toggleShuffle', {}),
+                                          padding: EdgeInsets
+                                              .zero,
+                                          icon: Icon(
+                                            isShuffleEnabled ? CupertinoIcons.shuffle : CupertinoIcons.shuffle_thick,
+                                            size: 32,
+                                            color: isShuffleEnabled ? Colors.white: Colors.grey,))),
+                                  SizedBox(width: 40,
+                                      height: 40,
+                                      child: IconButton(
+                                          disabledColor: Color.fromARGB(
+                                              255, 123, 123, 124),
+                                          onPressed: null,
+                                          padding: EdgeInsets
+                                              .zero,
+                                          icon: Icon(
+                                            Icons
+                                                .queue_music_rounded,
+                                            size: 40,
+                                            color: Color.fromARGB(
+                                                255, 123, 123, 124),))),
+
+                                  SizedBox(width: 40,
+                                      height: 40,
+                                      child: IconButton(
+                                          disabledColor: Color.fromARGB(
+                                              255, 123, 123, 124),
+                                          onPressed: langData[0]['vidos'] != "0" ? () {
+                                            setvi();
+                                          } : null,
+                                          padding: EdgeInsets
+                                              .zero,
+                                          icon: Image(
+                                            color: langData[0]['vidos'] != "0" ? Color
+                                                .fromARGB(255, 255, 255, 255) : Color
+                                                .fromARGB(255, 123, 123, 124),
+                                            image: AssetImage(videoope
+                                                ? 'assets/images/musicon.png'
+                                                : 'assets/images/video.png'),
+                                            width: 120,
+                                            height: 120,
+                                          ))),
+                                  SizedBox(height: 40,
+                                      width: 40,
+                                      child: IconButton(
+                                          disabledColor: Color.fromARGB(
+                                              255, 123, 123, 124),
+                                          onPressed: () => AudioService.customAction('toggleRepeatMode', {}),
+                                          padding: EdgeInsets
+                                              .zero,
+                                          icon: Icon(
+                                            repeatMode == LoopMode.one
+                                                ? CupertinoIcons.repeat_1
+                                                : repeatMode == LoopMode.all
+                                                ? CupertinoIcons.repeat
+                                                : CupertinoIcons.repeat,
+                                            size: 32,
+                                            color: repeatMode != LoopMode.off ? Colors.white: Colors.grey,))),
+                                ],)))
+                        ],
+                      )),
+                      Container(width: size.width /15,)
+
+                    ],)),
+                ],);
+
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
+
 
   Widget playersmallmusic_old(BuildContext context){
     final homi = homa.currentState!;
@@ -1738,11 +2786,6 @@ class PlayerWidget {
     ],);
   }
 
-  Widget playerbigvideo(BuildContext context) {
-    return Container();
-  }
 
-  Widget playerbigmusic(BuildContext context) {
-    return Container();
-  }
+
 }

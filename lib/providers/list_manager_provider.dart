@@ -41,6 +41,10 @@ class ListManagerProvider with ChangeNotifier {
       _lists[key] = initialData ?? [];
       await saveData();
       notifyListeners();
+    }else{
+      _lists[key] = initialData ?? [];
+      await saveData();
+      notifyListeners();
     }
   }
 

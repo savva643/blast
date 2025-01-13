@@ -1,5 +1,5 @@
+import 'package:blast/api/api_share.dart';
 import 'package:flutter/material.dart';
-
 void showTrackOptionsBottomSheet(BuildContext context, dynamic listok) {
   showModalBottomSheet(
     context: context,
@@ -81,7 +81,7 @@ void showTrackOptionsBottomSheet(BuildContext context, dynamic listok) {
                 child: ListView(
                   controller: scrollController, // Контроллер для прокрутки
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  children: _buildRoundedButtons(context),
+                  children: _buildRoundedButtons(context, listok),
                 ),
               ),
             ],
@@ -93,14 +93,14 @@ void showTrackOptionsBottomSheet(BuildContext context, dynamic listok) {
 }
 
 // Построение закругленных и увеличенных кнопок
-List<Widget> _buildRoundedButtons(BuildContext context) {
+List<Widget> _buildRoundedButtons(BuildContext context, dynamic listok) {
   final List<Map<String, dynamic>> options = [
     {"icon": Icons.radio_button_checked, "label": "Джем по песне"},
     {"icon": Icons.stars, "label": "Эссенция песни"},
     {"icon": Icons.download, "label": "Скачать"},
     {"icon": Icons.playlist_add, "label": "Добавить в плейлист"},
     {"icon": Icons.lyrics, "label": "Показать текст песни"},
-    {"icon": Icons.share, "label": "Поделиться"},
+    {"icon": Icons.share, "label": "Поделиться", "type": "share"},
     {"icon": Icons.cast, "label": "Транслировать на"},
     {"icon": Icons.person, "label": "Перейти к артисту"},
     {"icon": Icons.album, "label": "Перейти к альбому"},
@@ -121,6 +121,9 @@ List<Widget> _buildRoundedButtons(BuildContext context) {
         ),
         onPressed: () {
           Navigator.pop(context);
+          if(option["type"] == "share"){
+            shareContent('music', listok["idshaz"]);
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Вы выбрали: ${option["label"]}')),
           );
