@@ -1,17 +1,21 @@
 import 'dart:ui';
 
+import 'package:blast/screens/playlist_screen.dart';
 import 'package:blast/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/api_service.dart';
 import '../parts/buttons.dart';
 import '../parts/headers.dart';
+import '../parts/music_cell.dart';
 import '../providers/list_manager_provider.dart';
 import 'history_screen.dart';
 import 'mus_in_playlist.dart';
+import 'need_login.dart';
 
 const kBgColor = Color.fromARGB(255, 15, 15, 16);
 
@@ -37,14 +41,13 @@ class LibraryScreenState extends State<LibraryScreen>{
 
   final ScrollController _controller = ScrollController();
   double _opacity = 0.0;
-  late ScrollController _childController;
+  late ScrollController _childController  = ScrollController();
   bool _isChildScrolling = false;
   @override
   void initState() {
     super.initState();
+    _checkAuthAndLoad();
     _controller.addListener(_scrollListener);
-    _childController = ScrollController();
-    load();
 
     // Слушаем прокрутку дочернего списка
     _childController.addListener(() {
@@ -54,12 +57,37 @@ class LibraryScreenState extends State<LibraryScreen>{
         setState(() {
           _isChildScrolling = false;
           if(_childController.offset <= 0){
-            _isAtTop = _childController.offset <= 0 || _controller.offset <= 0 ;
+            _isAtTop = _childController.offset <= 0 || _controller.offset <= 0;
           }
         });
       }
     });
   }
+  bool _isLoggedIn = false;
+  Future<void> _checkAuthAndLoad() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasToken = prefs.getString('token') != null;
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoggedIn = hasToken;
+    });
+
+    if (hasToken) {
+      load(); // Загружаем данные только если пользователь авторизован
+    } else {
+      // Перенаправляем на экран входа
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => NeedLoginScreen(type: LoginType.library, showBackButton: false, showlog: widget.showlog,),
+          ),
+        );
+      });
+    }
+  }
+
 
   @override
   void dispose() {
@@ -118,6 +146,11 @@ class LibraryScreenState extends State<LibraryScreen>{
       }
       _isAtTop = _controller.offset == 0;
     });
+  }
+
+  void sendpalulit(var fdsvds, dynamic list){
+    print(list.toString() + fdsvds.toString()+ "loveghfghnf");
+    widget.onCallbackt(list,fdsvds, 'Любимые песни');
   }
 
   void _openSearchPage(BuildContext context, String fds, String name, String img, bool imgnd, bool history, bool love, bool install) {
@@ -200,7 +233,7 @@ class LibraryScreenState extends State<LibraryScreen>{
   Widget build(BuildContext context) {
     return standatbuild([LibrarySection(
       title: 'Любимые песни',
-      child: LikedSongsGrid(),
+      child: LikedSongsGrid(parctxj: widget.parctx, sendpalulit: (int fdsvds, list) { sendpalulit(fdsvds, list); },),
       onViewAll: () {_openSearchPage(context, "0","Мне нравится", 'assets/images/loveplaylist.gif', false, false, true, false);}, need: true,
     ),
       buttonWithImg("История", (){_openSearchPage(context, "-1","История",'assets/images/history.png', false, true, false, false);}, context, 'assets/images/history.png'),
@@ -216,7 +249,7 @@ class LibraryScreenState extends State<LibraryScreen>{
                 title: 'Мои плейлесты',
                 child: ItemsGrid(
                   items: [{'name': 'Нету плейлестов'}],
-                  dfs: true, has: false,
+                  dfs: true, has: false, aptouch: (String img, String name, String id) { _openSearchPage(context, id, name, img, true, false, false, true);  },
                 ),
                 onViewAll: () {}, need: false,
               );
@@ -226,9 +259,21 @@ class LibraryScreenState extends State<LibraryScreen>{
                   title: 'Мои плейлесты',
                   child: ItemsGrid(
                     items: list,
-                    dfs: true, has: true,
+                    dfs: true, has: true, aptouch: (String img, String name, String id) { _openSearchPage(context, id, name, img, true, false, false, true);   },
                   ),
-                  onViewAll: () {}, need: false,
+                  onViewAll: () {Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PlaylistScreen(
+                            onCallback: (dynamic input) => widget.onCallback(input),
+                            hie: widget.hie,
+                            showlog: widget.showlog,
+                            resdf: widget.resdf,
+                            onCallbackt: (dynamic input, dynamic inputi, String fds) =>
+                                widget.onCallbackt(input, inputi, fds), prtctx: widget.parctx,
+                          ),
+                    ),
+                  );}, need: false,
                 );
           }),
 
@@ -243,9 +288,11 @@ class LibraryScreenState extends State<LibraryScreen>{
                 title: 'Любимые альбомы',
                 child: ItemsGrid(
                   items: [{'name': 'Нету любимых альбомов'}],
-                  dfs: true, has: false,
+                  dfs: true, has: false, aptouch: (String img, String name, String id) { _openSearchPage(context, id, name, img, true, false, false, true); },
                 ),
-                onViewAll: () {}, need: false,
+                onViewAll: () {
+
+                }, need: false,
               );
             }
 
@@ -253,17 +300,26 @@ class LibraryScreenState extends State<LibraryScreen>{
               title: 'Любимые альбомы',
               child: ItemsGrid(
                 items: list,
-                dfs: true, has: true,
+                dfs: true, has: true, aptouch: (String img, String name, String id) { _openSearchPage(context, id, name, img, true, false, false, true);  },
               ),
               onViewAll: () {}, need: false,
             );
           }),
       Container(height: 134+ MediaQuery.of(context).padding.bottom,)
-    ], _opacity, imgprofile, widget.showlog, context, useri, widget.hie, widget.resdf, 'Библиотека', _controller, _childController, _isAtTop, setState, _previousOffset, false, context);
+    ], _opacity, imgprofile, widget.showlog, context, useri, widget.hie, widget.resdf, 'Библиотека', _controller, _childController, _isAtTop, setState, _previousOffset, false, context, load, null);
   }
 
 
+  void _handleMouseEnterFromOutside() {
+    setState(() => showRefreshButton = true);
+  }
 
+  void _handleMouseExitFromInside() {
+    setState(() {
+      showRefreshButton = false;
+
+    });
+  }
   double _previousOffset = 0.0;
 
 
@@ -300,6 +356,11 @@ class LibrarySection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              need ?  Container() :
+              Opacity(opacity: 0, child: TextButton(
+                onPressed: (){},
+                child: Text('Все', style: TextStyle(color: Colors.blue)),
+              ),),
               need ?
               Container(
                 width: 60,
@@ -343,75 +404,52 @@ class LibrarySection extends StatelessWidget {
 }
 
 class LikedSongsGrid extends StatelessWidget {
+  final BuildContext parctxj;
+  final Function(int fdsvds, dynamic list) sendpalulit;
+  const LikedSongsGrid({super.key, required this.parctxj, required this.sendpalulit});
+
   @override
   Widget build(BuildContext context) {
-    final songs = [
-      {'title': 'Song 1', 'artist': 'Artist 1'},
-      {'title': 'Song 2', 'artist': 'Artist 2'},
-      {'title': 'Song 3', 'artist': 'Artist 3'},
-      {'title': 'Song 4', 'artist': 'Artist 4'},
-      {'title': 'Song 5', 'artist': 'Artist 5'},
-      {'title': 'Song 6', 'artist': 'Artist 6'},
-      {'title': 'Song 7', 'artist': 'Artist 7'},
-      {'title': 'Song 8', 'artist': 'Artist 8'},
-      {'title': 'Song 8', 'artist': 'Artist 9'},
-    ];
+
 
     return Container(
-      height: 220,
-      child: ListView.builder(
+      height: 252,
+      child: Consumer<ListManagerProvider>(
+        builder: (context, listManager, child) {
+      final list = listManager.getList('lovelast9');
+      final listlast = listManager.getList('playlistid0');
+
+      if (list.isEmpty) {
+        return const Center(
+          child: Text(
+            'У вас нет любимых треков',
+            style: TextStyle(color: Colors.white),
+          ),
+        );
+      }
+      //_updateHeight(list.length * 82);
+      return ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: (songs.length / 3).ceil(),
+        itemCount: (list.length / 3).ceil(),
         itemBuilder: (context, columnIndex) {
           final start = columnIndex * 3;
-          final end = (start + 3 < songs.length) ? start + 3 : songs.length;
-          final columnSongs = songs.sublist(start, end);
+          final end = (start + 3 < list.length) ? start + 3 : list.length;
+          final columnSongs = list.sublist(start, end);
 
           return Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: const EdgeInsets.only(right: 2.0),
             child: Column(
               children: columnSongs.map((song) {
+                final songIndex = list.indexOf(song);
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Container(
-                    width: 200,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[800],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: EdgeInsets.all(8),
-                    child: Row(
-                      children: [
-                        Icon(Icons.music_note, color: Colors.white, size: 32),
-                        SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              song['title']!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              song['artist']!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.grey, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                  padding: const EdgeInsets.only(bottom: 2.0),
+                  child:MussicCellStaticWidth(song, (){sendpalulit(songIndex, listlast);}, parctxj),
                 );
               }).toList(),
             ),
           );
+        },
+      );
         },
       ),
     );
@@ -422,7 +460,25 @@ class ItemsGrid extends StatelessWidget {
   final dynamic items;
   final bool dfs;
   final bool has;
-  ItemsGrid({required this.items, required this.dfs, required this.has});
+  final Function(String img, String name, String id) aptouch;
+  ItemsGrid({required this.items, required this.dfs, required this.has, required this.aptouch});
+
+  ImageProvider _getSafeImageProvider(Map<String, dynamic> item) {
+    try {
+      // Пытаемся загрузить изображение из item
+      if (item['img'] != null && item['img'].isNotEmpty && item['img'] != 'https://kompot.keeppixel.store/') {
+        print("fsdfvdsv"+item['img']);
+        return NetworkImage(item['img']!);
+      }
+    } catch (e) {
+      // В случае ошибки возвращаем fallback изображение
+      print("fsdfvdsv");
+      return AssetImage('assets/images/playlist.png');
+    }
+    // Если изображение не указано, возвращаем fallback
+    print("fsdfvdsv");
+    return AssetImage('assets/images/playlist.png');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -443,13 +499,14 @@ class ItemsGrid extends StatelessWidget {
         return GestureDetector(
           onTap: () {
             // Navigate to item details
+            aptouch(item['img']!, item['name']!, item['id']!);
           },
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               image: DecorationImage(
-                image: AssetImage(item['img']!),
-                fit: BoxFit.cover,
+                image: _getSafeImageProvider(item),
+              fit: BoxFit.cover,
               ),
               boxShadow: [
                 BoxShadow(

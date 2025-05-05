@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_session/audio_session.dart';
+
+import 'api/api_install.dart';
 // import 'package:smtc_windows/smtc_windows.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +25,7 @@ Future<void> main() async {
   runApp(
       MultiProvider(
           providers: [
+            ChangeNotifierProvider(create: (_) => DownloadManager()),
             ChangeNotifierProvider(create: (_) => listManager),
             ChangeNotifierProvider(create: (_) => queueManager),
             ChangeNotifierProvider(create: (_) => AudioManager())

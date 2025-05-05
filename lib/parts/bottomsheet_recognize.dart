@@ -160,7 +160,7 @@ class _SongRecognitionScreenState extends State<SongRecognitionScreen> {
     }
 
     // Адрес вашего PHP-обработчика
-    final uri = Uri.parse('https://kompot.site/recognize.php');
+    final uri = Uri.parse('https://kompot.keeppixel.store/recognize.php');
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
     try {

@@ -120,7 +120,7 @@ class Recorderi{
     }
 
     // Адрес вашего PHP-обработчика
-    final uri = Uri.parse('https://kompot.site/recognize.php');
+    final uri = Uri.parse('https://kompot.keeppixel.store/recognize.php');
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
     try {
@@ -489,7 +489,7 @@ class Recorderi{
 
         // Отправляем GET-запрос
         final response = await http.get(Uri.parse(
-            'https://kompot.site/reactmusic?mus=' +
+            'https://kompot.keeppixel.store/reactmusic?mus=' +
                 lisa['id'].toString() + '&type=' + type.toString() + "&token="+ds!));
 
         if (response.statusCode == 200) {

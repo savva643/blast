@@ -116,14 +116,7 @@ class _SplashScreenState extends State<SplashScreen> {
                         alignment: Alignment.center,
                         children: [
 
-                          // Мишура
-                          Positioned(
-                            top: -53,
-                            child: Image.asset(
-                              'assets/images/tinsel.png',
-                              width: 250,
-                            ),
-                          ),
+
                           // Текст "blast!"
                       Container(padding: EdgeInsets.only(left: 12,top: 12),
                         child:const Text(

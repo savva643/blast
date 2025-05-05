@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-
+import '../api//api_install.dart';
 import 'package:blast/screens/login.dart';
 import 'package:blast/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,8 +16,10 @@ import 'package:http/http.dart' as http;
 
 import '../api/api_service.dart';
 import '../parts/buttons.dart';
+import '../parts/headers.dart';
 import '../parts/music_cell.dart';
 import '../providers/list_manager_provider.dart';
+import 'need_install_app.dart';
 
 
 
@@ -45,6 +47,10 @@ class MusInPlaylistScreen extends StatefulWidget {
 class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+
+// В класс MusInPlaylistScreenState добавьте:
+  late DownloadManager _downloadManager;
+  List<DownloadModel> _activeDownloads = [];
   var iconpla = Icon(Icons.play_arrow_rounded, size: 64, color: Colors.white,);
   void updateIcon(Icon newIcon) {
     setState(() {
@@ -60,7 +66,6 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   late VoidCallback showsearch;
   late VoidCallback showlog;
   late VoidCallback reset;
-  var player;
 
   MusInPlaylistScreenState(Function(dynamic) onk,String onki, VoidCallback fg,String erfw,String fdcdsc,bool fdsfad, VoidCallback dawsd, VoidCallback fgdfxg, Function(dynamic, dynamic, String) onkhngf){
     onCallback = onk;
@@ -107,21 +112,52 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
     await Future.delayed(Duration(milliseconds: 301));
     setState(() {
       isRefreshing = false;
-      isDragging = false;
     });
     print(usera.toString()+'kighj');
   }
 
+  String imgprofile = "";
+  bool useri = false;
+
   @override
   void initState()
   {
-    _scrollController.addListener(_checkScrollPosition);
+    _downloadManager = DownloadManager();
+    _downloadManager.downloadStream.listen((downloads) {
+      setState(() {
+        _activeDownloads = downloads.where((d) => !d.isCompleted).toList();
+      });
+    });
+    // Проверяем, если это веб-версия и открыта вкладка "Скачанные"
+    if (kIsWeb && palylsitid == "install") {
+      // Откладываем навигацию до следующего кадра
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => WebVersionScreen(),
+          ),
+        );
+      });
+      return; // Прекращаем дальнейшую инициализацию
+    }
     load();
+    _controller.addListener(_scrollListener);
+    _childController.addListener(() {
+      if (_isChildScrolling &&
+          _childController.offset <= _childController.position.minScrollExtent) {
+        // Возврат управления родительскому списку
+        setState(() {
+          _isChildScrolling = false;
+          if(_childController.offset <= 0){
+            _isAtTop = _childController.offset <= 0 || _controller.offset <= 0;
+          }
+        });
+      }
+    });
     super.initState();
   }
 
-  String musicUrl = ""; // Insert your music URL
-  String thumbnailImgUrl = "";
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -154,7 +190,8 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
                   Color.fromARGB(255, 15, 15, 16),
                 ],
               )),
-          child: size.width > 600 ? _loadListViewmore() : _loadListView(),
+          child: standatbuildcustomlistviewStack(_loadListView(),_opacity, imgprofile, showlog, context, useri, widget.hie, widget.resre, palylsitname, _controller, _childController, _isAtTop, setState, _previousOffset, true, context, load, _playlistImg(), false, true)
+
         ),
 
       ),
@@ -162,284 +199,192 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   }
 
 
-
-
-  void _checkScrollPosition() {
-    if (_scrollController.offset <= 0 && !isRefreshing) {
-      load();
-    }
+  double _previousOffset = 0.0;
+  final ScrollController _controller = ScrollController();
+  double _opacity = 0.0;
+  late ScrollController _childController  = ScrollController();
+  bool _isChildScrolling = false;
+  bool _isAtTop = true;
+  void _scrollListener() {
+    setState(() {
+      // Меняем прозрачность в зависимости от прокрутки
+      _opacity = _controller.offset > 100 ? 1.0 : 0.0;
+      print(_controller.offset);
+      if(_controller.offset <= 0){
+        _controller.jumpTo(0);
+      }
+      _isAtTop = _controller.offset == 0;
+    });
   }
+
   bool showRefreshButton = false;
   bool isRefreshing = false;
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _controller.dispose();
     super.dispose();
   }
-  bool isDragging = false;
-  final ScrollController _scrollController = ScrollController();
 
-  Widget _loadListViewmore() {
+  Widget _playlistImg() {
     Size size = MediaQuery.of(context).size;
-    return Consumer<ListManagerProvider>(
-        builder: (context, listManager, child)
-        {
-          late var list;
-          if(palylsitid != "install") {
-            list = listManager.getList(
-                'playlistid'+palylsitid.toString()); // Получить список из провайдера
-          }else{
-            list = listManager.getList(
-                'installedmusic');
-          }
-          if (list.isEmpty) {
-            return Center(child: Text('Нету треков', style: TextStyle(color: Colors.white, fontSize: 28),));
-          }
+    return size.width > 600 ?
+    Stack(
+      clipBehavior: Clip.none,
+      children: [
+        AnimatedContainer(
+            margin: EdgeInsets
+                .only(
+                left: 0,
+                right: 0,
+                top: 0),
+            constraints: BoxConstraints(maxHeight: 400, maxWidth: 400),
+            height: size.width/3,
+            width: size.width/3,
+            decoration: BoxDecoration(
+              shape: BoxShape
+                  .rectangle,
+              borderRadius: BorderRadius
+                  .only(bottomRight: Radius.circular(20) ),
+            ),
 
-          return NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-            if (notification is OverscrollNotification && !isRefreshing) {
-              setState(() => isDragging = true);
-            }
-            if (notification is ScrollEndNotification && isDragging) {
-              load();
-            }
-            return false;
-          },
-          child: ListView.builder(
-      controller: _scrollController,
-      itemCount: list.length+1,
-      itemBuilder: (BuildContext context, int idx)
-      {
-        if (idx == 0) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  AnimatedContainer(
-                      margin: EdgeInsets
-                          .only(
-                          left: 0,
-                          right: 0,
-                          top: 0),
-                      height: size.width/3,
-                      width: size.width/3,
-                      decoration: BoxDecoration(
-                        shape: BoxShape
-                            .rectangle,
-                        borderRadius: BorderRadius
-                            .only(bottomRight: Radius.circular(20) ),
-                      ),
-
-                      clipBehavior: Clip
-                          .hardEdge,
-                      duration: Duration(
-                          milliseconds: 0),
-                      child: AspectRatio(
-                          aspectRatio: 1,
-                          // Сохранение пропорций 1:1
-                          child: palylsitimgnd ? Image
-                              .network(
-                            palylsitimg,
-                            height: size.width,
-                            width: size.width,
-                            fit: BoxFit
-                                .cover, // Изображ
-                          ) : Image(image: AssetImage(palylsitimg), width: size.width,))),
-                  Positioned(
-                    child: Image.asset(
-                      'assets/images/circlebg.png',
-                      width: 420,
-                      height: 420,
-                    ),
-                    top: -280,
-                    left: -196,
+            clipBehavior: Clip
+                .hardEdge,
+            duration: Duration(
+                milliseconds: 0),
+            child: AspectRatio(
+                aspectRatio: 1,
+                // Сохранение пропорций 1:1
+                child: palylsitimgnd ? Image.network(
+                  palylsitimg,
+                  height: size.width,
+                  width: size.width,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                    'assets/images/playlist.png',
+                    height: size.width,
+                    width: size.width,
+                    fit: BoxFit.cover,
                   ),
-                  Row(children: [
-                    Container(padding: EdgeInsets.only(left: 12,top: 0),
-                        child:
-                        Text("blast!",
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),)),
-                    Expanded(child: Container()),
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reset,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
-                      imageUrl: imgprofile, // Replace with your image URL
-                      imageBuilder: (context, imageProvider) => Container(
-                        margin: EdgeInsets.only(right: 3, top: 3),
-                        width: 100.0, // Set the width of the circular image
-                        height: 100.0, // Set the height of the circular image
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover, // Adjusts the image inside the circle
-                          ),
-                        ),
+                ) : Image(image: AssetImage(palylsitimg), width: size.width,))),
+
+        Container(margin: EdgeInsets.only(left: (size.width/3 >= 400 ? 400 : size.width/3 )+ 10, top: 20), child:
+        Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),
+          Text(palylsitname,
+            style: TextStyle(
+              fontSize: 30,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),)],)),
+      ],)
+        : Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AnimatedContainer(
+                margin: EdgeInsets
+                    .only(
+                    left: 0,
+                    right: 0,
+                    top: 0),
+                height: size.width,
+                width: size.width,
+                decoration: BoxDecoration(
+                  shape: BoxShape
+                      .rectangle,
+                  borderRadius: BorderRadius
+                      .only(
+                      bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20) ),
+                ),
+
+                clipBehavior: Clip
+                    .hardEdge,
+                duration: Duration(
+                    milliseconds: 0),
+                child: AspectRatio(
+                    aspectRatio: 1,
+                    // Сохранение пропорций 1:1
+                    child: palylsitimgnd ? Image.network(
+                      palylsitimg,
+                      height: size.width,
+                      width: size.width,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/images/playlist.png',
+                        height: size.width,
+                        width: size.width,
+                        fit: BoxFit.cover,
                       ),
-                      placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
-                      errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                    )) : buttonlogin(showlog )),)
-                  ],),
-                  Container(margin: EdgeInsets.only(left: size.width/3 + 10, top: 20), child:
-                  Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),
-                    Text(palylsitname,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),)],)),
-                ],),
-
-            ],
-          );
-        }else{
-
-          return MussicCell( list[idx-1], (){sendpalulit(idx-1, list);}, context);
-        }
-      },
-    ));
-        });
+                    ) : Image(image: AssetImage(palylsitimg), width: size.width,))),
+          ],),
+      ],
+    );
   }
+
+
 
 
   Widget _loadListView() {
-    Size size = MediaQuery.of(context).size;
     return Consumer<ListManagerProvider>(
-        builder: (context, listManager, child)
-        {
+        builder: (context, listManager, child) {
           late var list;
           if(palylsitid != "install") {
-            list = listManager.getList(
-                'playlistid'+palylsitid.toString()); // Получить список из провайдера
-          }else{
-            list = listManager.getList(
-                'installedmusic');
+            list = listManager.getList('playlistid'+palylsitid.toString());
+          } else {
+            // Для раздела "Скачанные" объединяем загруженные треки и активные загрузки
+            list = listManager.getList('installedmusic');
+
+            // Добавляем активные загрузки в начало списка
+            if(_activeDownloads.isNotEmpty) {
+              list = [
+                ..._activeDownloads.map((d) => {
+                  'id': d.id,
+                  'idshaz': d.idshaz,
+                  'name': d.name,
+                  'img': d.img,
+                  'message': d.message,
+                  'txt': d.txt,
+                  'messageimg': d.messageimg,
+                  'short': d.short,
+                  'vidos': d.vidos,
+                  'bgvideo': d.bgvideo,
+                  'elir': d.elir,
+                  'isDownloading': true,
+                  'progress': d.progress,
+                }),
+                ...list
+              ];
+            }
           }
 
           if (list.isEmpty) {
             return Center(child: Text('Нету треков', style: TextStyle(color: Colors.white, fontSize: 28),));
           }
 
-          return NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-            if (notification is OverscrollNotification && !isRefreshing) {
-              setState(() => isDragging = true);
-            }
-            if (notification is ScrollEndNotification && isDragging) {
-              load();
-            }
-            return false;
-          },
-          child: ListView.builder(
-            controller: _scrollController,
-      itemCount: list.length+1,
-      itemBuilder: (BuildContext context, int idx)
-      {
-        if (idx == 0) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  AnimatedContainer(
-                      margin: EdgeInsets
-                          .only(
-                          left: 0,
-                          right: 0,
-                          top: 0),
-                      height: size.width,
-                      width: size.width,
-                      decoration: BoxDecoration(
-                        shape: BoxShape
-                            .rectangle,
-                        borderRadius: BorderRadius
-                            .only(
-                            bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20) ),
-                      ),
-
-                      clipBehavior: Clip
-                          .hardEdge,
-                      duration: Duration(
-                          milliseconds: 0),
-                      child: AspectRatio(
-                          aspectRatio: 1,
-                          // Сохранение пропорций 1:1
-                          child: palylsitimgnd ? Image
-                              .network(
-                            palylsitimg,
-                            height: size.width,
-                            width: size.width,
-                            fit: BoxFit
-                                .cover, // Изображ
-                          ) : Image(image: AssetImage(palylsitimg), width: size.width,))),
-                  Positioned(
-                    child: Image.asset(
-                      'assets/images/circlebg.png',
-                      width: 420,
-                      height: 420,
-                    ),
-                    top: -280,
-                    left: -196,
-                  ),
-                  Row(children: [
-                    Container(padding: EdgeInsets.only(left: 12,top: 0),
-                        child:
-                        Text("blast!",
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),)),
-                   Expanded(child: Container()),
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: () {showsearch();}, icon: Icon(Icons.search_rounded, size: 40, color: Colors.white,)),),
-                    Container(alignment: Alignment.topRight, margin: EdgeInsets.only(top: 18), child: IconButton(onPressed: useri ? () { Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProfileScreen(reseti: reset,))); } : showlog, icon: imgprofile!="" ? SizedBox(height: 44, width: 44, child: CachedNetworkImage(
-                      imageUrl: imgprofile, // Replace with your image URL
-                      imageBuilder: (context, imageProvider) => Container(
-                        margin: EdgeInsets.only(right: 3, top: 3),
-                        width: 100.0, // Set the width of the circular image
-                        height: 100.0, // Set the height of the circular image
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover, // Adjusts the image inside the circle
-                          ),
-                        ),
-                      ),
-                      placeholder: (context, url) => CircularProgressIndicator(), // Placeholder while loading
-                      errorWidget: (context, url, error) => Icon(Icons.error), // Error icon if image fails to load
-                    )) : buttonlogin(showlog )),)
-                  ],),
-                ],),
-              Container(margin: EdgeInsets.only(left: 10), child:
-              Row(children: [Container(margin: EdgeInsets.only(top: 0), child: IconButton(onPressed: (){ Navigator.pop(context); }, icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 34,)),),
-                Text(palylsitname,
-                style: TextStyle(
-                  fontSize: 30,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),)],)),
-            ],
+          return ListView.builder(
+            shrinkWrap: true,
+            controller: _childController,
+            itemCount: list.length,
+            itemBuilder: (BuildContext context, int idx) {
+              return list[idx]['isDownloading'] == true ? MussicCellProgress(
+                list[idx],
+                    (){sendpalulit(idx, list);},
+                    () {_downloadManager.cancelDownload(list['id']);},
+                context,
+                isDownloading: list[idx]['isDownloading'] == true,
+                progress: list[idx]['progress']?.toDouble() ?? 0.0,
+              ) : MussicCell(
+                list[idx],
+                    (){sendpalulit(idx, list);},
+                context,
+              );
+            },
           );
-        }else{
-          return MussicCell( list[idx-1], (){sendpalulit(idx-1, list);}, context);
         }
-      },
-    )
-          );
-        });
+    );
   }
 
   void sendpalulit(var fdsvds, dynamic list){
@@ -448,9 +393,6 @@ class MusInPlaylistScreenState extends State<MusInPlaylistScreen> {
   }
 
 
-
-  String imgprofile = "";
-  bool useri = false;
 
 
 }

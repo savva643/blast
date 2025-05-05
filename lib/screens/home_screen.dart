@@ -6,6 +6,8 @@ import 'dart:ui';
 import 'package:app_links/app_links.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:blast/screens/library_screen.dart';
+import 'package:blast/screens/profile_screen.dart';
+import 'package:blast/screens/register_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:path_provider/path_provider.dart';
@@ -30,12 +32,16 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../api/api_install.dart';
 import '../api/api_service.dart';
 import '../api/record_api.dart';
 import '../parts/bottomsheet_about_music.dart';
 import '../parts/bottomsheet_queue.dart';
 import '../parts/bottomsheet_recognize.dart';
+import '../parts/buttons.dart';
+import '../parts/desktop_menu.dart';
 import '../parts/player_widgets.dart';
+import '../providers/list_manager_provider.dart';
 import '../providers/queue_manager_provider.dart';
 import 'AudioManager.dart';
 import 'background_task.dart';
@@ -96,7 +102,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
 
 
-
+  final DownloadManager _downloadManager = DownloadManager();
 
 
 
@@ -1065,8 +1071,8 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   String idmus = "0";
   String namemus = "Название";
   String ispolmus = "Исполнитель";
-  String imgmus = "https://kompot.site/img/music.jpg";
-  String imgispol = "https://kompot.site/img/music.jpg";
+  String imgmus = "https://kompot.keeppixel.store/img/music.jpg";
+  String imgispol = "https://kompot.keeppixel.store/img/music.jpg";
   bool _isMuted = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS); // Состояние звука
   bool _isWeb = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS); // Проверка для iOS на вебе
 
@@ -1088,13 +1094,33 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     return "$url?timestamp=$timestamp";
   }
+
+
+  void load() async {
+
+    var usera = await apiService.getUser();
+    setState(() {
+      if(usera['status'] != 'false') {
+        useri = true;
+        imgprofile = usera["img_kompot"];
+      }else{
+        useri = false;
+      }
+    });
+
+
+  }
+
+
   @override
   void initState() {
     super.initState();
+
     initUniLinks();
     getnamedevice();
-    _startServer();
     _getLocalIp();
+    _startServer();
+    load();
     AudioService.customEventStream.listen((event) {
 
       if(!devicecon) {
@@ -1200,7 +1226,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                   final dwa = event['video'] as bool;
                   print("fvdsgvv"+currentTrack.toString());
                   if(dwa == false) {
-                    getaboutmusmini(currentTrack);
+                    getaboutmusmini(currentTrack, true);
                   }
                   print("fvdsfgdfgdt"+trackData.toString());
                 }
@@ -1252,7 +1278,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                 final dwa = event['video'] as bool;
                 print("fvdsgvv"+currentTrack.toString());
                 if(dwa == false) {
-                  getaboutmusmini(currentTrack);
+                  getaboutmusmini(currentTrack, true);
                 }
                 print("fvdsfgdfgdt"+trackData.toString());
               }
@@ -1456,7 +1482,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       parent: _controller,
       curve: Curves.easeInOut,
     ));
-    postRequesty();
+    startJem();
   }
 
   Future<void> _playNewTrack(String url) async {
@@ -1502,7 +1528,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
 
 
-  Future<void> getaboutmusmini(MediaItem item) async {
+  Future<void> getaboutmusmini(MediaItem item, bool needplay) async {
     print("hhgfgbffddsag1");
     String? shazik = item.extras?['idshaz'].toString();
     print(shazid);
@@ -1533,8 +1559,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           shazid = item.extras!['idshaz'].toString();
         });
       }
-      if(!videoope){
+      if(!videoope && needplay){
         AudioService.play();
+      }else{
+        AudioService.pause();
       }
       var aboutmus = await apiService.getAboutMusic(shazik!);
       langData[0] = aboutmus;
@@ -1901,15 +1929,21 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               if (reaction == "1") {
                 isLiked = true;
                 isDisLiked = false;
+                context.read<ListManagerProvider>().addItem('playlistid0', langData[0]);
+                context.read<ListManagerProvider>().addItem('lovelast9', langData[0]);
               } else if (reaction == "0") {
                 isDisLiked = true;
                 isLiked = false;
+                context.read<ListManagerProvider>().removeItemById('playlistid0', langData[0]['idshaz']);
+                context.read<ListManagerProvider>().removeItemById('lovelast9', langData[0]['idshaz']);
               } else if (reaction == "2") {
                 isDisLiked = false;
                 isLiked = false;
+                context.read<ListManagerProvider>().removeItemById('playlistid0', langData[0]['idshaz']);
+                context.read<ListManagerProvider>().removeItemById('lovelast9', langData[0]['idshaz']);
               } else if(reaction == "3"){
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => NeedLoginScreen(type: LoginType.likes,)
+                    builder: (context) => NeedLoginScreen(type: LoginType.likes, showlog: showlogin,)
                   )
                 );
               }
@@ -1924,7 +1958,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       }
     }else{
       Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => NeedLoginScreen(type: LoginType.likes,)
+          builder: (context) => NeedLoginScreen(type: LoginType.likes, showlog: showlogin)
         )
       );
     }
@@ -1996,8 +2030,9 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         });
       }
     });
+    print("sdcv"+sdcv.toString());
     bool fvd2 = await filterValidImages(getCacheBustedUrl(sdcv['url']));
-    if(search || !fvd2) {
+    if(sdcv['url'].toString() == "0" || search || !fvd2) {
       String dff = await apiService.installMusic(sdcv['idshaz']);
       print(dff);
       getaboutmus(dff, false, true, false, false);
@@ -2018,7 +2053,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         dsv = true;
       }
     }catch (e) {
-      print("Ошибка при загрузке музыки: $e");
+      print("Ошибка при загрузке музыки: $e" + url);
 
     }
 
@@ -2036,7 +2071,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       try {
         // Загружаем видео и сохраняем его
         await Dio().download(
-            "https://kompot.site/" + langData[0]['bgvideo'], filePath);
+            "https://kompot.keeppixel.store/" + langData[0]['bgvideo'], filePath);
         print("Видео загружено и сохранено в локальном хранилище.");
         await videoshort.open(Media(filePath));
 
@@ -2055,7 +2090,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   List langData = [
     {
       'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
+      'img': 'https://kompot.keeppixel.store/img/music.jpg',
       'name': 'Название',
       'message': 'Имполнитель',
     },
@@ -2107,8 +2142,8 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         }
       });
       if(langData[0]['bgvideo'] != "0") {
-        print("https://kompot.site/"+langData[0]['bgvideo']);
-        loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
+        print("https://kompot.keeppixel.store/"+langData[0]['bgvideo']);
+        loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
       }
 
     }else {
@@ -2154,7 +2189,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
           });
           if(langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
+            loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
           }
 
     }
@@ -2206,7 +2241,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       });
       });
       if(langData[0]['bgvideo'] != "0") {
-        loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
+        loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
       }
       if (essensioni) {
         _playNewTrack(listok['short']);
@@ -2280,7 +2315,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
           });
           if(langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
+            loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
           }
         } else {
           frstsd = true;
@@ -2375,7 +2410,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
             }
           });
           if(langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.site/" + langData[0]['bgvideo']);
+            loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
           }
         }
       } else {
@@ -2416,6 +2451,260 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     );
   }
 
+
+  // Добавьте эти переменные в состояние вашего основного виджета
+  bool _isProfileOpen = false;
+  bool _isSearchOpen = false;
+
+// 2. Добавьте этот метод в ваш основной класс
+  void _updateNavigationState() {
+    final navigator = _getNavigatorKey(pageIndex).currentState;
+    if (navigator == null) return;
+
+    bool profileOpen = false;
+    bool searchOpen = false;
+
+    navigator.popUntil((route) {
+      if (route.settings.name == '/profile') profileOpen = true;
+      if (route.settings.name == '/search') searchOpen = true;
+      return true;
+    });
+
+    setState(() {
+      _isProfileOpen = profileOpen;
+      _isSearchOpen = searchOpen;
+    });
+  }
+
+
+  void _openProfilePage(BuildContext context, VoidCallback resdf) {
+    final navigator = _getNavigatorKey(pageIndex);
+    if (_isProfileOpen) {
+      navigator.currentState?.pop();
+    } else {
+      navigator.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => ProfileScreen(reseti: resdf),
+          settings: const RouteSettings(name: '/profile'),
+        ),
+      );
+    }
+    _updateNavigationState();
+  }
+
+  // Функция для переключения поиска
+  void _toggleSearch() {
+    final navigator = _getNavigatorKey(pageIndex);
+    if (_isSearchOpen) {
+      navigator.currentState?.pop();
+    } else {
+      navigator.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) =>
+              SearchScreen(onCallback: (dynamic input) {
+                getaboutmus(input, false, false, false, false);
+              },
+                onCallbacki: startJem,
+                hie: closeserch,
+                showlog: showlogin,
+                dasd: resetapp,
+                dfsfd: (dynamic input) {
+                  installmus(input, true);
+                },
+                reci: reci, oniBack: _updateNavigationState, prtctx: context,),
+          settings: const RouteSettings(name: '/search'),
+        ),
+      );
+    }
+    _updateNavigationState();
+  }
+  Widget desktopblastmenu(String imgprofile, VoidCallback showlog, BuildContext context, bool useri, VoidCallback hie, VoidCallback resdf) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+
+
+
+        // Функция для открытия/закрытия профиля
+
+        return ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(18),
+            bottomRight: Radius.circular(18),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF1E1E1E).withOpacity(0.95),
+                  const Color(0xFF121212).withOpacity(0.95),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.4),
+                  blurRadius: 15,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -230,
+                  left: -150,
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: Image.asset(
+                      'assets/images/circlebg.png',
+                      width: 360,
+                      height: 360,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "blast!",
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildDesktopNavButton(0, 'Плейлисты', Icons.playlist_play),
+                              const SizedBox(width: 16),
+                              _buildDesktopNavButton(1, 'Музыка', Icons.music_note),
+                              const SizedBox(width: 16),
+                              _buildDesktopNavButton(2, 'Видео', Icons.video_library),
+                              const SizedBox(width: 24),
+                              IconButton(
+                                onPressed: () {
+                                  _toggleSearch();
+                                },
+                                icon: Icon(
+                                  _isSearchOpen ? Icons.close : Icons.search_rounded,
+                                  size: 28,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Container(
+                                alignment: Alignment.topRight,
+                                child: IconButton(
+                                  onPressed: useri
+                                      ? () {
+                                    _openProfilePage(context, resdf);
+                                  }
+                                      : showlog,
+                                  icon: _isProfileOpen
+                                      ? const Icon(Icons.close, size: 28, color: Colors.white)
+                                      : imgprofile != ""
+                                      ? SizedBox(
+                                    height: 40,
+                                    width: 40,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: CachedNetworkImage(
+                                        imageUrl: imgprofile,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) => CircularProgressIndicator(),
+                                        errorWidget: (context, url, error) => Icon(Icons.person),
+                                      ),
+                                    ),
+                                  )
+                                      : buttonlogin(showlog),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.only(top: 4),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            Colors.white.withOpacity(0.1),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDesktopNavButton(int index, String title, IconData icon) {
+    return Tooltip(
+      message: title,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: pageIndex == index ? Colors.white.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: pageIndex == index
+              ? Border.all(color: Colors.white.withOpacity(0.3), width: 0.5)
+              : null,
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+          setState(() => pageIndex = index);
+          _updateNavigationState();
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: pageIndex == index ? Colors.white : Colors.white.withOpacity(0.7),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                  color: pageIndex == index ? Colors.white : Colors.white.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String imgprofile = "";
+  bool useri = false;
+
   @override
   Widget build(BuildContext context) {
     queuewidget = QueueWidget(playpause, loadingmus, iconpla, videoope, controller);
@@ -2432,10 +2721,13 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     Size size = MediaQuery
         .of(context)
         .size;
+    if(size.width > 800){
+      _updateNavigationState();
+    }
     return Scaffold(
         key: _scaffoldKey,
 
-        appBar: PreferredSize(
+        appBar: size.width <= 800 ?  PreferredSize(
           preferredSize: Size.zero,
           child: AppBar(
             elevation: 0,
@@ -2447,7 +2739,11 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               statusBarIconBrightness: Brightness
                   .light, // For Android: (dark icons)
             ),
-          ),
+
+          )) :
+           PreferredSize(
+            preferredSize: Size.fromHeight(89), // Высота AppBar
+            child: desktopblastmenu(imgprofile, showlogin, context, useri, (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, resetapp,),
         ),
         backgroundColor: const Color.fromARGB(255, 15, 15, 16),
         bottomNavigationBar: buildMyNavBar(context),
@@ -2477,15 +2773,56 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               });
               return showsearch ? SearchScreen(onCallback: (dynamic input) {
                 getaboutmus(input, false, false, false, false);
-              }, onCallbacki: postRequesty, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
+              }, onCallbacki: startJem, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
                 installmus(input, true);
-              }, reci: reci,) : Container(
+              }, reci: reci, oniBack: _updateNavigationState, prtctx: context,) : Container(
                   height: size.height, child: IndexedStack(
                 index: pageIndex, // Отображение выбранного экрана
                 children: pages,
               ));
             }
-        )])
+        ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 140, // Высота AppBar
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  //Positioned(
+                  //  top: -280,
+                  //  left: -196,
+                  //  child: Image.asset(
+                  //    'assets/images/circlebg.png',
+                  //    width: 420,
+                  //    height: 420,
+                  //  ),
+                  //),
+                /*Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.only(left: 12, top: 12),
+                          child: const Text(
+                            "blast!",
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const Expanded(child: SizedBox()),
+                      ],
+                    ),*/
+                ],
+              ),
+            ),
+          ),
+
+        ])
     );
   }
   final GlobalKey<NavigatorState> _playlistNavigatorKey = GlobalKey<NavigatorState>();
@@ -2516,18 +2853,21 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               SearchScreen(onCallback: (dynamic input) {
                 getaboutmus(input, false, false, false, false);
               },
-                onCallbacki: postRequesty,
+                onCallbacki: startJem,
                 hie: closeserch,
                 showlog: showlogin,
                 dasd: resetapp,
                 dfsfd: (dynamic input) {
                   installmus(input, true);
                 },
-                reci: reci,),
+                reci: reci, oniBack: _updateNavigationState, prtctx: context,),
+          settings: const RouteSettings(name: '/search'),
         ),
       );
 
   }
+
+
 
   void _openHistroryPage(BuildContext context) {
     // Navigator.of(context).push(_createSearchRoute());
@@ -2542,7 +2882,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
               hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);},
               showlog: showlogin,
               resdf: resetapp,
-              onCallbackt: (dynamic input, dynamic inputi, String asdsa) { loadpalylisttoochered(input, inputi, asdsa); }, parctx: context,
+              onCallbackt: (dynamic input, dynamic inputi, String asdsa) { loadpalylisttoochered(input, inputi, asdsa, 1); }, parctx: context,
             ),
       ),
     );
@@ -2608,13 +2948,13 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   List nestedArray = [
     {
       'id': '1',
-      'img': 'https://kompot.site/img/music.jpg',
+      'img': 'https://kompot.keeppixel.store/img/music.jpg',
       'name': 'Название',
       'message': 'Имполнитель',
     },
     {
       'id': '2',
-      'img': 'https://kompot.site/img/music.jpg',
+      'img': 'https://kompot.keeppixel.store/img/music.jpg',
       'name': 'Название',
       'message': 'Имполнитель',
     },
@@ -3548,9 +3888,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   }
 
   void _showModalSheetu() {
-    Size size = MediaQuery
-        .of(context)
-        .size;
+    Size size = MediaQuery.of(context).size;
     showModalBottomSheet(
         context: context,
         builder: (builder) {
@@ -3566,6 +3904,8 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         }
     );
   }
+
+
   late StateSetter setmdState;
   late StateSetter setnewState;
 
@@ -3578,9 +3918,12 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
 
   Container buildMyNavBar(BuildContext context) {
+    Size size = MediaQuery
+        .of(context)
+        .size;
     return
       Container(
-          height: 134+ MediaQuery.of(context).padding.bottom,
+          height: size.width <= 800 ? 134 + MediaQuery.of(context).padding.bottom : 74 + MediaQuery.of(context).padding.bottom,
           decoration: const BoxDecoration(
               color: Color.fromARGB(200, 25, 24, 24),
               borderRadius: BorderRadius.vertical(top: Radius.circular(15))
@@ -3690,9 +4033,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                           ),
                         ),
                       ),
-                      Container(
-                        height: 60,
-                        child: Row(
+                      if (size.width <= 800)
+                        Container(
+                          height: 60,
+                          child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             IconButton(
@@ -3774,14 +4118,16 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   late List<Widget> pages = [
     _buildNavigator(_playlistNavigatorKey, LibraryScreen(onCallback: (dynamic input) {
       getaboutmus(input, false, false, false, false);
-    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp, onCallbackt: (dynamic input, dynamic inputi, String asdsa) { loadpalylisttoochered(input, inputi, asdsa); }, parctx: context, hie2: () { _openHistroryPage(_getNavigatorKey(pageIndex).currentContext!); },)),
-    _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey, onCallbackt: (dynamic input, dynamic inputi) { loadpalylisttoochered(input, inputi, "Джем"); }, onCallback: (dynamic input) {
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resdf: resetapp, onCallbackt: (dynamic input, dynamic inputi, String asdsa) { loadpalylisttoochered(input, inputi, asdsa, 1); }, parctx: context, hie2: () { _openHistroryPage(_getNavigatorKey(pageIndex).currentContext!); },)),
+    _buildNavigator(_homeNavigatorKey, MusicScreen(key: _childKey, onCallbackt: (dynamic input, dynamic inputi) { loadpalylisttoochered(input, inputi, "Чарт", 1); }, onCallback: (dynamic input) {
       getaboutmus(input, false, false, false, false);
-    }, onCallbacki: postRequesty, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp, essension: essension, parctx: context,)),
+    }, onCallbacki: startJem, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, resre: resetapp, essension: essension, parctx: context,)),
     _buildNavigator(_videoNavigatorKey, VideoScreen(onCallback: (dynamic input) {
       setvi(input, false, true);
-    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, dsad: resetapp,)),
+    }, hie: (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, showlog: showlogin, dsad: resetapp, prtctx: context,)),
   ];
+
+
 
   bool isjemnow = false;
 
@@ -3867,7 +4213,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   }
 
   void showlogin(){
-    Navigator.push(context, MaterialPageRoute(builder: (context) =>  LoginScreen(resetap: resetapp)));
+    Navigator.push(context, MaterialPageRoute(builder: (context) =>  AuthScreen(resetap: resetapp, onBack: true,)));
   }
 
   @override
@@ -3881,13 +4227,15 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   }
   String _jemData = "132";
 
-  Future<void> postRequesty () async {
+  Future<void> startJem () async {
     if(!isjemnow) {
       String dff = await apiService.getJemRandom();
       print(dff);
-      setState(() {
+      var aboutmus = await apiService.getAboutMusic(dff);
+      setState(()  {
         _jemData = dff;
-        getaboutmus(_jemData, true, false, false, false);
+        loadpalylisttoochered([aboutmus], 0, "Джем", 2);
+        //getaboutmus(_jemData, true, false, false, false);
         isjemnow = true;
       });
     }else{
@@ -3901,7 +4249,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   Future<void> getdivecs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
      String? tr = prefs.getString("token");
-      var urli = Uri.parse("https://kompot.site/getdeviceblast?getdevices="+tr!);
+      var urli = Uri.parse("https://kompot.keeppixel.store/getdeviceblast?getdevices="+tr!);
       var response = await http.get(urli);
       String dff = response.body.toString();
       print(dff);
@@ -4266,7 +4614,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   Future<void> adddevicetopull() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? tr = prefs.getString("token");
-    http.Response response = await http.get(Uri.parse("https://kompot.site/getdeviceblast?createip="+_localIp!+"&tokeni="+tr!+"&name="+_deviceName+"&os="+_os));
+    http.Response response = await http.get(Uri.parse("https://kompot.keeppixel.store/getdeviceblast?createip="+_localIp!+"&tokeni="+tr!+"&name="+_deviceName+"&os="+_os));
 
   }
 
@@ -4361,14 +4709,76 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
   bool ispalylistochered = false;
 
-  void loadpalylisttoochered(var listokd, var index, String asdsa){
+  Future<void> loadpalylisttoochered(var listokd, var index, String asdsa, int typemus) async {  //1 - standart mus, 2 - Jem, 3 - Essensia
     // ocherd.clear();
     // for (var num in listokd) {
     //  ocherd.add(num["idshaz"]);
     //}
     // getaboutmus(ocherd[index], false, false, false, true);
     // ispalylistochered = true;
-
+    bool fds = true;
+    if(!frstsd) {
+      frstsd = true;
+      fds = false;
+      await AudioService.start(
+        backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+        androidNotificationChannelName: 'blast!',
+        androidNotificationColor: 0xFF2196f3,
+        androidNotificationIcon: 'drawable/mus_logo_foreground',
+        params: {'track': MediaItem(
+          id: listokd[index]['id'],
+          artUri: Uri.parse(listokd[index]['img']),
+          artist: listokd[index]['message'],
+          title: listokd[index]['name'],
+          extras: {
+            'idshaz': listokd[index]['idshaz'],
+            'url': listokd[index]['short'],
+            'messageimg': listokd[index]['messageimg'],
+            'short': listokd[index]['short'],
+            'txt': listokd[index]['txt'],
+            'vidos': listokd[index]['vidos'],
+            'bgvideo': listokd[index]['bgvideo'],
+            'elir': listokd[index]['elir'],
+          },
+        )},
+      ).whenComplete((){
+         //AudioService.pause();
+      });
+      //await AudioService.pause();
+    }
+    if(typemus == 1){
+      isjemnow = false;
+      essensionbool = false;
+    }else if(typemus == 2){
+      isjemnow = true;
+      essensionbool = false;
+    }else if(typemus == 3){
+      isjemnow = false;
+      essensionbool = true;
+    }
+    setState(() {
+      if(typemus == 1){
+        isjemnow = false;
+        essensionbool = false;
+      }else if(typemus == 2){
+        isjemnow = true;
+        essensionbool = false;
+      }else if(typemus == 3){
+        isjemnow = false;
+        essensionbool = true;
+      }
+      if (!isjemnow) {
+        _childKey.currentState?.toggleAnimation(false);
+        _childKey.currentState?.updateIcon(Icon(
+            Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+      }
+      if (!essensionbool) {
+        _childKey.currentState?.toggleAnimationese(false);
+        _childKey.currentState?.updateIconese(Icon(
+            Icons.play_arrow_rounded, size: 64, color: Colors.white,key: ValueKey<bool>(AudioService.playbackState.playing)));
+      }
+    });
+    print("fsdfsd"+isjemnow.toString());
     List<MediaItem> playlist = [];
     for (var num in listokd) {
       playlist.add(MediaItem(
@@ -4388,7 +4798,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         },
       ));
     }
-    setQueue(playlist, index);
+    setQueue(playlist, index,fds);
     print("objectqueue");
     context.read<QueueManagerProvider>().setQueue(listokd);
     context.read<QueueManagerProvider>().setCurrentAlbum(asdsa);
@@ -4417,7 +4827,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   }
 
 
-  Future<void> setQueue(List<MediaItem> playlist, int inx) async {
+  Future<void> setQueue(List<MediaItem> playlist, int inx, bool needplay) async {
     // Преобразуем список MediaItem в список Map<String, dynamic>
     List<Map<String, dynamic>> tracks = playlist.map((track) {
       return {
@@ -4430,7 +4840,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         'duration': track.duration?.inMilliseconds,
       };
     }).toList();
-    print("hnghngb"+tracks.toString());
+
 
 
     if(shazid != playlist[inx].extras?['idshaz']) {
@@ -4442,12 +4852,15 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       }else{
         print("fdvsvsv");
         await AudioService.customAction('setQueue',
-            {'playlist': tracks, 'startIndex': inx, 'needplay': true});
+            {'playlist': tracks, 'startIndex': inx, 'needplay': needplay});
+        print("hnghngb"+'playlist'+ tracks.toString()+ 'startIndex'+ inx.toString()+ 'needplay'+ needplay.toString());
+
       }
-      await getaboutmusmini(playlist[inx]);
+      await getaboutmusmini(playlist[inx],needplay);
+
     }else{
       await AudioService.customAction('setQueue', {'playlist': tracks, 'startIndex': inx, 'needplay': false});
-      await getaboutmusmini(playlist[inx]);
+      await getaboutmusmini(playlist[inx],false);
     }
   }
 

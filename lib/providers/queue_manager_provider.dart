@@ -11,7 +11,7 @@ class QueueManagerProvider with ChangeNotifier {
   Map<String, dynamic>? _currentTrack =
   {
     'id': '1',
-    'img': 'https://kompot.site/img/music.jpg',
+    'img': 'https://kompot.keeppixel.store/img/music.jpg',
     'name': 'Название',
     'message': 'Имполнитель',
     'idshaz': '423432'

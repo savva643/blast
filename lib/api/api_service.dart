@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'api_install.dart';
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
@@ -17,7 +19,7 @@ class ApiService {
     if (ds != null && ds != "") {
       if (user['token'] != ds || user == null) {
         print("object" + ds!);
-        var urli = Uri.parse("https://kompot.site/getabout?token=" + ds);
+        var urli = Uri.parse("https://kompot.keeppixel.store/getabout?token=" + ds);
 
         var response = await http.get(urli);
         String dff = response.body.toString();
@@ -30,26 +32,40 @@ class ApiService {
     return {'status':'false'};
   }
 
-  Future<List> showStatusInstall(List da) async {
+  Future<List> showStatusInstall(List da, {DownloadManager? downloadManager}) async {
     List langData = da;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? sac = prefs.getStringList("installmusid");
+    List<String>? savedIds = prefs.getStringList("installmusid");
+
+    // Получаем активные загрузки, если передан менеджер
+    List<DownloadModel> activeDownloads = [];
+    if (downloadManager != null) {
+      activeDownloads = await downloadManager.getActiveDownloads();
+    }
+
     for (var i = 0; i < langData.length; i++) {
-      if (sac != null) {
-        if (!sac.isEmpty) {
-          if (sac.contains(langData[i]["idshaz"])) {
-            (langData[i] as Map<String, dynamic>)["install"] = "1";
-          } else {
-            (langData[i] as Map<String, dynamic>)["install"] = "0";
-          }
-        } else {
-          (langData[i] as Map<String, dynamic>)["install"] = "0";
-        }
+      final track = langData[i] as Map<String, dynamic>;
+      final trackId = track["idshaz"];
+
+      // Проверяем активные загрузки
+      final isDownloading = activeDownloads.any((d) => d.idshaz == trackId && !d.isCompleted);
+
+      if (isDownloading) {
+        // Если трек в процессе загрузки
+        track["install"] = "2"; // 2 - статус "в процессе загрузки"
+        track["download_progress"] = activeDownloads
+            .firstWhere((d) => d.idshaz == trackId && !d.isCompleted)
+            .progress;
+      } else if (savedIds != null && savedIds.contains(trackId)) {
+        // Если трек уже скачан
+        track["install"] = "1"; // 1 - статус "скачан"
       } else {
-        (langData[i] as Map<String, dynamic>)["install"] = "0";
+        // Если трек не скачан
+        track["install"] = "0"; // 0 - статус "не скачан"
       }
     }
-    return da;
+
+    return langData;
   }
 
 
@@ -59,12 +75,12 @@ class ApiService {
     Uri urli;
     if(ds != null) {
       if (ds != "") {
-        urli = Uri.parse("https://kompot.site/gettopmusic?lim=20&token="+ds!);
+        urli = Uri.parse("https://kompot.keeppixel.store/gettopmusic?lim=20&token="+ds!);
       } else {
-        urli = Uri.parse("https://kompot.site/gettopmusic?lim=20");
+        urli = Uri.parse("https://kompot.keeppixel.store/gettopmusic?lim=20");
       }
     }else{
-      urli = Uri.parse("https://kompot.site/gettopmusic?lim=20");
+      urli = Uri.parse("https://kompot.keeppixel.store/gettopmusic?lim=20");
     }
     var response = await http.get(urli);
     String dff = response.body.toString();
@@ -89,7 +105,7 @@ class ApiService {
     if(id=="0") {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       String? ds = prefs.getString("token");
-      var urli = Uri.parse("https://kompot.site/getlovemus?token=" + ds! + "&count=" + count.toString());
+      var urli = Uri.parse("https://kompot.keeppixel.store/getlovemus?token=" + ds! + "&count=" + count.toString());
       var response = await http.get(urli);
       String dff = response.body.toString();
       List langData = jsonDecode(dff)[0];
@@ -99,10 +115,10 @@ class ApiService {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       String? ds = prefs.getString("token");
       print(
-          "https://kompot.site/getmusfromplaylist?token=" + ds! + "&playlst=" +
+          "https://kompot.keeppixel.store/getmusfromplaylist?token=" + ds! + "&playlst=" +
               id);
       var urli = Uri.parse(
-          "https://kompot.site/getmusfromplaylist?token=" + ds! + "&playlst=" +
+          "https://kompot.keeppixel.store/getmusfromplaylist?token=" + ds! + "&playlst=" +
               id);
       var response = await http.get(urli);
       String dff = response.body.toString();
@@ -117,7 +133,7 @@ class ApiService {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
     if(ds != null && ds != "") {
-      var urli = Uri.parse("https://kompot.site/getmusicplaylist?getplaylist="+ds!+"&count"+count.toString());
+      var urli = Uri.parse("https://kompot.keeppixel.store/getmusicplaylist?getplaylist="+ds!+"&count"+count.toString());
 
       var response = await http.get(urli);
       String dff = response.body.toString();
@@ -133,7 +149,7 @@ class ApiService {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
     if(ds != null && ds != "") {
-      var urli = Uri.parse("https://kompot.site/getmusicplaylist?getalbum="+ds!+"&count"+count.toString());
+      var urli = Uri.parse("https://kompot.keeppixel.store/getmusicplaylist?getalbum="+ds!+"&count"+count.toString());
 
       var response = await http.get(urli);
       String dff = response.body.toString();
@@ -150,7 +166,7 @@ class ApiService {
     String? ds = prefs.getString("token");
     if(ds != null) {
       if (ds != "") {
-        var urli = Uri.parse("https://kompot.site/getabout?token=" + ds);
+        var urli = Uri.parse("https://kompot.keeppixel.store/getabout?token=" + ds);
         var response = await http.get(urli);
         String dff = response.body.toString();
 
@@ -171,36 +187,43 @@ class ApiService {
   Future<List> getSearchHistory() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? sac = prefs.getStringList("historymusid");
-    if(sac != null) {
-      List langData = [];
-      for (var num in sac) {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        String? ds = prefs.getString("token");
-        Uri urli;
-        if(ds != null) {
-          if (ds != "") {
-            print("https://kompot.site/getaboutmus?sidi=" + num! + "&tokeni=" + ds!);
-            urli = Uri.parse(
-                "https://kompot.site/getaboutmus?sidi=" + num! + "&tokeni=" + ds!);
-          } else {
-            urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + num!);
-          }
-        }else{
-          urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + num!);
-        }
-        var response = await http.get(urli);
-        String dff = response.body.toString();
-        print("jhghjg");
-        print(dff);
-        try {
-          langData.add(jsonDecode(dff));
-        }catch (e) {
-          print("Ошибка: $e");
-        }
+
+    if (sac != null && sac.isNotEmpty) {
+      // Получаем токен (один раз, а не в цикле)
+      final String? ds = prefs.getString("token");
+
+      // Формируем строку с ID через запятую
+      String ids = sac.join(',');
+
+      // Формируем URL
+      String url = "https://kompot.keeppixel.store/getaboutmus?sidis=$ids";
+      if (ds != null && ds.isNotEmpty) {
+        url += "&tokeni=$ds";
       }
-      langData = await showStatusInstall(langData);
-      return langData;
-    }else{
+
+      print("Request URL: $url");
+
+      try {
+        // Делаем один запрос для всех ID
+        var response = await http.get(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+          // Парсим ответ (ожидаем массив данных)
+          List<dynamic> result = jsonDecode(response.body);
+
+          // Обрабатываем статусы (если нужно)
+          result = await showStatusInstall(result);
+
+          return result;
+        } else {
+          print("Ошибка запроса: ${response.statusCode}");
+          return [];
+        }
+      } catch (e) {
+        print("Ошибка: $e");
+        return [];
+      }
+    } else {
       return [];
     }
   }
@@ -208,7 +231,7 @@ class ApiService {
   Future<List> getSearchMusic(String text) async {
     print("searchikngh "+text);
     if(text != '') {
-      var urli = Uri.parse("https://kompot.site/getmusshazandr?token=1&nice=" + text);
+      var urli = Uri.parse("https://kompot.keeppixel.store/getmusshazandr?token=1&nice=" + text);
       var response = await http.get(urli);
       String dff = response.body.toString();
       print("searchikngh"+dff);
@@ -221,7 +244,7 @@ class ApiService {
   }
 
   Future<List> getVideosTop() async {
-    var urli = Uri.parse("https://kompot.site/getvideomus");
+    var urli = Uri.parse("https://kompot.keeppixel.store/getvideomus");
     var response = await http.get(urli);
     String dff = response.body.toString();
     List langData = jsonDecode(dff);
@@ -229,14 +252,14 @@ class ApiService {
   }
 
   Future<dynamic> getEssensionRandom() async {
-    var urli = Uri.parse("https://kompot.site/getesemus");
+    var urli = Uri.parse("https://kompot.keeppixel.store/getesemus");
     var response = await http.get(urli);
     String dff = response.body.toString();
     return jsonDecode(dff);
   }
 
   Future<String> getJemRandom() async {
-    var urli = Uri.parse("https://kompot.site/getjemmus");
+    var urli = Uri.parse("https://kompot.keeppixel.store/getjemmus");
     var response = await http.get(urli);
     String dff = response.body.toString();
     return dff;
@@ -249,18 +272,54 @@ class ApiService {
     Uri urli;
     if(ds != null) {
       if (ds != "") {
-        print("https://kompot.site/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
+        print("https://kompot.keeppixel.store/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
         urli = Uri.parse(
-            "https://kompot.site/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
+            "https://kompot.keeppixel.store/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
       } else {
-        urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + idshaz!);
+        urli = Uri.parse("https://kompot.keeppixel.store/getaboutmus?sidi=" + idshaz!);
       }
     }else{
-      urli = Uri.parse("https://kompot.site/getaboutmus?sidi=" + idshaz!);
+      urli = Uri.parse("https://kompot.keeppixel.store/getaboutmus?sidi=" + idshaz!);
     }
     var response = await http.get(urli);
     String dff = response.body.toString();
     return jsonDecode(dff);
+  }
+
+
+  Future<Map<String, dynamic>> getSimilarTracks({
+    required String currentTrackId,
+    required int count,
+    List<String> playedIds = const [],
+    String? token,
+  }) async {
+    final String baseUrl = "https://kompot.keeppixel.store/nextmus";
+    final Map<String, String> queryParams = {
+      'nice': currentTrackId,
+      'count': count.toString(),
+      if (playedIds.isNotEmpty) 'playedIds': playedIds.join(','),
+      if (token != null && token.isNotEmpty) 'tokan': token,
+    };
+
+    final Uri uri = Uri.parse(baseUrl).replace(queryParameters: queryParams);
+    print("Request URL: ${uri.toString()}");
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return {
+          'downloadedTracks': List<String>.from(data['downloadedTracks'] ?? []),
+          'playedIds': List<String>.from(data['playedIds'] ?? []),
+        };
+      } else {
+        throw Exception('Failed to load similar tracks: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching similar tracks: $e');
+      throw Exception('Failed to load similar tracks');
+    }
   }
 
 
@@ -269,7 +328,7 @@ class ApiService {
     String? ds = prefs.getString("token");
     if(ds != "") {
       final response = await http.get(Uri.parse(
-          'https://kompot.site/reactmusic?mus=' +id + '&type=' + type.toString() + "&token="+ds!));
+          'https://kompot.keeppixel.store/reactmusic?mus=' +id + '&type=' + type.toString() + "&token="+ds!));
       if (response.statusCode == 200) {
         // Успешный ответ, меняем состояние лайка
         String dff = response.body.toString();
@@ -291,14 +350,62 @@ class ApiService {
 
 
   Future<String> installMusic(String idshaz) async {
-    var urli = Uri.parse("https://kompot.site/installmusapple?nice=" + idshaz);
+    var urli = Uri.parse("https://kompot.keeppixel.store/installmusapple?nice=" + idshaz);
     var response = await http.get(urli);
     String dff = response.body.toString();
     print("dvsxv"+dff);
     return dff;
   }
 
+  Future<bool> toLogin(String login, String password, bool isRemember) async {
+    if(login != '' && password != '') {
+      var urli = Uri.parse(
+          "https://kompot.keeppixel.store/anlog?login="+login+"&password=" + password);
 
+      var response = await http.get(urli);
+      String dff = response.body.toString();
+
+      var langData = jsonDecode(dff);
+      print(langData);
+      if(langData['status'] == "true"){
+        if(isRemember) {
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString("token", langData['token']);
+        }
+        print("gkjhjk"+langData['token']);
+        return true;
+      }else{
+        return false;
+      }
+    }else{
+      return false;
+    }
+  }
+
+  Future<bool> toRegister(String login, String nick, String email, String password, bool isRemember) async {
+    if(login != '' && password != '') {
+      var urli = Uri.parse(
+          "https://kompot.keeppixel.store/anlog?login="+login+"&password=" + password);
+
+      var response = await http.get(urli);
+      String dff = response.body.toString();
+
+      var langData = jsonDecode(dff);
+      print(langData);
+      if(langData['status'] == "true"){
+        if(isRemember) {
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString("token", langData['token']);
+        }
+        print("gkjhjk"+langData['token']);
+        return true;
+      }else{
+        return false;
+      }
+    }else{
+      return false;
+    }
+  }
 
 }
 

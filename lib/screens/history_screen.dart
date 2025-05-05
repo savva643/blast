@@ -51,11 +51,10 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
     _controller.addListener(_scrollListener);
     _childController = ScrollController();
-
-
+    _tabController.addListener(_updateTabHeight);
+    load();
     // Слушаем прокрутку дочернего списка
     _childController.addListener(() {
       if (_isChildScrolling &&
@@ -94,20 +93,43 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
         useri = false;
       }
     });
-    var langData = await apiService.getMusicInPlaylist("0", 9);
-    var langData1 = await apiService.getPlayLists(4);
-    var langData2 = await apiService.getAlbum(4);
+    var langData = await apiService.getMusicInPlaylist("0", 0);
     setState(() {
       showRefreshButton = false;
-      context.read<ListManagerProvider>().createList('lovelast9', langData);
-      context.read<ListManagerProvider>().createList('playlistlast4', langData1);
-      context.read<ListManagerProvider>().createList('albumlast4', langData2);
+      context.read<ListManagerProvider>().createList('historyaccount', langData);
     });
     await Future.delayed(Duration(milliseconds: 301));
     setState(() {
       isRefreshing = false;
       isDragging = false;
     });
+  }
+
+
+  double _contentHeight = 300; // Начальная высота
+  final double _defaultEmptyHeight = 100;
+
+  void _updateHeight(double height) {
+    if (_contentHeight != height) {
+      setState(() {
+        _contentHeight = height;
+      });
+    }
+  }
+
+  void _updateTabHeight() {
+    if (!mounted) return;
+
+    if (_tabController.index == 1) {
+      // Вторая вкладка (История аккаунта) -> высота экрана
+      //_updateHeight(MediaQuery.of(context).size.height-MediaQuery.of(context).padding.bottom-134);
+      final listLength = context.read<ListManagerProvider>().getList('historyaccount').length;
+      _updateHeight(listLength > 0 ? (listLength * 82)+ MediaQuery.of(context).padding.bottom : _defaultEmptyHeight);
+    } else {
+      // Первая вкладка -> вычисляемая высота списка
+      final listLength = context.read<ListManagerProvider>().getList('historydevice').length;
+      _updateHeight(listLength > 0 ? (listLength * 82)+ MediaQuery.of(context).padding.bottom : _defaultEmptyHeight);
+    }
   }
   void _scrollListener() {
     setState(() {
@@ -127,39 +149,70 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       [
         // История устройства
         SizedBox(
-        height: 20*200,child:
-        Consumer<ListManagerProvider>(
-          builder: (context, listManager, child) {
-            final list = listManager.getList('top20');
-            if (list.isEmpty) {
-              return const Center(
-                child: Text(
-                  'Нету треков',
-                  style: TextStyle(color: Colors.white),
-                ),
+          child: Consumer<ListManagerProvider>(
+            builder: (context, listManager, child) {
+              final list = listManager.getList('historydevice');
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (_tabController.index == 0) {
+                  _updateHeight(list.isNotEmpty ? (list.length * 82) + MediaQuery.of(context).padding.bottom : _defaultEmptyHeight);
+                }
+              });
+              if (list.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'История устройства пуста',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+              //_updateHeight(list.length * 82);
+              return Column(
+                mainAxisSize: MainAxisSize.max, // Не даёт колонке занимать всё доступное пространство
+                children: list.map((track) {
+                  return MussicCell(
+                    track,
+                        () {
+                      widget.onCallbackt(list, list.indexOf(track));
+                    },
+                    widget.parctx,
+                  );
+                }).toList(),
               );
-            }
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: list.length,
-              itemBuilder: (context, idx) {
-                return MussicCell(
-                  list[idx],
-                      () {
-                    widget.onCallbackt(list, idx);
-                  },
-                  widget.parctx,
-                ) ;
-              },
-            );
-          },
-        )),
+            },
+          ),
+        ),
         // История аккаунта
-        Center(
-          child: const Text(
-            'История аккаунта пока пуста',
-            style: TextStyle(color: Colors.white),
+        SizedBox(
+          child: Consumer<ListManagerProvider>(
+            builder: (context, listManager, child) {
+              final list = listManager.getList('historyaccount');
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (_tabController.index == 1) {
+                  _updateHeight(list.isNotEmpty ? (list.length * 82) + MediaQuery.of(context).padding.bottom : _defaultEmptyHeight);
+                }
+              });
+              if (list.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'История аккаунта пуста',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+              //_updateHeight(list.length * 82);
+              return Column(
+                mainAxisSize: MainAxisSize.max, // Не даёт колонке занимать всё доступное пространство
+                children: list.map((track) {
+                  return MussicCell(
+                    track,
+                        () {
+                      widget.onCallbackt(list, list.indexOf(track));
+                    },
+                    widget.parctx,
+                  );
+                }).toList(),
+              );
+            },
           ),
         ),
         
@@ -177,7 +230,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       _isAtTop,
       setState,
       _previousOffset,
-      _tabController, true, context
+      _tabController, true, context, _contentHeight
     );
   }
 

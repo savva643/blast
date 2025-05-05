@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 
 class NeedLoginScreen extends StatefulWidget {
   final LoginType type;
-
-  NeedLoginScreen({required this.type});
+  final bool showBackButton; // Новая необязательная переменная
+  final VoidCallback showlog;
+  NeedLoginScreen({
+    required this.type,
+    this.showBackButton = true, required this.showlog, // По умолчанию true
+  });
 
   @override
   _NeedLoginScreenState createState() => _NeedLoginScreenState();
 }
 
-class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProviderStateMixin{
+class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProviderStateMixin {
   late final Map<String, dynamic> featureDetails;
   bool showContent = false;
   late ScrollController _scrollController;
+  late AnimationController _animationController;
 
   Widget _buildIconicBackground() {
     return AnimatedBuilder(
@@ -75,17 +80,17 @@ class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProv
             // Маленькие иконки для детализации
             for (int i = 0; i < 15; i++)
               Positioned(
-                top: (i * 50).toDouble() - offset * 0.05 * (i % 3 + 1),
-                left: (i * 40) % MediaQuery.of(context).size.width +
-                    offset * 0.02 * (i % 2 == 0 ? 1 : -1),
-                child: Transform.scale(
-                  scale: 0.8 + 0.2 * (_animationController.value),
-                  child: Icon(
-                    Icons.circle,
-                    size: 20,
-                    color: Colors.white.withOpacity(0.05 * (i % 5 + 1)),
-                  ),
-                ),
+                  top: (i * 50).toDouble() - offset * 0.05 * (i % 3 + 1),
+                  left: (i * 40) % MediaQuery.of(context).size.width +
+                      offset * 0.02 * (i % 2 == 0 ? 1 : -1),
+                  child: Transform.scale(
+                    scale: 0.8 + 0.2 * (_animationController.value),
+                    child: Icon(
+                      Icons.circle,
+                      size: 20,
+                      color: Colors.white.withOpacity(0.05 * (i % 5 + 1)),
+                    ),
+                  )
               ),
           ],
         );
@@ -109,13 +114,14 @@ class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProv
       duration: Duration(seconds: 5),
     )..repeat(reverse: true);
   }
-  late AnimationController _animationController;
+
   @override
   void dispose() {
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,16 +138,17 @@ class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProv
                 color: Colors.transparent,
               ),
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-                child: IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
+            if (widget.showBackButton) // Показываем кнопку назад только если showBackButton = true
+              Align(
+                alignment: Alignment.topLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
                 ),
               ),
-            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -164,15 +171,15 @@ class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProv
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                    CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.blue,
-                    child: Icon(
-                      featureDetails['icon'] as IconData,
-                      size: 50,
-                      color: Colors.white,
-                    ),
-                  ),
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.blue,
+                        child: Icon(
+                          featureDetails['icon'] as IconData,
+                          size: 50,
+                          color: Colors.white,
+                        ),
+                      ),
                       const SizedBox(height: 20),
                       Text(
                         featureDetails['title'] as String,
@@ -207,6 +214,7 @@ class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProv
                       child: ElevatedButton(
                         onPressed: () {
                           // Обработчик входа
+                          widget.showlog();
                         },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
@@ -263,6 +271,12 @@ class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProv
           'title': 'Переносить музыку',
           'description': 'Импортируйте музыку из других сервисов.',
         };
+      case LoginType.library:
+        return {
+          'icon': Icons.library_music,
+          'title': 'Доступ к библиотеке',
+          'description': 'Просматривайте свою музыкальную коллекцию.',
+        };
       default:
         return {
           'icon': Icons.music_note,
@@ -273,4 +287,10 @@ class _NeedLoginScreenState extends State<NeedLoginScreen> with SingleTickerProv
   }
 }
 
-enum LoginType { likes, playlists, devices, musicTransfer }
+enum LoginType {
+  likes,
+  playlists,
+  devices,
+  musicTransfer,
+  library
+}

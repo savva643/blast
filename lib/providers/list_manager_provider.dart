@@ -59,10 +59,22 @@ class ListManagerProvider with ChangeNotifier {
 
   /// Добавить элемент в список
   Future<void> addItem(String key, Map<String, dynamic> item) async {
-    if (_lists.containsKey(key)) {
-      _lists[key]!.add(item);
+    try {
+      if (!_lists.containsKey(key)) {
+        await createList(key); // Создаем список, если его нет
+      }
+
+      // Проверка на дубликат (если нужно)
+      final idshaz = item['idshaz'];
+      if (idshaz != null && _lists[key]!.any((e) => e['idshaz'] == idshaz)) {
+        return; // Уже существует
+      }
+
+      _lists[key]!.insert(0, item); // Добавляем в начало списка (сверху)
       await saveData();
       notifyListeners();
+    } catch (e) {
+      debugPrint('Error adding item: $e');
     }
   }
 
@@ -72,6 +84,18 @@ class ListManagerProvider with ChangeNotifier {
       _lists[key]!.removeAt(index);
       await saveData();
       notifyListeners();
+    }
+  }
+
+  Future<void> removeItemById(String key, String idshaz) async {
+    try {
+      if (_lists.containsKey(key)) {
+        _lists[key]!.removeWhere((item) => item['idshaz'] == idshaz);
+        await saveData();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error removing item by id: $e');
     }
   }
 
@@ -95,4 +119,12 @@ class ListManagerProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> clearAllLists() async {
+    _lists.clear();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('saved_lists'); // Удаляем сохраненные данные
+    notifyListeners();
+  }
+
 }
