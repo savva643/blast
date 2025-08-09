@@ -295,7 +295,7 @@ class CustomTile extends StatelessWidget {
 
   ImageProvider _getSafeImageProvider(String url) {
     try {
-      if (url.isNotEmpty && url != 'https://kompot.keeppixel.store/') {
+      if (url.isNotEmpty && url != 'https://kompot.keep-pixel.ru/') {
         return NetworkImage(url);
       }
     } catch (e) {

@@ -96,7 +96,7 @@ class QueueWidget {
                                     CachedNetworkImage(
                                       imageUrl: queueManager
                                           .currentTrack?['img'] ??
-                                          "https://kompot.keeppixel.store/img/music.jpg",
+                                          "https://kompot.keep-pixel.ru/img/music.jpg",
                                       imageBuilder: (context, imageProvider) =>
                                           Container(
                                             width: 60,
@@ -296,7 +296,7 @@ class QueueWidget {
                     CachedNetworkImage(
                       imageUrl: queueManager
                           .currentTrack?['img'] ??
-                          "https://kompot.keeppixel.store/img/music.jpg",
+                          "https://kompot.keep-pixel.ru/img/music.jpg",
                       imageBuilder: (context, imageProvider) =>
                           Container(
                             width: 60,

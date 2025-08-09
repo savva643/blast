@@ -466,7 +466,7 @@ class ItemsGrid extends StatelessWidget {
   ImageProvider _getSafeImageProvider(Map<String, dynamic> item) {
     try {
       // Пытаемся загрузить изображение из item
-      if (item['img'] != null && item['img'].isNotEmpty && item['img'] != 'https://kompot.keeppixel.store/') {
+      if (item['img'] != null && item['img'].isNotEmpty && item['img'] != 'https://kompot.keep-pixel.ru/') {
         print("fsdfvdsv"+item['img']);
         return NetworkImage(item['img']!);
       }

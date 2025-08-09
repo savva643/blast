@@ -12,11 +12,12 @@ class WebVersionScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildDownloadButton(String platform, String iconAsset, String storeUrl) {
+  Widget _buildDownloadButton(String platform, String iconAsset, String storeUrl, bool needwhite) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         backgroundColor: Colors.blue[800],
+        iconColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -25,9 +26,9 @@ class WebVersionScreen extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(iconAsset, width: 24, height: 24),
+          needwhite ? Image.asset(iconAsset, width: 30, height: 30, color: Colors.white,) : Image.asset(iconAsset, width: 24, height: 24,),
           const SizedBox(width: 12),
-          Text('Скачать для $platform'),
+          Text('Скачать для $platform', style: TextStyle(color: Colors.white),),
         ],
       ),
     );
@@ -94,14 +95,16 @@ class WebVersionScreen extends StatelessWidget {
                     // Мобильные платформы
                     _buildDownloadButton(
                       'Android',
-                      'assets/img/android.png',
+                      'assets/images/android.png',
                       'https://play.google.com/store',
+                      false
                     ),
                     const SizedBox(height: 16),
                     _buildDownloadButton(
                       'iOS',
-                      'assets/img/ios.png',
+                      'assets/images/ios.png',
                       'https://apps.apple.com',
+                      true
                     ),
                   ] else ...[
                     // Десктопные платформы
@@ -112,18 +115,21 @@ class WebVersionScreen extends StatelessWidget {
                       children: [
                         _buildDownloadButton(
                           'Windows',
-                          'assets/img/windows.png',
+                          'assets/images/windows.png',
                           'https://www.microsoft.com/store',
+                          true
                         ),
                         _buildDownloadButton(
                           'macOS',
-                          'assets/img/macos.png',
+                          'assets/images/macos.png',
                           'https://www.apple.com/macos',
+                          true
                         ),
                         _buildDownloadButton(
                           'Linux',
-                          'assets/img/linux.png',
+                          'assets/images/linux.png',
                           'https://www.linux.org',
+                          false
                         ),
                       ],
                     ),

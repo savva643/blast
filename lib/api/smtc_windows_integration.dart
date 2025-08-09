@@ -9,7 +9,7 @@ class WindowsSMTC {
       metadata: const MusicMetadata(
         title: 'Название',
         artist: 'Исполнитель',
-        thumbnail: 'https://kompot.keeppixel.store/img/music.jpg',
+        thumbnail: 'https://kompot.keep-pixel.ru/img/music.jpg',
       ),
       timeline: const PlaybackTimeline(
         startTimeMs: 0,

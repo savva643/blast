@@ -9,6 +9,20 @@ import '../providers/list_manager_provider.dart';
 import '../screens/profile_screen.dart';
 import 'buttons.dart';
 
+// Добавьте в начало файла headers.dart
+enum DeviceType { phone, tablet, carAudio, pc, tv }
+
+DeviceType getDeviceType(BuildContext context) {
+  final size = MediaQuery.of(context).size;
+  final isTablet = size.width >= 600;
+  final isCarAudio = size.width >= 600 && size.height <= 400; // Примерные параметры для магнитолы
+
+  // Для тестирования - всегда считаем устройство планшетом/магнитолой
+  // В реальном приложении замените на:
+  // return isCarAudio ? DeviceType.carAudio : (isTablet ? DeviceType.tablet : DeviceType.phone);
+  return DeviceType.tablet;
+}
+
 Widget headerwithblast(String imgprofile, VoidCallback showlog, BuildContext context, bool useri, VoidCallback hie, VoidCallback resdf) {
   return SliverToBoxAdapter(
     child: Stack(
@@ -96,6 +110,265 @@ Widget headerwithblast(String imgprofile, VoidCallback showlog, BuildContext con
     ),
   );
 }
+
+Widget carAudioHeader(
+    String imgprofile,
+    VoidCallback showlog,
+    BuildContext context,
+    bool useri,
+    VoidCallback resdf,
+    double opacity,
+    String name,
+    bool back,
+    ) {
+  final bool isTablet = MediaQuery.of(context).size.width >= 600;
+
+  return SliverAppBar(
+    backgroundColor: Colors.transparent,
+    pinned: true,
+    expandedHeight: isTablet ? 140 : 100,
+    toolbarHeight: isTablet ? 80 : 60,
+    centerTitle: true,
+    title: AnimatedOpacity(
+      opacity: opacity,
+      duration: const Duration(milliseconds: 200),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text(
+          name,
+          style: TextStyle(
+            fontSize: isTablet ? 28 : 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    ),
+    leading: back ? IconButton(
+      icon: Icon(Icons.arrow_back, size: isTablet ? 36 : 30, color: Colors.white),
+      onPressed: () => Navigator.pop(context),
+    ) : null,
+    actions: [
+      Padding(
+        padding: const EdgeInsets.only(right: 12.0),
+        child: GestureDetector(
+          onTap: useri
+              ? () => Navigator.push(context, MaterialPageRoute(
+              builder: (context) => ProfileScreen(reseti: resdf),
+              settings: const RouteSettings(name: '/profile')))
+              : showlog,
+          child: Container(
+            width: isTablet ? 60 : 48,
+            height: isTablet ? 60 : 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: ClipOval(
+              child: imgprofile.isNotEmpty
+                  ? CachedNetworkImage(
+                imageUrl: imgprofile,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+                errorWidget: (context, url, error) => Icon(
+                  Icons.person,
+                  size: isTablet ? 32 : 24,
+                  color: Colors.white,
+                ),
+              )
+                  : Icon(
+                Icons.person,
+                size: isTablet ? 32 : 24,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+    flexibleSpace: FlexibleSpaceBar(
+      background: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withOpacity(0.8),
+              Colors.transparent,
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget carAudioScaffold({
+  required List<Widget> widgets,
+  required String imgprofile,
+  required VoidCallback showlog,
+  required BuildContext context,
+  required bool useri,
+  required VoidCallback resdf,
+  required String name,
+  required bool back,
+  required VoidCallback load,
+  Widget? bottomPlayer,
+}) {
+  final size = MediaQuery.of(context).size;
+  final bool isTablet = size.width >= 600;
+
+  return Scaffold(
+    backgroundColor: Colors.black,
+    body: Stack(
+      children: [
+        // Фоновое изображение
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/car_bg.jpg'),
+                fit: BoxFit.cover,
+                opacity: 0.3,
+              ),
+            ),
+          ),
+        ),
+
+        // Основной контент
+        CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            carAudioHeader(imgprofile, showlog, context, useri, resdf, 1.0, name, back),
+
+            SliverPadding(
+              padding: EdgeInsets.all(isTablet ? 20 : 12),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isTablet ? 4 : 2,
+                  crossAxisSpacing: isTablet ? 20 : 12,
+                  mainAxisSpacing: isTablet ? 20 : 12,
+                  childAspectRatio: isTablet ? 1.3 : 1.1,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                      (context, index) => widgets[index],
+                  childCount: widgets.length,
+                ),
+              ),
+            ),
+
+            SliverToBoxAdapter(
+              child: SizedBox(height: bottomPlayer != null ? (isTablet ? 120 : 80) : 20),
+            ),
+          ],
+        ),
+
+        // Кнопка обновления вверху
+        Positioned(
+          top: isTablet ? 30 : 15,
+          right: isTablet ? 30 : 15,
+          child: GestureDetector(
+            onTap: load,
+            child: Container(
+              padding: EdgeInsets.all(isTablet ? 12 : 8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.7),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.refresh,
+                size: isTablet ? 32 : 24,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+
+        // Плеер внизу (если есть)
+        if (bottomPlayer != null)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: bottomPlayer,
+          ),
+      ],
+    ),
+  );
+}
+
+Widget carAudioButton({
+  required String text,
+  required IconData icon,
+  required VoidCallback onPressed,
+  required BuildContext context,
+  Color? color,
+}) {
+  final isTablet = MediaQuery.of(context).size.width >= 600;
+
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: color ?? Colors.blue.withOpacity(0.8),
+      padding: EdgeInsets.all(isTablet ? 20 : 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          size: isTablet ? 36 : 24,
+          color: Colors.white,
+        ),
+        SizedBox(height: isTablet ? 12 : 6),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: isTablet ? 18 : 14,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    ),
+  );
+}
+
+Widget carAudioList({
+  required List<Widget> items,
+  required ScrollController controller,
+}) {
+  return ListView.builder(
+    controller: controller,
+    physics: const BouncingScrollPhysics(),
+    padding: const EdgeInsets.all(12),
+    itemCount: items.length,
+    itemBuilder: (context, index) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.grey[900]!.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: items[index],
+      );
+    },
+  );
+}
+
 
 Widget headerwithblastwihoutSilver(String imgprofile, VoidCallback showlog, BuildContext context, bool useri, VoidCallback hie, VoidCallback resdf) {
   return Stack(
@@ -440,7 +713,7 @@ Widget standatbuildcustomlistview(
         controller: _controller,
         slivers: [
           if (isMobile)
-            headerwithblast(imgprofile, showlog, context, useri, hie, resdf),
+            carAudioHeader(imgprofile, showlog, context, useri, resdf, opacity, name, back),
           if (beforewidgets != null)
             SliverToBoxAdapter(child: beforewidgets),
           headerfast(opacity, imgprofile, showlog, context, useri, hie, resdf, name, back, childctx, false),

@@ -493,7 +493,7 @@ Widget PlaylistCell(dynamic list, Function sac, BuildContext context) {
 Widget _getSafeNetworkImage(String? url) {
   return ClipRRect(
     borderRadius: BorderRadius.circular(5), // Сохраняем скругление углов
-    child: url == null || url.isEmpty || url == 'https://kompot.keeppixel.store/'
+    child: url == null || url.isEmpty || url == 'https://kompot.keep-pixel.ru/'
         ? Image(
       width: 64.0,
       height: 64.0,

@@ -10,9 +10,22 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api/api_install.dart';
 // import 'package:smtc_windows/smtc_windows.dart';
+
+
+Future<void> checkAuthOnStart() async {
+  final prefs = await SharedPreferences.getInstance();
+
+  // Если стоит флаг "выйти при перезапуске"
+  if (prefs.getBool('logout_on_restart') == true) {
+    await prefs.remove('token'); // Удаляем токен
+    await prefs.remove('logout_on_restart'); // Удаляем флаг
+  }
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
@@ -22,6 +35,7 @@ Future<void> main() async {
   final queueManager = QueueManagerProvider();
   await queueManager.loadFromCache();
   MediaKit.ensureInitialized();
+  await checkAuthOnStart();
   runApp(
       MultiProvider(
           providers: [

@@ -19,7 +19,7 @@ class ApiService {
     if (ds != null && ds != "") {
       if (user['token'] != ds || user == null) {
         print("object" + ds!);
-        var urli = Uri.parse("https://kompot.keeppixel.store/getabout?token=" + ds);
+        var urli = Uri.parse("https://kompot.keep-pixel.ru/getabout?token=" + ds);
 
         var response = await http.get(urli);
         String dff = response.body.toString();
@@ -75,12 +75,12 @@ class ApiService {
     Uri urli;
     if(ds != null) {
       if (ds != "") {
-        urli = Uri.parse("https://kompot.keeppixel.store/gettopmusic?lim=20&token="+ds!);
+        urli = Uri.parse("https://kompot.keep-pixel.ru/gettopmusic?lim=20&token="+ds!);
       } else {
-        urli = Uri.parse("https://kompot.keeppixel.store/gettopmusic?lim=20");
+        urli = Uri.parse("https://kompot.keep-pixel.ru/gettopmusic?lim=20");
       }
     }else{
-      urli = Uri.parse("https://kompot.keeppixel.store/gettopmusic?lim=20");
+      urli = Uri.parse("https://kompot.keep-pixel.ru/gettopmusic?lim=20");
     }
     var response = await http.get(urli);
     String dff = response.body.toString();
@@ -105,7 +105,7 @@ class ApiService {
     if(id=="0") {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       String? ds = prefs.getString("token");
-      var urli = Uri.parse("https://kompot.keeppixel.store/getlovemus?token=" + ds! + "&count=" + count.toString());
+      var urli = Uri.parse("https://kompot.keep-pixel.ru/getlovemus?token=" + ds! + "&count=" + count.toString());
       var response = await http.get(urli);
       String dff = response.body.toString();
       List langData = jsonDecode(dff)[0];
@@ -115,10 +115,10 @@ class ApiService {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       String? ds = prefs.getString("token");
       print(
-          "https://kompot.keeppixel.store/getmusfromplaylist?token=" + ds! + "&playlst=" +
+          "https://kompot.keep-pixel.ru/getmusfromplaylist?token=" + ds! + "&playlst=" +
               id);
       var urli = Uri.parse(
-          "https://kompot.keeppixel.store/getmusfromplaylist?token=" + ds! + "&playlst=" +
+          "https://kompot.keep-pixel.ru/getmusfromplaylist?token=" + ds! + "&playlst=" +
               id);
       var response = await http.get(urli);
       String dff = response.body.toString();
@@ -133,7 +133,7 @@ class ApiService {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
     if(ds != null && ds != "") {
-      var urli = Uri.parse("https://kompot.keeppixel.store/getmusicplaylist?getplaylist="+ds!+"&count"+count.toString());
+      var urli = Uri.parse("https://kompot.keep-pixel.ru/getmusicplaylist?getplaylist="+ds!+"&count"+count.toString());
 
       var response = await http.get(urli);
       String dff = response.body.toString();
@@ -149,7 +149,7 @@ class ApiService {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? ds = prefs.getString("token");
     if(ds != null && ds != "") {
-      var urli = Uri.parse("https://kompot.keeppixel.store/getmusicplaylist?getalbum="+ds!+"&count"+count.toString());
+      var urli = Uri.parse("https://kompot.keep-pixel.ru/getmusicplaylist?getalbum="+ds!+"&count"+count.toString());
 
       var response = await http.get(urli);
       String dff = response.body.toString();
@@ -166,7 +166,7 @@ class ApiService {
     String? ds = prefs.getString("token");
     if(ds != null) {
       if (ds != "") {
-        var urli = Uri.parse("https://kompot.keeppixel.store/getabout?token=" + ds);
+        var urli = Uri.parse("https://kompot.keep-pixel.ru/getabout?token=" + ds);
         var response = await http.get(urli);
         String dff = response.body.toString();
 
@@ -196,7 +196,7 @@ class ApiService {
       String ids = sac.join(',');
 
       // Формируем URL
-      String url = "https://kompot.keeppixel.store/getaboutmus?sidis=$ids";
+      String url = "https://kompot.keep-pixel.ru/getaboutmus?sidis=$ids";
       if (ds != null && ds.isNotEmpty) {
         url += "&tokeni=$ds";
       }
@@ -231,7 +231,7 @@ class ApiService {
   Future<List> getSearchMusic(String text) async {
     print("searchikngh "+text);
     if(text != '') {
-      var urli = Uri.parse("https://kompot.keeppixel.store/getmusshazandr?token=1&nice=" + text);
+      var urli = Uri.parse("https://kompot.keep-pixel.ru/getmusshazandr?token=1&nice=" + text);
       var response = await http.get(urli);
       String dff = response.body.toString();
       print("searchikngh"+dff);
@@ -244,7 +244,7 @@ class ApiService {
   }
 
   Future<List> getVideosTop() async {
-    var urli = Uri.parse("https://kompot.keeppixel.store/getvideomus");
+    var urli = Uri.parse("https://kompot.keep-pixel.ru/getvideomus");
     var response = await http.get(urli);
     String dff = response.body.toString();
     List langData = jsonDecode(dff);
@@ -252,14 +252,14 @@ class ApiService {
   }
 
   Future<dynamic> getEssensionRandom() async {
-    var urli = Uri.parse("https://kompot.keeppixel.store/getesemus");
+    var urli = Uri.parse("https://kompot.keep-pixel.ru/getesemus");
     var response = await http.get(urli);
     String dff = response.body.toString();
     return jsonDecode(dff);
   }
 
   Future<String> getJemRandom() async {
-    var urli = Uri.parse("https://kompot.keeppixel.store/getjemmus");
+    var urli = Uri.parse("https://kompot.keep-pixel.ru/getjemmus");
     var response = await http.get(urli);
     String dff = response.body.toString();
     return dff;
@@ -272,14 +272,14 @@ class ApiService {
     Uri urli;
     if(ds != null) {
       if (ds != "") {
-        print("https://kompot.keeppixel.store/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
+        print("https://kompot.keep-pixel.ru/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
         urli = Uri.parse(
-            "https://kompot.keeppixel.store/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
+            "https://kompot.keep-pixel.ru/getaboutmus?sidi=" + idshaz! + "&tokeni=" + ds!);
       } else {
-        urli = Uri.parse("https://kompot.keeppixel.store/getaboutmus?sidi=" + idshaz!);
+        urli = Uri.parse("https://kompot.keep-pixel.ru/getaboutmus?sidi=" + idshaz!);
       }
     }else{
-      urli = Uri.parse("https://kompot.keeppixel.store/getaboutmus?sidi=" + idshaz!);
+      urli = Uri.parse("https://kompot.keep-pixel.ru/getaboutmus?sidi=" + idshaz!);
     }
     var response = await http.get(urli);
     String dff = response.body.toString();
@@ -293,7 +293,7 @@ class ApiService {
     List<String> playedIds = const [],
     String? token,
   }) async {
-    final String baseUrl = "https://kompot.keeppixel.store/nextmus";
+    final String baseUrl = "https://kompot.keep-pixel.ru/nextmus";
     final Map<String, String> queryParams = {
       'nice': currentTrackId,
       'count': count.toString(),
@@ -328,7 +328,7 @@ class ApiService {
     String? ds = prefs.getString("token");
     if(ds != "") {
       final response = await http.get(Uri.parse(
-          'https://kompot.keeppixel.store/reactmusic?mus=' +id + '&type=' + type.toString() + "&token="+ds!));
+          'https://kompot.keep-pixel.ru/reactmusic?mus=' +id + '&type=' + type.toString() + "&token="+ds!));
       if (response.statusCode == 200) {
         // Успешный ответ, меняем состояние лайка
         String dff = response.body.toString();
@@ -350,7 +350,7 @@ class ApiService {
 
 
   Future<String> installMusic(String idshaz) async {
-    var urli = Uri.parse("https://kompot.keeppixel.store/installmusapple?nice=" + idshaz);
+    var urli = Uri.parse("https://kompot.keep-pixel.ru/installmusapple?nice=" + idshaz);
     var response = await http.get(urli);
     String dff = response.body.toString();
     print("dvsxv"+dff);
@@ -360,7 +360,7 @@ class ApiService {
   Future<bool> toLogin(String login, String password, bool isRemember) async {
     if(login != '' && password != '') {
       var urli = Uri.parse(
-          "https://kompot.keeppixel.store/anlog?login="+login+"&password=" + password);
+          "https://kompot.keep-pixel.ru/anlog?login="+login+"&password=" + password);
 
       var response = await http.get(urli);
       String dff = response.body.toString();
@@ -371,6 +371,11 @@ class ApiService {
         if(isRemember) {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString("token", langData['token']);
+        } else {
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Сохраняем токен, но ставим флаг для выхода при перезапуске
+          await prefs.setString("token", langData['token']);
+          await prefs.setBool("logout_on_restart", true);
         }
         print("gkjhjk"+langData['token']);
         return true;
@@ -385,7 +390,7 @@ class ApiService {
   Future<bool> toRegister(String login, String nick, String email, String password, bool isRemember) async {
     if(login != '' && password != '') {
       var urli = Uri.parse(
-          "https://kompot.keeppixel.store/anlog?login="+login+"&password=" + password);
+          "https://kompot.keep-pixel.ru/anlog?login="+login+"&password=" + password);
 
       var response = await http.get(urli);
       String dff = response.body.toString();
@@ -396,6 +401,11 @@ class ApiService {
         if(isRemember) {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString("token", langData['token']);
+        }else {
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Сохраняем токен, но ставим флаг для выхода при перезапуске
+          await prefs.setString("token", langData['token']);
+          await prefs.setBool("logout_on_restart", true);
         }
         print("gkjhjk"+langData['token']);
         return true;

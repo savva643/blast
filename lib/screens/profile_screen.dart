@@ -285,6 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onTap: () async {
               final SharedPreferences prefs = await SharedPreferences.getInstance();
               await prefs.remove("token");
+              await prefs.remove('logout_on_restart'); // Удаляем флаг
               final listManager = Provider.of<ListManagerProvider>(context, listen: false);
               await listManager.clearAllLists();
               widget.reseti();

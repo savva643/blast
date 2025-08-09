@@ -5,22 +5,22 @@ void shareContent(String type, String id) {
   final String url;
   switch (type) {
     case 'music':
-      url = 'https://blast.keeppixel.store/music?id=$id';
+      url = 'https://blast.keep-pixel.ru/music?id=$id';
       break;
     case 'video':
-      url = 'https://blast.keeppixel.store/video?id=$id';
+      url = 'https://blast.keep-pixel.ru/video?id=$id';
       break;
     case 'artist':
-      url = 'https://blast.keeppixel.store/artist?id=$id';
+      url = 'https://blast.keep-pixel.ru/artist?id=$id';
       break;
     case 'playlist':
-      url = 'https://blast.keeppixel.store/playlist?id=$id';
+      url = 'https://blast.keep-pixel.ru/playlist?id=$id';
       break;
     case 'album':
-      url = 'https://blast.keeppixel.store/album?id=$id';
+      url = 'https://blast.keep-pixel.ru/album?id=$id';
       break;
     default:
-      url = 'https://blast.keeppixel.store/';
+      url = 'https://blast.keep-pixel.ru/';
   }
 
   // Поделиться ссылкой

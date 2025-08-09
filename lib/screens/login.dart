@@ -763,7 +763,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Отправляем idToken на твой PHP-сервер
       final response = await http.get(
-        Uri.parse('https://keeppixel.store/andrgoogle.php?token=$idToken'),
+        Uri.parse('https://keep-pixel.ru/andrgoogle.php?token=$idToken'),
       );
 
       // Обрабатываем ответ (например, сохраняем токен пользователя)

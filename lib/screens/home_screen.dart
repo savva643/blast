@@ -1071,8 +1071,8 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   String idmus = "0";
   String namemus = "Название";
   String ispolmus = "Исполнитель";
-  String imgmus = "https://kompot.keeppixel.store/img/music.jpg";
-  String imgispol = "https://kompot.keeppixel.store/img/music.jpg";
+  String imgmus = "https://kompot.keep-pixel.ru/img/music.jpg";
+  String imgispol = "https://kompot.keep-pixel.ru/img/music.jpg";
   bool _isMuted = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS); // Состояние звука
   bool _isWeb = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS); // Проверка для iOS на вебе
 
@@ -1646,7 +1646,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       print("hjtghjgthjy"+install.toString());
       print("hjtghjgthjycsadc"+fvd2.toString());
       if(install) {
-         fvd = await filterValidImages(langData[0]['timeurl']);
+         fvd = await filterValidImages(langData[0]['url']);
       }
 
       setState(() {
@@ -1660,10 +1660,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
           if(install){
             instalumusa = true;
             print("vfdvvfdv");
-            print(langData[0]['timeurl']);
+            print(langData[0]['url']);
             if(fvd) {
               print("haveconnect");
-              langData[0]['url'] = langData[0]['timeurl'];
+              langData[0]['url'] = langData[0]['url'];
             }
           }else{
             if(!fvd2) {
@@ -2071,7 +2071,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       try {
         // Загружаем видео и сохраняем его
         await Dio().download(
-            "https://kompot.keeppixel.store/" + langData[0]['bgvideo'], filePath);
+            "https://kompot.keep-pixel.ru/" + langData[0]['bgvideo'], filePath);
         print("Видео загружено и сохранено в локальном хранилище.");
         await videoshort.open(Media(filePath));
 
@@ -2090,7 +2090,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   List langData = [
     {
       'id': '1',
-      'img': 'https://kompot.keeppixel.store/img/music.jpg',
+      'img': 'https://kompot.keep-pixel.ru/img/music.jpg',
       'name': 'Название',
       'message': 'Имполнитель',
     },
@@ -2142,8 +2142,8 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         }
       });
       if(langData[0]['bgvideo'] != "0") {
-        print("https://kompot.keeppixel.store/"+langData[0]['bgvideo']);
-        loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
+        print("https://kompot.keep-pixel.ru/"+langData[0]['bgvideo']);
+        loadbgvideo("https://kompot.keep-pixel.ru/" + langData[0]['bgvideo']);
       }
 
     }else {
@@ -2189,7 +2189,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
           });
           if(langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
+            loadbgvideo("https://kompot.keep-pixel.ru/" + langData[0]['bgvideo']);
           }
 
     }
@@ -2241,7 +2241,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
       });
       });
       if(langData[0]['bgvideo'] != "0") {
-        loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
+        loadbgvideo("https://kompot.keep-pixel.ru/" + langData[0]['bgvideo']);
       }
       if (essensioni) {
         _playNewTrack(listok['short']);
@@ -2315,7 +2315,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
 
           });
           if(langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
+            loadbgvideo("https://kompot.keep-pixel.ru/" + langData[0]['bgvideo']);
           }
         } else {
           frstsd = true;
@@ -2410,7 +2410,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
             }
           });
           if(langData[0]['bgvideo'] != "0") {
-            loadbgvideo("https://kompot.keeppixel.store/" + langData[0]['bgvideo']);
+            loadbgvideo("https://kompot.keep-pixel.ru/" + langData[0]['bgvideo']);
           }
         }
       } else {
@@ -2711,120 +2711,282 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     playerwis = PlayerWidget(
       connectToWebSocket: connectToWebSocket,
       langData: langData,
-      opacityi3: opacityi3, opacityi1: opacityi1, animation: animation, imgwh: imgwh, imgmus: imgmus, opacity: opacity, videoope: videoope, opacityi2: videoopacity,
-      squareScaleA: squareScaleA, scaleY: scaleY, translateX: translateX, translateY: translateY, shazid: shazid, namemus: namemus, opka: opaka, imgispol: imgispol, 
-      ispolmus: ispolmus, totalDuration: totalDuration, tapdown1: tapdown1, tapup1: tapup1, isPressed: isPressed, newposition: newposition, currentPosition: currentPosition, dragStarted1: dragStarted1, dragCompleted1: dragCompleted1,
-      toggleLike: toggleLike, isDisLiked: isDisLiked, canrevew: canrevew, previosmusic: previosmusic, loadingmus: loadingmus, playpause: playpause2, iconpla: iconpla, nextmusic: nextmusic, cannext: cannext, setvi: setvi2,
-      controller: controller, isLiked: isLiked, squareScaleB: squareScaleB, videoopacity: videoopacity, toggleMute: _toggleMute, borderRadius: borderRadius, tap2: opaka2, queuewidget: (){showQueueBottomSheets(context);}, isShuffleEnabled: _isShuffleEnabled, repeatMode: _repeatMode, controllershort: controllershort,
+      opacityi3: opacityi3, opacityi1: opacityi1, animation: animation,
+      imgwh: imgwh, imgmus: imgmus, opacity: opacity, videoope: videoope,
+      opacityi2: videoopacity,
+      squareScaleA: squareScaleA, scaleY: scaleY, translateX: translateX,
+      translateY: translateY, shazid: shazid, namemus: namemus, opka: opaka,
+      imgispol: imgispol,
+      ispolmus: ispolmus, totalDuration: totalDuration, tapdown1: tapdown1,
+      tapup1: tapup1, isPressed: isPressed, newposition: newposition,
+      currentPosition: currentPosition, dragStarted1: dragStarted1,
+      dragCompleted1: dragCompleted1,
+      toggleLike: toggleLike, isDisLiked: isDisLiked, canrevew: canrevew,
+      previosmusic: previosmusic, loadingmus: loadingmus, playpause: playpause2,
+      iconpla: iconpla, nextmusic: nextmusic, cannext: cannext, setvi: setvi2,
+      controller: controller, isLiked: isLiked, squareScaleB: squareScaleB,
+      videoopacity: videoopacity, toggleMute: _toggleMute, borderRadius: borderRadius,
+      tap2: opaka2, queuewidget: (){showQueueBottomSheets(context);},
+      isShuffleEnabled: _isShuffleEnabled, repeatMode: _repeatMode,
+      controllershort: controllershort,
     );
 
-    Size size = MediaQuery
-        .of(context)
-        .size;
-    if(size.width > 800){
-      _updateNavigationState();
-    }
     return Scaffold(
-        key: _scaffoldKey,
-
-        appBar: size.width <= 800 ?  PreferredSize(
-          preferredSize: Size.zero,
-          child: AppBar(
-            elevation: 0,
-            backgroundColor: kBgColor,
-
-            systemOverlayStyle: const SystemUiOverlayStyle(
-              statusBarColor: kBgColor,
-              statusBarBrightness: Brightness.dark, // For iOS: (dark icons)
-              statusBarIconBrightness: Brightness
-                  .light, // For Android: (dark icons)
-            ),
-
-          )) :
-           PreferredSize(
-            preferredSize: Size.fromHeight(89), // Высота AppBar
-            child: desktopblastmenu(imgprofile, showlogin, context, useri, (){_openSearchPage(_getNavigatorKey(pageIndex).currentContext!);}, resetapp,),
-        ),
-        backgroundColor: const Color.fromARGB(255, 15, 15, 16),
-        bottomNavigationBar: buildMyNavBar(context),
-        extendBody: true,
-        body: Stack(children: [Positioned(
-          top: -280,
-          left: -196,
-          child: Image.asset(
-            'assets/images/circlebg.png',
-            width: 420,
-            height: 420,
-          ),
-        ), LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              // При изменении размеров экрана обновляется состояние
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                setState(() {
-                  Size size = MediaQuery
-                      .of(context)
-                      .size;
-                  if (size.width <= 640) {
-                    dsds2 = videoope ? ((size.width / 16) * 9) + 80 : 60;
-                  } else {
-                    dsds2 = videoope ? ((640 / 16) * 9) + 80 : 60;
-                  }
-                });
-              });
-              return showsearch ? SearchScreen(onCallback: (dynamic input) {
-                getaboutmus(input, false, false, false, false);
-              }, onCallbacki: startJem, hie: closeserch, showlog: showlogin, dasd: resetapp,dfsfd: (dynamic input) {
-                installmus(input, true);
-              }, reci: reci, oniBack: _updateNavigationState, prtctx: context,) : Container(
-                  height: size.height, child: IndexedStack(
-                index: pageIndex, // Отображение выбранного экрана
-                children: pages,
-              ));
-            }
-        ),
+      key: _scaffoldKey,
+      backgroundColor: const Color.fromARGB(255, 15, 15, 16),
+      drawer: _buildSideMenu(context), // Боковое меню навигации
+      body: Stack(
+        children: [
+          // Фоновое изображение
           Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 140, // Высота AppBar
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  //Positioned(
-                  //  top: -280,
-                  //  left: -196,
-                  //  child: Image.asset(
-                  //    'assets/images/circlebg.png',
-                  //    width: 420,
-                  //    height: 420,
-                  //  ),
-                  //),
-                /*Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.only(left: 12, top: 12),
-                          child: const Text(
-                            "blast!",
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const Expanded(child: SizedBox()),
-                      ],
-                    ),*/
-                ],
+            top: -280,
+            left: -196,
+            child: Image.asset(
+              'assets/images/circlebg.png',
+              width: 420,
+              height: 420,
+            ),
+          ),
+
+          // Основная структура
+          Column(
+            children: [
+              // Верхняя панель с поиском и профилем
+              _buildTopBar(),
+
+              // Основная область контента
+              Expanded(
+                child: Row(
+                  children: [
+                    // Боковая панель с вкладками (видео/музыка)
+                    _buildContentTabs(),
+
+                    // Основное содержимое
+                    Expanded(
+                      child: showsearch
+                          ? SearchScreen(
+                        onCallback: (input) => getaboutmus(input, false, false, false, false),
+                        onCallbacki: startJem,
+                        hie: closeserch,
+                        showlog: showlogin,
+                        dasd: resetapp,
+                        dfsfd: (input) => installmus(input, true),
+                        reci: reci,
+                        oniBack: _updateNavigationState,
+                        prtctx: context,
+                      )
+                          : IndexedStack(
+                        index: pageIndex,
+                        children: pages,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+// Боковое меню навигации (Drawer)
+  Widget _buildSideMenu(BuildContext context) {
+    return Drawer(
+      width: 250,
+      backgroundColor: kBgColor.withOpacity(0.9),
+      child: Column(
+        children: [
+          // Упрощенный заголовок
+          Container(
+            height: 160, // Стандартная высота для DrawerHeader
+            color: Colors.black,
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: Text(
+                "blast!",
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 1.5,
+                ),
               ),
             ),
           ),
-
-        ])
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildMenuTile(Icons.home, 'Главная', 0),
+                _buildMenuTile(Icons.search, 'Поиск', -1, isSearch: true),
+                _buildMenuTile(Icons.library_music, 'Медиатека', 1),
+                _buildMenuTile(Icons.history, 'История', 2),
+                _buildMenuTile(Icons.favorite, 'Избранное', 3),
+                _buildMenuTile(Icons.download, 'Загрузки', 4),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+
+  Widget _buildMenuTile(IconData icon, String title, int pageIndex, {bool isSearch = false}) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: pageIndex == this.pageIndex ? Colors.blue : Colors.white,
+        size: 28,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: pageIndex == this.pageIndex ? Colors.blue : Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      selected: pageIndex == this.pageIndex,
+      selectedTileColor: Colors.blue.withOpacity(0.1),
+      onTap: () {
+        if (isSearch) {
+          setState(() {
+            showsearch = true;
+          });
+        } else {
+          setState(() {
+            this.pageIndex = pageIndex;
+            showsearch = false;
+          });
+        }
+        Navigator.pop(context); // Закрываем drawer после выбора
+      },
+    );
+  }
+
+// Боковая панель с вкладками контента (видео/музыка)
+  Widget _buildContentTabs() {
+    return Container(
+      width: 80, // Ширина боковой панели
+      color: kBgColor.withOpacity(0.8),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          // Вкладка "Музыка"
+          _buildContentTab(
+            icon: Icons.music_note,
+            label: 'Музыка',
+            isActive: pageIndex == 0,
+            onTap: () => setState(() => pageIndex = 0),
+          ),
+
+          const SizedBox(height: 20),
+          // Вкладка "Видео"
+          _buildContentTab(
+            icon: Icons.video_library,
+            label: 'Видео',
+            isActive: pageIndex == 1,
+            onTap: () => setState(() => pageIndex = 1),
+          ),
+
+          const SizedBox(height: 20),
+          // Вкладка "Подкасты"
+          _buildContentTab(
+            icon: Icons.mic,
+            label: 'Подкасты',
+            isActive: pageIndex == 2,
+            onTap: () => setState(() => pageIndex = 2),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Виджет вкладки контента
+  Widget _buildContentTab({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.blue.withOpacity(0.3) : Colors.transparent,
+          border: isActive
+              ? Border(left: BorderSide(width: 3, color: Colors.blue))
+              : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: isActive ? Colors.blue : Colors.white70, size: 28),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? Colors.blue : Colors.white70,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Верхняя панель с поиском и профилем
+  Widget _buildTopBar() {
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      color: kBgColor.withOpacity(0.8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          // Кнопка поиска
+          IconButton(
+            icon: const Icon(Icons.search, size: 30, color: Colors.white),
+            onPressed: () => setState(() => showsearch = true),
+          ),
+          const SizedBox(width: 16),
+
+          // Кнопка профиля
+          GestureDetector(
+            onTap: useri
+                ? () => Navigator.push(context, MaterialPageRoute(
+                builder: (context) => ProfileScreen(reseti: resetapp),
+                settings: const RouteSettings(name: '/profile')))
+                : showlogin,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: ClipOval(
+                child: imgprofile.isNotEmpty
+                    ? CachedNetworkImage(
+                  imageUrl: imgprofile,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => Center(child: CircularProgressIndicator()),
+                  errorWidget: (_, __, ___) => const Icon(Icons.person, size: 24),
+                )
+                    : const Icon(Icons.person, size: 24),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   final GlobalKey<NavigatorState> _playlistNavigatorKey = GlobalKey<NavigatorState>();
   final GlobalKey<NavigatorState> _homeNavigatorKey = GlobalKey<NavigatorState>();
   final GlobalKey<NavigatorState> _videoNavigatorKey = GlobalKey<NavigatorState>();
@@ -2948,13 +3110,13 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   List nestedArray = [
     {
       'id': '1',
-      'img': 'https://kompot.keeppixel.store/img/music.jpg',
+      'img': 'https://kompot.keep-pixel.ru/img/music.jpg',
       'name': 'Название',
       'message': 'Имполнитель',
     },
     {
       'id': '2',
-      'img': 'https://kompot.keeppixel.store/img/music.jpg',
+      'img': 'https://kompot.keep-pixel.ru/img/music.jpg',
       'name': 'Название',
       'message': 'Имполнитель',
     },
@@ -4249,7 +4411,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   Future<void> getdivecs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
      String? tr = prefs.getString("token");
-      var urli = Uri.parse("https://kompot.keeppixel.store/getdeviceblast?getdevices="+tr!);
+      var urli = Uri.parse("https://kompot.keep-pixel.ru/getdeviceblast?getdevices="+tr!);
       var response = await http.get(urli);
       String dff = response.body.toString();
       print(dff);
@@ -4614,7 +4776,7 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
   Future<void> adddevicetopull() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? tr = prefs.getString("token");
-    http.Response response = await http.get(Uri.parse("https://kompot.keeppixel.store/getdeviceblast?createip="+_localIp!+"&tokeni="+tr!+"&name="+_deviceName+"&os="+_os));
+    http.Response response = await http.get(Uri.parse("https://kompot.keep-pixel.ru/getdeviceblast?createip="+_localIp!+"&tokeni="+tr!+"&name="+_deviceName+"&os="+_os));
 
   }
 
