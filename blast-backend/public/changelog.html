@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>История обновлений — blast!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(0deg, rgb(105 0 123), #120033);
+      color: white;
+      min-height: 100vh;
+    }
+    .top-bar {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .top-bar-content {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: white;
+      text-decoration: none;
+      text-transform: lowercase;
+    }
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      opacity: 0.8;
+    }
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      opacity: 1;
+    }
+    .nav-link.active {
+      background: rgba(92, 0, 255, 0.8);
+      opacity: 1;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 60px 0 40px;
+    }
+    .header h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.8;
+      margin-bottom: 40px;
+    }
+    .changelog {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    .version {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .version-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      padding-bottom: 15px;
+    }
+    .version-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .version-date {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    .version-status {
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .status-current {
+      background: rgba(92, 0, 255, 0.8);
+      color: white;
+    }
+    .status-upcoming {
+      background: rgba(255, 165, 0, 0.8);
+      color: white;
+    }
+    .changes {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .changes li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      padding-left: 25px;
+    }
+    .changes li:last-child {
+      border-bottom: none;
+    }
+    .changes li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: rgba(92, 0, 255, 1);
+      font-weight: 700;
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 20px 0 10px;
+      color: rgba(92, 0, 255, 1);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-content">
+      <a href="/" class="logo">blast!</a>
+      <nav class="nav-links">
+        <a href="/" class="nav-link">Главная</a>
+        <a href="/download" class="nav-link">Скачать</a>
+        <a href="/about" class="nav-link">О проекте</a>
+        <a href="/changelog" class="nav-link active">Обновления</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>История обновлений</h1>
+      <p>Здесь появляются заметные изменения в blast! и его интеграции с экосистемой Necsoura.</p>
+    </div>
+
+    <div class="changelog">
+      <div class="version">
+        <div class="version-header">
+          <div>
+            <div class="version-number">Альфа 12.1</div>
+            <div class="version-date">Декабрь 2024</div>
+          </div>
+          <div class="version-status status-current">Текущая версия</div>
+        </div>
+
+        <div class="section-title">✨ Новое</div>
+        <ul class="changes">
+          <li>Переезд backend на Node.js + Fastify.</li>
+          <li>Интеграция с Necsoura Auth и Necsoura ID (единый вход).</li>
+          <li>Новый профиль пользователя на основе таблицы <code>kompot_profiles</code> в PostgreSQL.</li>
+          <li>Поддержка авторизации и профиля во всех клиентах blast! (веб + Flutter).</li>
+        </ul>
+
+        <div class="section-title">🐛 Исправления</div>
+        <ul class="changes">
+          <li>Оптимизирована загрузка рекомендаций и плейлистов.</li>
+          <li>Исправлены мелкие визуальные артефакты в веб‑версии.</li>
+        </ul>
+      </div>
+
+      <div class="version">
+        <div class="version-header">
+          <div>
+            <div class="version-number">В разработке</div>
+            <div class="version-date">Планы</div>
+          </div>
+          <div class="version-status status-upcoming">Скоро</div>
+        </div>
+
+        <div class="section-title">🚀 Запланировано</div>
+        <ul class="changes">
+          <li>Расширенный профиль Kompot (работа, любимая песня, соцсети) в приложениях blast!.</li>
+          <li>Офлайн‑режим для мобильных клиентов.</li>
+          <li>Улучшенный поиск и рекомендации на базе Elasticsearch.</li>
+          <li>Поддержка дополнительных платформ (TV‑приложения, десктопные клиенты).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>История обновлений blast!</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div class="top-bar__content">
+        <a class="logo" href="/">blast!</a>
+        <nav class="nav-links">
+          <a class="nav-link" href="/">Главная</a>
+          <a class="nav-link" href="/download">Скачать</a>
+          <a class="nav-link" href="/about">О сервисе</a>
+          <a class="nav-link active" href="/changelog">Обновления</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h1>История обновлений</h1>
+        <p>Следим за прогрессом перехода с Keep Pixel на Necsoura.</p>
+      </section>
+
+      <section class="section">
+        <div class="timeline">
+          <article class="timeline-item">
+            <header>
+              <div>
+                <strong>Альфа 12.3 — Necsoura Bridge</strong>
+                <div style="color:var(--muted);">Декабрь 2025</div>
+              </div>
+              <span class="btn btn-secondary" style="padding:6px 16px;">Текущая</span>
+            </header>
+            <ul>
+              <li>Встроенный Necsoura ID, refresh-токены и 2FA в клиентах.</li>
+              <li>Профили читаются из таблицы <code>kompot_profiles</code>.</li>
+              <li>PHP-страницы перенесены в статический фронтенд.</li>
+            </ul>
+          </article>
+
+          <article class="timeline-item">
+            <header>
+              <div>
+                <strong>Альфа 12.2</strong>
+                <div style="color:var(--muted);">Ноябрь 2025</div>
+              </div>
+            </header>
+            <ul>
+              <li>Полный переезд API на Fastify + TypeScript.</li>
+              <li>Elasticsearch для поиска и рекомендации.</li>
+              <li>FFmpeg-настройки под CDN Necsoura.</li>
+            </ul>
+          </article>
+
+          <article class="timeline-item">
+            <header>
+              <div>
+                <strong>Альфа 12.1</strong>
+                <div style="color:var(--muted);">Октябрь 2025</div>
+              </div>
+            </header>
+            <ul>
+              <li>Первый релиз веб-версии blast! поверх нового стека.</li>
+              <li>Управление устройствами и push-распознавание музыки.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Necsoura Ecosystem · blast! alpha · <span id="year"></span>
+    </footer>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
+

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Скачать blast!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(0deg, rgb(105 0 123), #120033);
+      color: white;
+      min-height: 100vh;
+    }
+    .top-bar {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .top-bar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: white;
+      text-decoration: none;
+      text-transform: lowercase;
+    }
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      opacity: 0.8;
+    }
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      opacity: 1;
+    }
+    .nav-link.active {
+      background: rgba(92, 0, 255, 0.8);
+      opacity: 1;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 60px 0;
+    }
+    .header h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-transform: lowercase;
+    }
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.8;
+      margin-bottom: 40px;
+    }
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin: 60px 0;
+    }
+    .platform-category {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .platform-category h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #fff;
+      text-align: center;
+    }
+    .platform-links {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .download-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 20px;
+      background: rgba(92, 0, 255, 0.8);
+      border: 2px solid rgba(92, 0, 255, 0.5);
+      border-radius: 40px;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .download-btn:hover {
+      background: rgba(92, 0, 255, 1);
+      border-color: rgba(92, 0, 255, 1);
+      transform: translateY(-2px);
+    }
+    .download-btn.disabled {
+      background: rgba(128, 128, 128, 0.5);
+      border-color: rgba(128, 128, 128, 0.3);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .download-btn.disabled:hover {
+      transform: none;
+    }
+    .platform-icon {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2.5rem;
+      }
+      .platforms {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .platform-category {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-content">
+      <a href="/" class="logo">blast!</a>
+      <nav class="nav-links">
+        <a href="/" class="nav-link">Главная</a>
+        <a href="/download" class="nav-link active">Скачать</a>
+        <a href="/about" class="nav-link">О проекте</a>
+        <a href="/changelog" class="nav-link">Обновления</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>blast!</h1>
+      <p>Скачайте плеер blast! для своего устройства и войдите через Necsoura ID</p>
+    </div>
+
+    <div class="platforms">
+      <div class="platform-category">
+        <h2>💻 Компьютеры</h2>
+        <div class="platform-links">
+          <a href="#" class="download-btn disabled">
+            <span><span class="platform-icon">🪟</span>Windows</span>
+            <span>Скоро</span>
+          </a>
+          <a href="#" class="download-btn disabled">
+            <span><span class="platform-icon">🍎</span>macOS</span>
+            <span>Скоро</span>
+          </a>
+          <a href="#" class="download-btn disabled">
+            <span><span class="platform-icon">🐧</span>Linux</span>
+            <span>Скоро</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="platform-category">
+        <h2>📱 Мобильные устройства</h2>
+        <div class="platform-links">
+          <a href="#" class="download-btn disabled">
+            <span><span class="platform-icon">🤖</span>Android</span>
+            <span>Скоро</span>
+          </a>
+          <a href="#" class="download-btn disabled">
+            <span><span class="platform-icon">📱</span>iOS</span>
+            <span>Скоро</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="platform-category">
+        <h2>📺 ТВ и приставки</h2>
+        <div class="platform-links">
+          <a href="#" class="download-btn disabled">
+            <span><span class="platform-icon">📺</span>Android TV</span>
+            <span>Скоро</span>
+          </a>
+          <a href="#" class="download-btn disabled">
+            <span><span class="platform-icon">🍎</span>Apple TV</span>
+            <span>Скоро</span>
+          </a>
+          <a href="#" class="download-btn disabled">
+            <span><span class="platform-icon">🌐</span>WebOS / Tizen</span>
+            <span>Скоро</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="platform-category">
+        <h2>🌐 Веб-версия</h2>
+        <div class="platform-links">
+          <a href="https://blast.keep-pixel.ru" target="_blank" class="download-btn">
+            <span><span class="platform-icon">🌐</span>Открыть в браузере</span>
+            <span>Доступно</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; opacity: 0.8;">
+      <p>Приложения для других платформ находятся в разработке.</p>
+      <p>Следите за новостями в разделе <a href="/changelog" style="color: #fff; text-decoration: underline;">обновлений</a>.</p>
+    </div>
+  </div>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Скачать blast! — Necsoura</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div class="top-bar__content">
+        <a class="logo" href="/">blast!</a>
+        <nav class="nav-links">
+          <a class="nav-link" href="/">Главная</a>
+          <a class="nav-link active" href="/download">Скачать</a>
+          <a class="nav-link" href="/about">О сервисе</a>
+          <a class="nav-link" href="/changelog">Обновления</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h1>Выберите платформу</h1>
+        <p>
+          Blast! поддерживает устройства Necsoura, классические десктопы,
+          телевизоры и смартфоны. Все версии работают под одним Necsoura ID.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Компьютеры и ноутбуки</h2>
+        <div class="platform-list">
+          <div class="platform-card">
+            <strong>Windows</strong>
+            <p>Установщик .msix — скоро</p>
+          </div>
+          <div class="platform-card">
+            <strong>macOS (Intel / Apple Silicon)</strong>
+            <p>DMG-пакет — скоро</p>
+          </div>
+          <div class="platform-card">
+            <strong>Linux</strong>
+            <p>AppImage и пакеты для популярных дистрибутивов — скоро</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Мобильные устройства</h2>
+        <div class="platform-list">
+          <div class="platform-card">
+            <strong>Android</strong>
+            <p>Ранняя бета в Necsoura Store</p>
+          </div>
+          <div class="platform-card">
+            <strong>iOS / iPadOS</strong>
+            <p>Тестирование TestFlight</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>ТВ и мультимедиа</h2>
+        <div class="platform-list">
+          <div class="platform-card">
+            <strong>Android TV / Google TV</strong>
+            <p>Пилотная сборка — доступ к каталогу и рекомендациям</p>
+          </div>
+          <div class="platform-card">
+            <strong>Apple TV</strong>
+            <p>В разработке</p>
+          </div>
+          <div class="platform-card">
+            <strong>LG webOS</strong>
+            <p>Тест в Necsoura Labs</p>
+          </div>
+          <div class="platform-card">
+            <strong>Samsung Tizen</strong>
+            <p>В подготовке</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Веб‑версия</h2>
+        <div class="cta-group" style="margin-top:20px;">
+          <a class="btn btn-primary" href="https://blast.keep-pixel.ru" target="_blank" rel="noreferrer">
+            Открыть в браузере
+          </a>
+        </div>
+        <p style="text-align:center;margin-top:16px;color:var(--muted);">
+          Веб версия обновляется первой и всегда отражает актуальные изменения Necsoura.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      Necsoura Ecosystem · blast! alpha · <span id="year"></span>
+    </footer>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
+

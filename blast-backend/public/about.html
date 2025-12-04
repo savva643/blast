@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>О blast!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(0deg, rgb(105 0 123), #120033);
+      color: white;
+      min-height: 100vh;
+    }
+    .top-bar {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .top-bar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: white;
+      text-decoration: none;
+      text-transform: lowercase;
+    }
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      opacity: 0.8;
+    }
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      opacity: 1;
+    }
+    .nav-link.active {
+      background: rgba(92, 0, 255, 0.8);
+      opacity: 1;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 60px 0 40px;
+    }
+    .brand {
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: 1.4px;
+      text-transform: lowercase;
+    }
+    .subtitle {
+      font-size: 1.5rem;
+      margin-top: 20px;
+      opacity: 0.8;
+    }
+    .content-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      margin: 30px 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #fff;
+      text-align: center;
+    }
+    .section-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      opacity: 0.9;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 30px;
+      margin: 40px 0;
+    }
+    .feature-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-4px);
+    }
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+    .feature-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    .feature-description {
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin: 40px 0;
+    }
+    .stat-card {
+      background: rgba(92, 0, 255, 0.2);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      border: 1px solid rgba(92, 0, 255, 0.3);
+    }
+    .stat-number {
+      font-size: 2.4rem;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .stat-label {
+      font-size: 1rem;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-content">
+      <a href="/" class="logo">blast!</a>
+      <nav class="nav-links">
+        <a href="/" class="nav-link">Главная</a>
+        <a href="/download" class="nav-link">Скачать</a>
+        <a href="/about" class="nav-link active">О проекте</a>
+        <a href="/changelog" class="nav-link">Обновления</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="brand">blast!</div>
+      <div class="subtitle">Музыкальный сервис внутри экосистемы Necsoura</div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stat-card">
+        <div class="stat-number">12.1</div>
+        <div class="stat-label">Текущая альфа-версия</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">9+</div>
+        <div class="stat-label">Поддерживаемых платформ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Бесплатный базовый функционал</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Доступность сервиса</div>
+      </div>
+    </div>
+
+    <div class="content-section">
+      <h2 class="section-title">🎵 Что такое blast!</h2>
+      <p class="section-text">
+        blast! — это аудио‑часть экосистемы Necsoura. Современный музыкальный плеер и сервис,
+        который объединяет ваш профиль Kompot, библиотеку и рекомендации на всех устройствах.
+      </p>
+    </div>
+
+    <div class="content-section">
+      <h2 class="section-title">🚀 Наша цель</h2>
+      <p class="section-text">
+        Дать пользователю быстрый, красивый и честный музыкальный сервис, в котором аккаунт Necsoura
+        работает везде — от мобильного приложения до веб‑версии и десктопа.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3 class="feature-title">Современный UI</h3>
+        <p class="feature-description">
+          Интерфейс, который одинаково хорошо ощущается на смартфоне, планшете, ПК и в вебе.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎧</div>
+        <h3 class="feature-title">Качество звука</h3>
+        <p class="feature-description">
+          Потоковое воспроизведение, подготовка к Hi‑Res и интеграция c рекомендациями Kompot.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3 class="feature-title">Единый аккаунт</h3>
+        <p class="feature-description">
+          Вход по Necsoura ID, общий профиль, истории и устройства для всех приложений экосистемы.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3 class="feature-title">Производительность</h3>
+        <p class="feature-description">
+          Flutter‑клиент и оптимизированный backend на Node.js обеспечивают быструю работу даже на
+          слабых устройствах.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3 class="feature-title">Безопасность</h3>
+        <p class="feature-description">
+          Авторизация через Necsoura Auth, поддержка 2FA и трекинг устройств в отдельном сервисе.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🆓</div>
+        <h3 class="feature-title">Доступность</h3>
+        <p class="feature-description">
+          Основные функции прослушивания остаются бесплатными; подписки управляются через Necsoura.
+        </p>
+      </div>
+    </div>
+
+    <div class="content-section">
+      <h2 class="section-title">👥 Команда</h2>
+      <p class="section-text">
+        blast! и Kompot — часть Necsoura. Проект развивает небольшая команда, которая любит музыку,
+        хороший UX и прозрачные сервисы. Сервис активно развивается, поэтому интерфейсы и API ещё могут меняться.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>О blast! и Necsoura</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div class="top-bar__content">
+        <a class="logo" href="/">blast!</a>
+        <nav class="nav-links">
+          <a class="nav-link" href="/">Главная</a>
+          <a class="nav-link" href="/download">Скачать</a>
+          <a class="nav-link active" href="/about">О сервисе</a>
+          <a class="nav-link" href="/changelog">Обновления</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h1>blast! внутри экосистемы Necsoura</h1>
+        <p>
+          Blast! — музыкальный сервис, выросший из Keep Pixel и ставший частью
+          Necsoura. Мы переписали бэкенд на Node.js, подключили Necsoura ID,
+          обновили стороницы и подготовили базу для масштабирования.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Основные принципы</h2>
+        <div class="grid">
+          <div class="card">
+            <strong>Прозрачность</strong>
+            <p>
+              Necsoura ID показывает, какие устройства подключены и какие
+              токены активны. Управляй сессиями в один клик.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Скорость</strong>
+            <p>
+              Fastify + PostgreSQL + MongoDB + Redis обеспечивают быструю
+              отдачу персонализированных данных.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Готовность к масштабированию</strong>
+            <p>
+              Все API переведены на TypeScript, покрываются swagger и готовы к
+              деплою в Necsoura Cloud.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Забота о данных</strong>
+            <p>
+              Профили теперь в таблице <code>kompot_profiles</code>, а доступ к
+              ним ограничен Necsoura ID.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Команда и партнёры</h2>
+        <p>
+          Blast! развивает небольшой, но очень упёртый коллектив внутри Necsoura.
+          Мы интегрируем feedback-клуб, коллаборативные плейлисты, расширенный
+          поиск артистов и свежие гаджеты Necsoura Home.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Что дальше</h2>
+        <div class="grid">
+          <div class="card">
+            <strong>Новые клиенты</strong>
+            <p>Автомобили Necsoura Mobility и пульты Smart Control.</p>
+          </div>
+          <div class="card">
+            <strong>Расширенный поиск</strong>
+            <p>Гибрид Elasticsearch + Necsoura ML для похожих треков.</p>
+          </div>
+          <div class="card">
+            <strong>Эффекты и пространства</strong>
+            <p>Immersive audio, adaptive EQ, общие комнаты.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Necsoura Ecosystem · blast! alpha · <span id="year"></span>
+    </footer>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
+

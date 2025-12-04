@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blast! — часть экосистемы Necsoura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Montserrat", sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #5b00ff 0, #120033 45%, #05000f 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(18px);
+      background: rgba(0, 0, 0, 0.35);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .top-bar-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-blast {
+      font-weight: 900;
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+      text-transform: lowercase;
+    }
+    .logo-ecosystem {
+      font-size: 0.9rem;
+      opacity: 0.75;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.95rem;
+      padding: 8px 14px;
+      border-radius: 999px;
+      opacity: 0.8;
+      transition: all 0.25s ease;
+    }
+    nav a:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    nav a.active {
+      background: rgba(91, 0, 255, 0.9);
+      opacity: 1;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px 60px;
+    }
+    .hero {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 40px;
+      align-items: center;
+    }
+    .hero-title {
+      font-size: 3.2rem;
+      line-height: 1.05;
+      font-weight: 900;
+      margin-bottom: 18px;
+    }
+    .hero-subtitle {
+      font-size: 1.15rem;
+      opacity: 0.85;
+      max-width: 480px;
+      margin-bottom: 26px;
+    }
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 26px;
+    }
+    .badge {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(0, 0, 0, 0.3);
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .btn-primary,
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.98rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(120deg, #ff4fd8, #8b5bff);
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .hero-right {
+      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.45));
+      border-radius: 24px;
+      padding: 22px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+    }
+    .hero-right h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .hero-right p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      margin-bottom: 18px;
+    }
+    .hero-web-preview {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 14px 16px;
+      font-size: 0.88rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hero-web-preview span {
+      opacity: 0.85;
+    }
+    .hero-web-preview strong {
+      font-weight: 700;
+    }
+    footer {
+      padding: 18px 20px 26px;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      text-align: center;
+    }
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+        text-align: left;
+      }
+      .hero-title {
+        font-size: 2.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="logo-area">
+        <div class="logo-blast">blast!</div>
+        <div class="logo-ecosystem">часть экосистемы Necsoura</div>
+      </div>
+      <nav>
+        <a href="/" class="active">Главная</a>
+        <a href="/download">Скачать</a>
+        <a href="/about">О проекте</a>
+        <a href="/changelog">Обновления</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1 class="hero-title">Музыка, которая живёт во всей экосистеме.</h1>
+        <p class="hero-subtitle">
+          blast! — музыкальный сервис Necsoura. Один аккаунт, единый профиль Kompot
+          и удобный плеер на всех платформах: от смартфона до десктопа и веба.
+        </p>
+        <div class="hero-badges">
+          <div class="badge">Альфа-версия</div>
+          <div class="badge">Web + Desktop + Mobile</div>
+          <div class="badge">Интеграция с Necsoura ID</div>
+        </div>
+        <div class="hero-actions">
+          <a href="/download" class="btn-primary">Скачать blast!</a>
+          <a href="https://blast.keep-pixel.ru" class="btn-secondary">Открыть WEB-версию</a>
+        </div>
+      </div>
+      <aside class="hero-right">
+        <h2>blast! в браузере</h2>
+        <p>
+          Попробуй новую веб-версию blast! прямо сейчас — ничего не устанавливая.
+          Вход по Necsoura ID, общий профиль и история прослушиваний.
+        </p>
+        <div class="hero-web-preview">
+          <span>WEB-версия доступна по адресу<br /><strong>blast.keep-pixel.ru</strong></span>
+          <span>▶</span>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer>
+    © Necsoura / Kompot — blast! (альфа). Интерфейс и API находятся в активной разработке.
+  </footer>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>blast! — часть Necsoura</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div class="top-bar__content">
+        <a class="logo" href="/">blast!</a>
+        <nav class="nav-links">
+          <a class="nav-link active" href="/">Главная</a>
+          <a class="nav-link" href="/download">Скачать</a>
+          <a class="nav-link" href="/about">О сервисе</a>
+          <a class="nav-link" href="/changelog">Обновления</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <p class="logo" style="font-size: 3.2rem;">blast! × Necsoura</p>
+        <h1>Музыка, устройства и единый Necsoura ID</h1>
+        <p>
+          Переходим от Keep Pixel к современной экосистеме Necsoura — обновлённые
+          приложения, единый аккаунт, мгновенная синхронизация и потоковое аудио
+          студийного качества на всех платформах.
+        </p>
+        <div class="cta-group">
+          <a class="btn btn-primary" href="/download">Скачать приложение</a>
+          <a class="btn btn-secondary" href="https://blast.keep-pixel.ru" target="_blank" rel="noreferrer">Открыть веб‑версию</a>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Почему blast! внутри Necsoura</h2>
+        <div class="grid">
+          <div class="card">
+            <strong>Единый профиль</strong>
+            <p>
+              Necsoura ID избавляет от повторных регистраций и шифрует токены для
+              всех приложений семьи.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Мгновенный доступ</strong>
+            <p>
+              Десктопы, мобильные устройства, телевизоры и автомобили — подключи
+              устройство один раз и управляй всем из профиля.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Потоковое качество</strong>
+            <p>
+              FFmpeg + CDN, адаптивные битрейты, анализ шумов и кэш в Redis для
+              очень быстрых откликов.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Поиск и рекомендации</strong>
+            <p>
+              Elasticsearch и собственные алгоритмы на данных Necsoura позволяют
+              находить музыку за миллисекунды.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Где уже доступен blast!</h2>
+        <div class="grid">
+          <div class="card">
+            <strong>Веб и десктоп</strong>
+            <p>Chrome, Safari, Edge, Windows, macOS, Linux.</p>
+          </div>
+          <div class="card">
+            <strong>Мобильные устройства</strong>
+            <p>Android, iOS, HarmonyOS (бета).</p>
+          </div>
+          <div class="card">
+            <strong>ТВ и мультимедиа</strong>
+            <p>Android TV, Apple TV, webOS, Tizen.</p>
+          </div>
+          <div class="card">
+            <strong>Умные колонки и авто</strong>
+            <p>CarPlay/Android Auto и устройства Necsoura Home.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Necsoura Ecosystem · blast! alpha · <span id="year"></span>
+    </footer>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
+
