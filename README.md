@@ -1,14 +1,11 @@
-### blast!
+## Blast Service
 
-## Музыкальный стриминговый сервис (часть экосистемы Necsoura)
+Структура такая же, как у Kompot:
 
-Репозиторий содержит несколько частей проекта:
+- `backend/` — серверная часть (`blast-backend`).
+- `frontend-web/` — веб-версия.
+- `frontend-mobile/` — мобильное приложение.
+- `database/` — SQL/миграции.
+- `docker/` — локальный docker-compose для Blast.
 
-- `blast-flutter` — основной клиент blast (Flutter, Web + мобильные/десктоп).
-- `backend-node` — новый backend на Node.js + TypeScript + Fastify (API для музыки, плейлистов, устройств и профиля Kompot).
-- `blast-backend` — старый PHP‑backend, откуда переносится логика (будет постепенно отключаться).
-- `blast-frontend` — старый PHP‑фронтенд (страницы «о проекте», «скачать», changelog).
-- `auth-service` — микросервис авторизации Necsoura (`auth.keep-pixel.ru/api/auth/*`).
-- `blast-database` — SQL‑файлы для PostgreSQL (init.sql и схема музыкальных таблиц).
 
-Более подробное описание структуры и потоков см. в `ARCHITECTURE.md`.
