@@ -1,14 +1,17 @@
 import type { FastifyInstance } from "fastify";
-import { Client as ElasticClient } from "elasticsearch";
+import elasticsearch from "elasticsearch";
 import { env } from "../config/env.js";
 
 declare module "fastify" {
   interface FastifyInstance {
-    elastic: ElasticClient;
+    // тип намеренно ослаблен, чтобы не требовать деклараций elasticsearch
+    elastic: any;
   }
 }
 
 export async function registerElastic(app: FastifyInstance) {
+  const ElasticClient: any = (elasticsearch as any).Client;
+
   const client = new ElasticClient({
     host: env.elastic.node
   });
@@ -19,5 +22,4 @@ export async function registerElastic(app: FastifyInstance) {
     await client.close();
   });
 }
-
 

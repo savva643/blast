@@ -46,23 +46,6 @@ async function buildServer() {
 
   await registerRoutes(app);
 
-  // Маршруты для статики / лендинга
-  app.get("/", async (request, reply) => {
-    return reply.type("text/html").sendFile("index.html");
-  });
-
-  app.get("/download", async (request, reply) => {
-    return reply.type("text/html").sendFile("download.html");
-  });
-
-  app.get("/about", async (request, reply) => {
-    return reply.type("text/html").sendFile("about.html");
-  });
-
-  app.get("/changelog", async (request, reply) => {
-    return reply.type("text/html").sendFile("changelog.html");
-  });
-
   return app;
 }
 

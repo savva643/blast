@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import mongoist, { type Db } from "mongoist";
+import { MongoClient, type Db } from "mongodb";
 import { env } from "../config/env.js";
 
 declare module "fastify" {
@@ -9,13 +9,15 @@ declare module "fastify" {
 }
 
 export async function registerMongo(app: FastifyInstance) {
-  const db = mongoist(env.mongo.uri);
+  const client = new MongoClient(env.mongo.uri);
+  await client.connect();
+
+  const db = client.db(); // берём БД из URI (например, mongodb://host:27017/blast)
 
   app.decorate("mongo", db);
 
   app.addHook("onClose", async () => {
-    await db.close();
+    await client.close();
   });
 }
-
 
